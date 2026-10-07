@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { AnimatePresence, motion } from "motion/react";
 import {
   ArrowUpRight,
   BrainCircuit,
@@ -689,12 +690,23 @@ export default function StudyToolsModal({ note, onClose }: StudyToolsModalProps)
                               <span className="flashcard-next-number">{String(flashcardIndex + 2).padStart(2, "0")}</span>
                             </div>
                           )}
-                          <button
-                            type="button"
-                            className={`flashcard-surface ${flashcardFlipped ? "revealed" : ""}`}
-                            onClick={() => setFlashcardFlipped(value => !value)}
-                            aria-label={flashcardFlipped ? "Hide answer" : "Reveal answer"}
-                          >
+                          <AnimatePresence initial={false} mode="wait">
+                            <motion.div
+                              key={flashcardIndex}
+                              className="flashcard-motion-shell"
+                              initial={{ opacity: 0, x: 72, y: 28, rotate: 4, scale: 0.94 }}
+                              animate={{ opacity: 1, x: 0, y: 0, rotate: 0, scale: 1 }}
+                              exit={{ opacity: 0, x: 110, y: -14, rotate: 6, scale: 0.93 }}
+                              transition={{ type: "spring", stiffness: 280, damping: 26, mass: 0.72 }}
+                            >
+                              <motion.button
+                                type="button"
+                                className={`flashcard-surface ${flashcardFlipped ? "revealed" : ""}`}
+                                onClick={() => setFlashcardFlipped(value => !value)}
+                                whileHover={{ y: -3, scale: 1.002 }}
+                                whileTap={{ scale: 0.997 }}
+                                aria-label={flashcardFlipped ? "Hide answer" : "Reveal answer"}
+                              >
                             <span className="flashcard-surface-inner">
                               <span className="flashcard-face flashcard-question-face">
                                 <span className="flashcard-card-top">
@@ -736,7 +748,9 @@ export default function StudyToolsModal({ note, onClose }: StudyToolsModalProps)
                                 <span className="flashcard-card-hint">Compare → judge your recall → rate it</span>
                               </span>
                             </span>
-                          </button>
+                              </motion.button>
+                            </motion.div>
+                          </AnimatePresence>
 
                           <div className="flashcard-action-deck">
                             <button
