@@ -10,6 +10,7 @@ import { AddResourceModal } from "./components/AddResourceModal";
 import type { Resource } from "./types/resource";
 import type { SearchResult } from "./services/search";
 import Subjects, { type Subject } from "./Subjects";
+import Review from "./Review";
 import {
     isStorageAvailable,
     loadResources,
@@ -299,6 +300,11 @@ function App() {
                             resources={resources}
                             subjects={subjects}
                             initialFilter="favourites"
+                        />
+                    ) : activePage === "Review" ? (
+                        <Review
+                            resources={resources}
+                            subjects={subjects}
                         />
                     ) : (
                         <div className="page-heading">
