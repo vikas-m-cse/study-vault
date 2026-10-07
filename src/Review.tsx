@@ -14,7 +14,7 @@ import { getAllNotes } from "./services/noteStorage";
 import type { Note, TipTapNode } from "./types/note";
 import type { Resource } from "./types/resource";
 import type { Subject } from "./Subjects";
-import { chooseNextInterval, masteryPercent, recordLearningEvent, recordMasteryLevel, getMastery, type QuestionType } from "./services/learningCore";
+import { chooseNextInterval, masteryPercent, recordLearningEvent, recordMasteryLevel, getMastery, getNextBestAction, type QuestionType } from "./services/learningCore";
 
 type ReviewProps = {
   resources: Resource[];
@@ -355,6 +355,7 @@ export default function Review({ subjects, focusNoteId }: ReviewProps) {
   const reviewedConcepts = concepts.filter((concept) => reviewState[concept.id]?.lastReviewedAt).length;
   const mastery = getMastery();
   const learnedConcepts = concepts.filter((concept) => masteryPercent(mastery[concept.id]) >= 70).length;
+  const nextAction = selected ? getNextBestAction(mastery[selected.id]) : null;
 
   return (
     <div className="review-page">
@@ -429,6 +430,17 @@ export default function Review({ subjects, focusNoteId }: ReviewProps) {
                   {currentState && <span>Streak {currentState.streak}</span>}
                   {mastery[selected.id] && <span>Mastery {masteryPercent(mastery[selected.id])}%</span>}
                 </div>
+
+                {nextAction && (
+                  <div className="review-v2-next-action">
+                    <div>
+                      <span className="review-v2-next-action-kicker">ADAPTIVE NEXT STEP</span>
+                      <strong>{nextAction.label}</strong>
+                      <p>{nextAction.reason}</p>
+                    </div>
+                    <span className="review-v2-next-action-dimension">{nextAction.dimension}</span>
+                  </div>
+                )}
 
                 <div className="review-v2-question">
                   <strong>
