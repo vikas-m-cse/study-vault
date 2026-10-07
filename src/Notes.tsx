@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
     Archive,
+    BrainCircuit,
     ChevronLeft,
     ChevronRight,
     Clock3,
@@ -37,6 +38,7 @@ type NotesProps = {
     openNoteId?: string;
     openFolderId?: string;
     initialFilter?: NotesFilter;
+    onOpenReview?: (noteId: string) => void;
 };
 
 type NotesFilter = "all" | "pinned" | "favourites" | "recent" | "archived" | "trash" | `folder:${string}` | `tag:${string}`;
@@ -68,7 +70,7 @@ function noteMatchesSearch(note: Note, search: string): boolean {
     );
 }
 
-export default function Notes({ resources, subjects, openNoteId, openFolderId, initialFilter = "all" }: NotesProps) {
+export default function Notes({ resources, subjects, openNoteId, openFolderId, initialFilter = "all", onOpenReview }: NotesProps) {
     const [notes, setNotes] = useState<Note[]>([]);
     const [folders, setFolders] = useState<NoteFolder[]>([]);
     const [drafts, setDrafts] = useState<Drafts>({});
@@ -532,6 +534,17 @@ export default function Notes({ resources, subjects, openNoteId, openFolderId, i
                                 </div>
                                 <div className="notes-editor-header-actions">
                                     <span className={`notes-save-status ${saveState}`}>{statusLabel}</span>
+                                    {selectedNote && !selectedRecord?.legacy && onOpenReview && (
+                                        <button
+                                            type="button"
+                                            className="notes-review-button"
+                                            onClick={() => onOpenReview(selectedNote.id)}
+                                            title="Review this note now"
+                                        >
+                                            <BrainCircuit size={15} />
+                                            Review this note
+                                        </button>
+                                    )}
                                     <button
                                         type="button"
                                         className="notes-panel-toggle"
