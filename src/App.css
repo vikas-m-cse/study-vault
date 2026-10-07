@@ -3529,6 +3529,23 @@ button {
 .study-tools-signal-row b { color: #a9bfda; font-size: 9px; }
 .study-tools-signal-live { margin-left: auto; color: #64cda8 !important; border-color: rgba(100,205,168,.12) !important; background: rgba(100,205,168,.045) !important; }
 
+.study-tools-learning-directive {
+  display: grid; grid-template-columns: 34px minmax(0,1fr) auto; align-items: center; gap: 10px;
+  margin: 0 0 13px; padding: 11px 12px;
+  border: 1px solid rgba(111, 164, 235, .12); border-radius: 12px;
+  background: linear-gradient(100deg, rgba(75, 133, 230, .07), rgba(255,255,255,.018));
+}
+.study-tools-directive-icon {
+  width: 32px; height: 32px; display: grid; place-items: center; border-radius: 9px;
+  background: rgba(100, 157, 238, .09); border: 1px solid rgba(110, 165, 237, .14); color: #82afe9;
+}
+.study-tools-learning-directive strong { display: block; color: #c8daf0; font-size: 10px; }
+.study-tools-learning-directive p { margin: 3px 0 0; color: #607895; font-size: 9px; line-height: 1.5; }
+.study-tools-learning-directive > span {
+  padding: 6px 8px; border: 1px solid rgba(140, 169, 208, .1); border-radius: 999px;
+  color: #58718f; font-size: 7px; font-weight: 900; letter-spacing: .08em; text-transform: uppercase;
+}
+
 .study-tools-card-list, .study-tools-question-list { display: grid; gap: 10px; }
 .study-tools-card {
   position: relative; overflow: hidden; padding: 16px 17px;
