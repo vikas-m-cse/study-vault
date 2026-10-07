@@ -23,7 +23,7 @@ import {
   Zap,
 } from "lucide-react";
 import type { Note, TipTapNode } from "../types/note";
-import { getAdaptiveAction, getMastery, recordLearningEvent, type QuestionType } from "../services/learningCore";
+import { adaptiveNeed, getAdaptiveAction, getMastery, masteryPercent, recordLearningEvent, retentionEstimate, type QuestionType } from "../services/learningCore";
 
 type StudyTool = "mission" | "flashcards" | "questions" | "mnemonics" | "revision" | "teach";
 
@@ -361,6 +361,7 @@ export default function StudyToolsModal({ note, onClose }: StudyToolsModalProps)
   const [flashcardIndex, setFlashcardIndex] = useState(0);
   const [flashcardFlipped, setFlashcardFlipped] = useState(false);
   const [flashcardRatings, setFlashcardRatings] = useState<Record<number, "known" | "missed">>({});
+  const [flashcardInsight, setFlashcardInsight] = useState<{ type: "known" | "missed"; concept: string; label: string; reason: string } | null>(null);
   const [missionAnswer, setMissionAnswer] = useState("");
   const [missionStep, setMissionStep] = useState(0);
   const [missionSubmitted, setMissionSubmitted] = useState(false);
@@ -382,6 +383,13 @@ export default function StudyToolsModal({ note, onClose }: StudyToolsModalProps)
   const missedCount = Object.values(flashcardRatings).filter(value => value === "missed").length;
   const deckComplete = flashcards.length > 0 && knownCount + missedCount === flashcards.length;
   const missedCards = flashcards.map((_, index) => index).filter(index => flashcardRatings[index] === "missed");
+  const currentFlashcard = flashcards[flashcardIndex];
+  const flashcardConcept = currentFlashcard ? conceptName(currentFlashcard.question.replace(/^What is (?:the core idea behind |the role of |the concept of )/i, "")) : "this concept";
+  const flashcardMastery = currentFlashcard ? getMastery()[note.id + "::" + flashcardConcept] : undefined;
+  const flashcardNeed = adaptiveNeed(flashcardMastery);
+  const flashcardAction = getAdaptiveAction(flashcardMastery);
+  const flashcardMasteryPercent = masteryPercent(flashcardMastery);
+  const flashcardRetention = retentionEstimate(flashcardMastery);
 
   useEffect(() => {
     if (tool !== "flashcards") return;
@@ -674,7 +682,7 @@ export default function StudyToolsModal({ note, onClose }: StudyToolsModalProps)
                           <span className="flashcard-face flashcard-question-face">
                             <span className="flashcard-face-label"><Target size={13} /> RETRIEVE FROM MEMORY</span>
                             <strong>{flashcards[flashcardIndex].question}</strong>
-                            <span className="flashcard-card-hint">Try to say the answer before revealing <kbd>Space</kbd></span>
+                            <span className="flashcard-card-hint">{flashcardNeed === "retention" ? "Retention is fading · retrieve before rereading" : flashcardNeed === "calibration" ? "Confidence needs a reality check · explain it" : flashcardNeed === "understanding" ? "Recall is ahead · focus on why it works" : "Try to reconstruct the answer before revealing"} <kbd>Space</kbd></span>
                           </span>
                           <span className="flashcard-face flashcard-answer-face">
                             <span className="flashcard-face-label"><Check size={13} /> SOURCE-GROUNDED ANSWER</span>
@@ -697,6 +705,19 @@ export default function StudyToolsModal({ note, onClose }: StudyToolsModalProps)
                     </div>
 
                     {flashcardFlipped && (
+                      <div className="flashcard-adaptive-strip">
+                        <div className="flashcard-adaptive-icon"><Sparkles size={14} /></div>
+                        <div>
+                          <span>NEXT BEST ACTION</span>
+                          <strong>{flashcardAction.label}</strong>
+                          <small>{flashcardAction.reason}</small>
+                        </div>
+                        <div className="flashcard-adaptive-stats">
+                          <b>{flashcardMasteryPercent}%</b><small>mastery</small>
+                          <b>{flashcardRetention ? Math.round(flashcardRetention * 100) : 0}%</b><small>retention</small>
+                        </div>
+                      </div>
+
                       <div className="flashcard-rating-panel">
                         <div className="flashcard-rating-copy">
                           <span>RECALL QUALITY</span>
@@ -705,17 +726,28 @@ export default function StudyToolsModal({ note, onClose }: StudyToolsModalProps)
                         <div className="flashcard-rating-actions">
                           <button type="button" className="flashcard-rate missed" onClick={() => {
                             setFlashcardRatings(prev => ({ ...prev, [flashcardIndex]: "missed" }));
+                            recordLearningEvent({ conceptId: note.id + "::" + flashcardConcept, questionType: "recall", outcome: "incorrect", confidence: 30, evidenceScore: 0, at: Date.now() });
+                            setFlashcardInsight({ type: "missed", concept: flashcardConcept, label: "Gap detected", reason: "This card is now prioritized for another retrieval attempt." });
                             if (flashcardIndex < flashcards.length - 1) { setFlashcardIndex(value => value + 1); setFlashcardFlipped(false); }
                           }}>
                             <X size={16} /><span><b>Again</b><small>Couldn’t recall</small></span>
                           </button>
                           <button type="button" className="flashcard-rate known" onClick={() => {
                             setFlashcardRatings(prev => ({ ...prev, [flashcardIndex]: "known" }));
+                            recordLearningEvent({ conceptId: note.id + "::" + flashcardConcept, questionType: "recall", outcome: "correct", confidence: 80, evidenceScore: 35, at: Date.now() });
+                            setFlashcardInsight({ type: "known", concept: flashcardConcept, label: "Retrieval recorded", reason: "Your self-rating is now part of this concept’s learning history." });
                             if (flashcardIndex < flashcards.length - 1) { setFlashcardIndex(value => value + 1); setFlashcardFlipped(false); }
                           }}>
                             <Check size={16} /><span><b>Got it</b><small>Retrieved it</small></span>
                           </button>
                         </div>
+                      </div>
+                    )}
+
+                    {flashcardInsight && (
+                      <div className={`flashcard-insight-toast ${flashcardInsight.type}`}>
+                        <span>{flashcardInsight.type === "known" ? "✓" : "!"}</span>
+                        <div><b>{flashcardInsight.label}</b><small>{flashcardInsight.reason}</small></div>
                       </div>
                     )}
 
