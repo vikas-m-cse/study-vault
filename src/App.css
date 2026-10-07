@@ -4786,3 +4786,133 @@ button {
   .flashcard-adaptive-strip{grid-template-columns:34px minmax(0,1fr)}
   .flashcard-adaptive-stats{display:none}
 }
+
+/* FLASHCARDS — SIGNATURE EDITORIAL CARD
+   Deliberately overrides the previous nested-dashboard treatment. */
+.flashcard-cockpit{max-width:1040px}
+.flashcard-cockpit-head{margin-bottom:20px}
+.flashcard-cockpit-head h4{font-size:25px}
+.flashcard-session-score{border-radius:14px;padding:10px 14px}
+.flashcard-progress-track{height:2px;margin-bottom:20px;background:#1c2a3d}
+.flashcard-progress-track>span{background:linear-gradient(90deg,#d8b77a,#86a9ff);box-shadow:none}
+.flashcard-progress-mark.current{background:#f2d59b;box-shadow:0 0 0 4px rgba(216,183,122,.12)}
+.flashcard-board{
+  --flash-accent:#d8b77a;
+  padding:0;
+  overflow:visible;
+  border:0;
+  border-radius:0;
+  background:transparent;
+  box-shadow:none;
+}
+.flashcard-board.palette-1{--flash-accent:#b9a4ff}
+.flashcard-board.palette-2{--flash-accent:#75d0b4}
+.flashcard-board.palette-3{--flash-accent:#e0a76e}
+.flashcard-board.palette-4{--flash-accent:#77c7dc}
+.flashcard-board.palette-5{--flash-accent:#c68ee7}
+.flashcard-board-glow{
+  width:500px;height:350px;top:-210px;right:-120px;
+  opacity:.09;filter:blur(70px)
+}
+.flashcard-board-meta{
+  padding:0 4px 11px;
+}
+.flashcard-board-meta>div{gap:11px}
+.flashcard-eyebrow{font-size:7px;letter-spacing:.19em}
+.flashcard-concept-state{font-size:7px}
+.flashcard-number{
+  width:38px;height:38px;border-radius:50%;
+  background:#0b1625;border-color:rgba(216,183,122,.2);
+  color:#d8b77a;
+}
+.flashcard-surface{
+  min-height:390px;
+  border-radius:24px;
+  overflow:hidden;
+  box-shadow:0 35px 90px rgba(0,0,0,.34),0 0 0 1px rgba(255,255,255,.08);
+}
+.flashcard-face{
+  padding:48px 58px 42px;
+  border:0;
+  border-radius:24px;
+}
+.flashcard-question-face{
+  background:
+    linear-gradient(115deg,rgba(255,255,255,.92),rgba(244,239,229,.98)),
+    #f4efe5;
+  color:#172234;
+}
+.flashcard-question-face::before{
+  content:"";
+  position:absolute;
+  left:0;top:0;bottom:0;width:5px;
+  background:var(--flash-accent);
+}
+.flashcard-question-face::after{
+  content:"RECALL";
+  position:absolute;
+  right:-20px;bottom:10px;
+  color:rgba(22,34,52,.045);
+  font-size:110px;font-weight:900;letter-spacing:-.08em;
+  transform:rotate(-90deg);
+}
+.flashcard-answer-face{
+  background:
+    radial-gradient(circle at 85% 15%,rgba(112,212,178,.11),transparent 28%),
+    #0d2724;
+  border:1px solid rgba(112,212,178,.18);
+}
+.flashcard-face-label{
+  position:relative;z-index:2;
+  color:#637087;
+  margin-bottom:34px;
+}
+.flashcard-question-face .flashcard-face-label{color:#596a82}
+.flashcard-answer-face .flashcard-face-label{color:#77cdb2}
+.flashcard-face strong{
+  position:relative;z-index:2;
+  max-width:790px;
+  color:#142238;
+  font-size:clamp(30px,3.6vw,48px);
+  line-height:1.08;
+  letter-spacing:-.06em;
+}
+.flashcard-answer-face strong{color:#ecf8f4;font-size:clamp(20px,2.3vw,29px);line-height:1.48}
+.flashcard-card-hint{
+  position:relative;z-index:2;
+  color:#748096;
+  font-size:9px;
+}
+.flashcard-question-face .flashcard-card-hint{color:#6c7787}
+.flashcard-card-hint kbd{
+  background:#fff;border-color:rgba(20,34,56,.15);color:#44536a
+}
+.flashcard-answer-face .flashcard-card-hint{color:#71958d}
+.flashcard-reveal-row{margin-top:11px}
+.flashcard-reveal-button{
+  min-height:44px;padding:0 18px;border-radius:12px;
+  background:#f1d39a;color:#182234;border-color:#f1d39a;
+  box-shadow:0 8px 24px rgba(216,183,122,.13)
+}
+.flashcard-reveal-button:hover{background:#f6dda9}
+.flashcard-key-hint{color:#52657d}
+.flashcard-adaptive-strip{
+  margin-top:12px;border-radius:14px;
+  background:#0d1726;border-color:rgba(216,183,122,.16)
+}
+.flashcard-adaptive-icon{color:#e0bd7d;background:rgba(216,183,122,.08);border-color:rgba(216,183,122,.16)}
+.flashcard-adaptive-stats b{color:#e2c58e}
+.flashcard-rating-panel{
+  border-radius:14px;background:#0d1726;
+  border-color:rgba(255,255,255,.08)
+}
+.flashcard-rate{border-radius:11px}
+.flashcard-rate.known{background:rgba(105,199,166,.055)}
+.flashcard-session-footer{margin-top:13px}
+.flashcard-session-tip{color:#65758a}
+@media(max-width:700px){
+  .flashcard-surface{min-height:340px}
+  .flashcard-face{padding:36px 28px}
+  .flashcard-face strong{font-size:27px}
+  .flashcard-question-face::after{font-size:72px}
+}
