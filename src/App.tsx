@@ -1,6 +1,5 @@
 
-import { useState, useEffect, useCallback, startTransition } from "react";
-import { AnimateView } from "motion/react-animate-view";
+import { useState, useEffect, useCallback } from "react";
 import { Sidebar } from "./components/Sidebar";
 import { Topbar } from "./components/Topbar";
 import { GlobalSearch } from "./components/GlobalSearch";
@@ -62,7 +61,13 @@ function App() {
 
     const navigate = useCallback((page: string) => {
         if (page === activePage) return;
-        startTransition(() => setActivePage(page));
+
+        const update = () => setActivePage(page);
+        if ("startViewTransition" in document) {
+            document.startViewTransition(update);
+        } else {
+            update();
+        }
     }, [activePage]);
     const [isSearchOpen, setIsSearchOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
@@ -280,7 +285,6 @@ function App() {
                     </div>
                 )}
 
-                <AnimateView transition={{ duration: 0.28, ease: [0.22, 0.8, 0.25, 1] }} enter={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }}>
                 <section className="page-content">
                     {activePage === "Dashboard" ? (
                         <Dashboard
@@ -336,7 +340,6 @@ function App() {
                         </div>
                     )}
                 </section>
-                </AnimateView>
             </main>
 
             {isAddResourceOpen && (
