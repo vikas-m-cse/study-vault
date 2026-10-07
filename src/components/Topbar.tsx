@@ -21,6 +21,7 @@ export function Topbar({
 }: TopbarProps) {
     return (
         <header className="topbar">
+            <div className="topbar-ambient" aria-hidden="true" />
             <div className="topbar-search">
                 <Search size={18} />
 
@@ -37,11 +38,17 @@ export function Topbar({
                 />
 
                 <span className="search-shortcut">
-                    <Command size={12} /> K
+                    <Command size={11} /> K
                 </span>
+                <span className="search-prompt">Search notes, resources, concepts</span>
             </div>
 
             <div className="topbar-actions">
+                <div className="topbar-system">
+                    <span className="topbar-system-dot" />
+                    <span>LOCAL ENGINE</span>
+                </div>
+
                 <button
                     className="icon-button"
                     aria-label="Notifications"
@@ -56,6 +63,7 @@ export function Topbar({
                 >
                     <Plus size={18} />
                     <span>Add resource</span>
+                    <kbd>⌘N</kbd>
                 </button>
             </div>
         </header>
