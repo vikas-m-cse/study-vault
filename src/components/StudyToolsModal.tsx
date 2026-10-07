@@ -23,6 +23,7 @@ import {
   Zap,
 } from "lucide-react";
 import type { Note, TipTapNode } from "../types/note";
+import { getAdaptiveAction, getMastery, recordLearningEvent, type QuestionType } from "../services/learningCore";
 
 type StudyTool = "mission" | "flashcards" | "questions" | "mnemonics" | "revision" | "teach";
 
@@ -373,6 +374,8 @@ export default function StudyToolsModal({ note, onClose }: StudyToolsModalProps)
   const currentMission = mission[missionStep] ?? mission[0];
   const missionScore = missionSubmitted && currentMission ? evaluateAttempt(missionAnswer, currentMission.reference) : 0;
   const missionDone = missionStep >= mission.length - 1 && missionSubmitted && missionScore >= 40;
+  const currentMastery = currentMission ? getMastery()[`${note.id}::${currentMission.concept}`] : undefined;
+  const adaptiveMissionAction = getAdaptiveAction(currentMastery);
   const wordCount = note.plainText.trim().split(/\s+/).filter(Boolean).length;
   const conceptCount = keywords(note.plainText, 10).length;
 
@@ -517,7 +520,25 @@ export default function StudyToolsModal({ note, onClose }: StudyToolsModalProps)
                       type="button"
                       className="study-tools-mission-submit"
                       disabled={!missionAnswer.trim() || missionConfidence === 0}
-                      onClick={() => setMissionSubmitted(true)}
+                      onClick={() => {
+                        setMissionSubmitted(true);
+                        if (currentMission) {
+                          const questionType: QuestionType =
+                            currentMission.type === "why" ? "why"
+                              : currentMission.type === "apply" ? "application"
+                              : currentMission.type === "teach" ? "teach"
+                              : "recall";
+                          const outcome = missionScore >= 70 ? "correct" : missionScore >= 40 ? "partial" : "incorrect";
+                          recordLearningEvent({
+                            conceptId: `${note.id}::${currentMission.concept}`,
+                            questionType,
+                            outcome,
+                            confidence: missionConfidence * 20,
+                            evidenceScore: missionScore,
+                            at: Date.now(),
+                          });
+                        }
+                      }}
                     >
                       <Send size={14} /> Submit evidence <ArrowUpRight size={13} />
                     </button>
@@ -547,8 +568,8 @@ export default function StudyToolsModal({ note, onClose }: StudyToolsModalProps)
                       <div className="study-tools-directive-icon"><Sparkles size={16} /></div>
                       <div>
                         <span>NEXT BEST ACTION</span>
-                        <strong>{missionDone ? "Return later for spaced retrieval." : missionScore < 40 ? "Rebuild the concept, then try again." : currentMission.type === "recall" ? "Now test the reason behind it." : currentMission.type === "why" ? "Now transfer it to a new situation." : "Now teach it without the source."}</strong>
-                        <p>Confidence: {missionConfidence}/5 · This signal is a local heuristic, not an AI judgment.</p>
+                        <strong>{missionDone ? "Return later for spaced retrieval." : missionScore < 40 ? "Rebuild the concept, then try again." : adaptiveMissionAction.label}</strong>
+                        <p>Confidence: {missionConfidence}/5 · Next action: {adaptiveMissionAction.questionType} · Evidence is a local heuristic, not an AI judgment.</p>
                       </div>
                     </div>
                     <button
