@@ -362,6 +362,7 @@ export default function StudyToolsModal({ note, onClose }: StudyToolsModalProps)
   const [flashcardFlipped, setFlashcardFlipped] = useState(false);
   const [flashcardRatings, setFlashcardRatings] = useState<Record<number, "known" | "missed">>({});
   const [flashcardInsight, setFlashcardInsight] = useState<{ type: "known" | "missed"; concept: string; label: string; reason: string } | null>(null);
+  const [flashcardTransition, setFlashcardTransition] = useState<"idle" | "exiting">("idle");
   const [missionAnswer, setMissionAnswer] = useState("");
   const [missionStep, setMissionStep] = useState(0);
   const [missionSubmitted, setMissionSubmitted] = useState(false);
@@ -396,11 +397,15 @@ export default function StudyToolsModal({ note, onClose }: StudyToolsModalProps)
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.code === "Space" && document.activeElement?.tagName !== "TEXTAREA") {
         event.preventDefault();
-        if (!deckComplete) setFlashcardFlipped(value => !value);
+        if (!deckComplete && flashcardTransition === "idle") setFlashcardFlipped(value => !value);
       }
-      if (event.code === "ArrowRight" && !deckComplete && flashcardFlipped && flashcardIndex < flashcards.length - 1) {
-        setFlashcardIndex(value => value + 1);
-        setFlashcardFlipped(false);
+      if (event.code === "ArrowRight" && !deckComplete && flashcardFlipped && flashcardIndex < flashcards.length - 1 && flashcardTransition === "idle") {
+        setFlashcardTransition("exiting");
+        window.setTimeout(() => {
+          setFlashcardIndex(value => value + 1);
+          setFlashcardFlipped(false);
+          setFlashcardTransition("idle");
+        }, 360);
       }
       if (event.code === "ArrowLeft" && !deckComplete && flashcardIndex > 0) {
         setFlashcardIndex(value => value - 1);
@@ -409,7 +414,7 @@ export default function StudyToolsModal({ note, onClose }: StudyToolsModalProps)
     };
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [tool, deckComplete, flashcardFlipped, flashcardIndex, flashcards.length]);
+  }, [tool, deckComplete, flashcardFlipped, flashcardIndex, flashcards.length, flashcardTransition]);
 
   const copyText = async (value: string) => {
     try {
@@ -676,7 +681,14 @@ export default function StudyToolsModal({ note, onClose }: StudyToolsModalProps)
                         <div className="flashcard-stack-layer stack-two" aria-hidden="true" />
                         <div className="flashcard-stack-layer stack-one" aria-hidden="true" />
 
-                        <div className="flashcard-card-zone">
+                        <div className={"flashcard-card-zone " + (flashcardTransition === "exiting" ? "is-exiting" : "")}>
+                          {flashcards[flashcardIndex + 1] && (
+                            <div className="flashcard-next-card" aria-hidden="true">
+                              <span className="flashcard-next-label">UP NEXT</span>
+                              <strong>{flashcards[flashcardIndex + 1].question}</strong>
+                              <span className="flashcard-next-number">{String(flashcardIndex + 2).padStart(2, "0")}</span>
+                            </div>
+                          )}
                           <button
                             type="button"
                             className={`flashcard-surface ${flashcardFlipped ? "revealed" : ""}`}
@@ -736,7 +748,14 @@ export default function StudyToolsModal({ note, onClose }: StudyToolsModalProps)
                                 setFlashcardRatings(prev => ({ ...prev, [flashcardIndex]: "missed" }));
                                 recordLearningEvent({ conceptId: note.id + "::" + flashcardConcept, questionType: "recall", outcome: "incorrect", confidence: 30, evidenceScore: 0, at: Date.now() });
                                 setFlashcardInsight({ type: "missed", concept: flashcardConcept, label: "Gap detected", reason: "This concept is queued for another retrieval attempt." });
-                                if (flashcardIndex < flashcards.length - 1) { setFlashcardIndex(value => value + 1); setFlashcardFlipped(false); }
+                                if (flashcardIndex < flashcards.length - 1) {
+                                  setFlashcardTransition("exiting");
+                                  window.setTimeout(() => {
+                                    setFlashcardIndex(value => value + 1);
+                                    setFlashcardFlipped(false);
+                                    setFlashcardTransition("idle");
+                                  }, 360);
+                                }
                               }}
                             >
                               <X size={18} /><span><b>Again</b><small>Didn’t recall</small></span>
