@@ -229,7 +229,7 @@ function makeFlashcards(note: Note): Flashcard[] {
     }
 
     const concept = conceptName(text);
-    add("What is the core idea behind " + concept + "?", text, "Core idea");
+    add("What is " + concept + ", and what is its role in this topic?", text, "Core idea");
   }
 
   if (cards.length < 6) {
