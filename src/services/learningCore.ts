@@ -146,6 +146,33 @@ export type NextLearningAction = {
   reason: string;
 };
 
+export function retentionEstimate(value?: ConceptMastery, now = Date.now()): number {
+  if (!value || value.attempts === 0) return 0;
+  const baseMastery = masteryPercent(value) / 100;
+  if (!value.lastReviewedAt) return baseMastery;
+  const days = Math.max(0, (now - value.lastReviewedAt) / (24 * 60 * 60 * 1000));
+  const halfLifeDays = Math.max(1, 1.5 + value.bestLevel * 2.5);
+  return Math.max(0, Math.min(1, baseMastery * Math.pow(0.5, days / halfLifeDays)));
+}
+
+export function calibrationGap(value?: ConceptMastery): number {
+  if (!value || value.attempts === 0) return 0;
+  const confidence = averageConfidence(value) / 100;
+  const performance = (value.correct + value.partial * 0.5) / value.attempts;
+  return Math.round(Math.abs(confidence - performance) * 100);
+}
+
+export function learningPriority(value?: ConceptMastery, now = Date.now()): number {
+  if (!value || value.attempts === 0) return 100;
+  const retention = retentionEstimate(value, now);
+  const uncertainty = 1 - masteryPercent(value) / 100;
+  const calibration = calibrationGap(value) / 100;
+  const overdueDays = value.nextReviewAt && value.nextReviewAt < now
+    ? Math.min(1, (now - value.nextReviewAt) / (7 * 24 * 60 * 60 * 1000))
+    : 0;
+  return Math.round((uncertainty * 0.40 + (1 - retention) * 0.35 + calibration * 0.15 + overdueDays * 0.10) * 100);
+}
+
 export function getNextBestAction(value?: ConceptMastery): NextLearningAction {
   if (!value || value.attempts === 0) {
     return {
