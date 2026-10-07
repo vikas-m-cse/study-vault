@@ -91,25 +91,34 @@ function cleanSnippet(value: string, max = 180): string {
 }
 
 function conceptName(block: string): string {
-  const cleaned = cleanSnippet(block, 140);
+  const cleaned = cleanSnippet(block, 180);
 
-  const definition = cleaned.match(/^(.{2,90}?)(?:\s+is|\s+are|\s+means|\s+refers to|\s+is defined as)\b/i);
+  const definition = cleaned.match(
+    /^(.{2,80}?)(?:\s+is|\s+are|\s+means|\s+refers to|\s+is defined as)\b/i,
+  );
   if (definition) return definition[1].trim();
 
-  const heading = cleaned.match(/^(?:\d+(?:\.\d+)*[.)]?\s*)?([A-Z][A-Za-z][A-Za-z\s/&-]{2,70})$/);
+  const heading = cleaned.match(
+    /^(?:\d+(?:\.\d+)*[.)]?\s*)?([A-Z][A-Za-z][A-Za-z\s/&-]{2,55})$/,
+  );
   if (heading) return heading[1].trim();
 
-  const phrases = [
-    cleaned.match(/^(?:what is|introduction to|overview of|basics of)\s+(.{3,70})$/i)?.[1],
-    cleaned.match(/^(?:computer|operating|memory|process|storage|file|device|cpu|kernel|thread|deadlock|scheduling)[^.!?]{0,70}/i)?.[0],
-  ].filter(Boolean) as string[];
+  const explicit = cleaned.match(
+    /^(?:what is|introduction to|overview of|basics of)\s+([A-Za-z][A-Za-z\s/&-]{2,55})/i,
+  );
+  if (explicit) return explicit[1].trim();
 
-  if (phrases[0]) return phrases[0].trim();
+  const domainLead = cleaned.match(
+    /^(?:computer|operating system|memory|process|storage|file|device|cpu|kernel|thread|deadlock|scheduling|virtual memory|paging|segmentation)\b(?:\s+[A-Za-z][A-Za-z-]{1,20}){0,5}/i,
+  );
+  if (domainLead) return domainLead[0].trim();
 
-  const firstClause = cleaned.split(/[:—–,-]/)[0]?.trim();
-  if (firstClause && firstClause.length >= 4 && firstClause.length <= 55) return firstClause;
+  const firstClause = cleaned.split(/[:—–,]/)[0]?.trim();
+  if (firstClause && firstClause.length >= 4 && firstClause.length <= 55) {
+    return firstClause;
+  }
 
-  return cleaned.split(/\s+/).slice(0, 5).join(" ") || "Core idea";
+  return cleaned.split(/\s+/).slice(0, 4).join(" ") || "Core idea";
 }
 
 function missionBlocks(note: Note): string[] {
@@ -122,6 +131,8 @@ function missionBlocks(note: Note): string[] {
     const lower = line.toLowerCase();
     if (lower === (note.title || "").trim().toLowerCase()) return false;
     if (/^(?:untitled note|day \d+ course|course:|subject:|study mode:|semester:|vtu|scheme:)/i.test(line)) return false;
+    const metadataHits = (lower.match(/day\s+\d+|course\s*:|subject\s*:|study mode\s*:|semester\s*:|scheme\s*:|vtu\b/g) ?? []).length;
+    if (metadataHits >= 2) return false;
     if (/^\d{1,4}\s+(?:words?|source words?|concept signals?)/i.test(line)) return false;
     return line.length >= 55;
   });
