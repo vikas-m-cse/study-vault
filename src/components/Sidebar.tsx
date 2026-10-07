@@ -5,6 +5,7 @@ import {
     FolderOpen,
     FileText,
     Star,
+    BrainCircuit,
     Settings,
     Library,
 } from "lucide-react";
@@ -34,6 +35,10 @@ const navigationItems = [
     {
         label: "Favourites",
         icon: Star,
+    },
+    {
+        label: "Review",
+        icon: BrainCircuit,
     },
 ];
 
