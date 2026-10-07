@@ -28,6 +28,10 @@ export type ConceptMastery = {
   bestLevel: number;
   dimensionScores: Partial<Record<MasteryDimension, number>>;
   questionTypeAttempts: Partial<Record<QuestionType, number>>;
+  evidenceSum?: number;
+  evidenceCount?: number;
+  lastOutcome?: LearningEvent["outcome"];
+  lastQuestionType?: QuestionType;
 };
 
 export type LearningEvent = {
@@ -36,6 +40,7 @@ export type LearningEvent = {
   outcome: "correct" | "partial" | "incorrect";
   confidence: number;
   at: number;
+  evidenceScore?: number;
 };
 
 const STORAGE_KEY = "studyvault-learning-core-v1";
@@ -84,6 +89,12 @@ export function recordLearningEvent(event: LearningEvent): ConceptMastery {
   current.attempts += 1;
   current.confidenceSum += event.confidence;
   current.confidenceCount += 1;
+  if (typeof event.evidenceScore === "number") {
+    current.evidenceSum = (current.evidenceSum ?? 0) + event.evidenceScore;
+    current.evidenceCount = (current.evidenceCount ?? 0) + 1;
+  }
+  current.lastOutcome = event.outcome;
+  current.lastQuestionType = event.questionType;
   current.questionTypeAttempts[event.questionType] =
     (current.questionTypeAttempts[event.questionType] ?? 0) + 1;
 
@@ -244,4 +255,89 @@ export function recordMasteryLevel(conceptId: string, level: number) {
   if (!current) return;
   current.bestLevel = Math.max(current.bestLevel, level);
   write(STORAGE_KEY, mastery);
+}
+
+
+export function averageEvidence(value?: ConceptMastery): number {
+  if (!value || !value.evidenceCount) return 0;
+  return Math.round((value.evidenceSum ?? 0) / value.evidenceCount);
+}
+
+export function confidencePerformanceGap(value?: ConceptMastery): number {
+  if (!value || value.attempts === 0) return 0;
+  const confidence = averageConfidence(value);
+  const performance = masteryPercent(value);
+  return Math.round(confidence - performance);
+}
+
+export function adaptiveNeed(value?: ConceptMastery): "new" | "recall" | "understanding" | "application" | "calibration" | "retention" | "transfer" {
+  if (!value || value.attempts === 0) return "new";
+
+  const retention = retentionEstimate(value);
+  const calibration = Math.abs(confidencePerformanceGap(value));
+  const score = (dimension: MasteryDimension) => value.dimensionScores[dimension] ?? 0;
+
+  if (retention < 0.45) return "retention";
+  if (calibration >= 20) return "calibration";
+  if (score("recall") < 55) return "recall";
+  if (score("understanding") < 60) return "understanding";
+  if (score("application") < 60) return "application";
+  if (score("transfer") < 60) return "transfer";
+  return "transfer";
+}
+
+export function getAdaptiveAction(value?: ConceptMastery): NextLearningAction {
+  const need = adaptiveNeed(value);
+
+  switch (need) {
+    case "new":
+      return {
+        dimension: "recall",
+        questionType: "recall",
+        label: "Build the first memory trace",
+        reason: "This concept has no retrieval evidence yet. Start with a focused recall attempt.",
+      };
+    case "retention":
+      return {
+        dimension: "recall",
+        questionType: "recall",
+        label: "Retrieve before relearning",
+        reason: "Estimated retention has fallen. Try a fresh retrieval before reopening the source.",
+      };
+    case "calibration":
+      return {
+        dimension: "understanding",
+        questionType: "why",
+        label: "Check your confidence",
+        reason: "Confidence and demonstrated performance are misaligned. Use an explanation task to recalibrate.",
+      };
+    case "recall":
+      return {
+        dimension: "recall",
+        questionType: "recall",
+        label: "Stabilize recall",
+        reason: "Core retrieval is still the bottleneck. Keep the prompt simple and reconstruct from memory.",
+      };
+    case "understanding":
+      return {
+        dimension: "understanding",
+        questionType: "why",
+        label: "Explain the mechanism",
+        reason: "Recall is ahead of understanding. Ask why the concept works instead of repeating its definition.",
+      };
+    case "application":
+      return {
+        dimension: "application",
+        questionType: "application",
+        label: "Solve a new situation",
+        reason: "The concept is understood in isolation. Transfer it to a problem you have not seen before.",
+      };
+    default:
+      return {
+        dimension: "transfer",
+        questionType: "reverse",
+        label: "Test transfer",
+        reason: "Core dimensions are strong enough to justify a novel reconstruction challenge.",
+      };
+  }
 }
