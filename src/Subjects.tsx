@@ -1,13 +1,11 @@
 
 import { useEffect, useMemo, useState } from "react";
 import {
-    BookOpen,
-    Plus,
-    Search,
-    Pencil,
-    Trash2,
-    X,
+    BookOpen, Plus, Search, Pencil, Trash2, X,
+    SlidersHorizontal, ArrowUpDown, LayoutGrid, List,
+    FileText, FolderOpen, ArrowRight, MoreHorizontal,
 } from "lucide-react";
+import type { Resource } from "./types/resource";
 
 export type Subject = {
     id: number;
@@ -19,6 +17,7 @@ export type Subject = {
 type SubjectsProps = {
     subjects: Subject[];
     setSubjects: React.Dispatch<React.SetStateAction<Subject[]>>;
+    resources: Resource[];
     focusSubjectId?: number | null;
 };
 
@@ -27,6 +26,7 @@ const subjectColors = ["blue", "violet", "green", "orange"];
 export default function Subjects({
     subjects,
     setSubjects,
+    resources,
     focusSubjectId = null,
 }: SubjectsProps) {
     const [search, setSearch] = useState("");
@@ -34,12 +34,33 @@ export default function Subjects({
     const [editingId, setEditingId] = useState<number | null>(null);
     const [name, setName] = useState("");
     const [description, setDescription] = useState("");
+    const [viewMode, setViewMode] = useState<"cards" | "list">("cards");
+    const [sortMode, setSortMode] = useState<"recent" | "name">("recent");
+
+    const subjectStats = useMemo(() => {
+        const map = new Map<number, { notes: number; resources: number }>();
+        for (const subject of subjects) map.set(subject.id, { notes: 0, resources: 0 });
+        for (const resource of resources) {
+            const subjectId = resource.subjectId;
+            if (subjectId == null) continue;
+            const current = map.get(subjectId);
+            if (!current) continue;
+            current.resources += 1;
+            if (resource.type === "Note") current.notes += 1;
+        }
+        return map;
+    }, [subjects, resources]);
 
     const filteredSubjects = useMemo(() => {
-        return subjects.filter((subject) =>
-            subject.name.toLowerCase().includes(search.toLowerCase())
+        const query = search.trim().toLowerCase();
+        const result = subjects.filter((subject) =>
+            subject.name.toLowerCase().includes(query) ||
+            subject.description.toLowerCase().includes(query)
         );
-    }, [subjects, search]);
+        return sortMode === "name"
+            ? [...result].sort((a, b) => a.name.localeCompare(b.name))
+            : [...result].sort((a, b) => b.id - a.id);
+    }, [subjects, search, sortMode]);
 
     useEffect(() => {
         if (focusSubjectId === null) return;
@@ -121,8 +142,8 @@ export default function Subjects({
                 </button>
             </div>
 
-            <div className="subjects-toolbar">
-                <div className="subjects-search">
+            <div className="subjects-toolbar subjects-toolbar-v2">
+                <div className="subjects-search subjects-search-v2">
                     <Search size={18} />
                     <input
                         type="search"
@@ -132,44 +153,40 @@ export default function Subjects({
                     />
                 </div>
 
-                <span>{filteredSubjects.length} subjects</span>
+                <button className="subjects-filter-button" type="button"><SlidersHorizontal size={14} /><span>All subjects</span></button>
+                <button className="subjects-filter-button" type="button" onClick={() => setSortMode((mode) => mode === "recent" ? "name" : "recent")}><ArrowUpDown size={14} /><span>{sortMode === "recent" ? "Recent" : "A–Z"}</span></button>
+                <div className="subjects-view-toggle">
+                    <button className={viewMode === "cards" ? "active" : ""} onClick={() => setViewMode("cards")} aria-label="Card view"><LayoutGrid size={15} /></button>
+                    <button className={viewMode === "list" ? "active" : ""} onClick={() => setViewMode("list")} aria-label="List view"><List size={15} /></button>
+                </div>
+                <span className="subjects-count">{filteredSubjects.length} subjects</span>
             </div>
 
-            <div className="subjects-grid">
+            <div className={`subjects-grid subjects-grid-v2 ${viewMode === "list" ? "list-view" : ""}`}>
                 {filteredSubjects.map((subject) => (
-                    <article className="subject-card" key={subject.id} data-subject-id={subject.id}>
+                    <article className={`subject-card subject-card-v2 ${subject.color}`} key={subject.id} data-subject-id={subject.id}>
+                        <div className="subject-card-art" aria-hidden="true"><span className="art-core" /><span className="art-orbit orbit-one" /><span className="art-orbit orbit-two" /><span className="art-orbit orbit-three" /></div>
                         <div className="subject-card-top">
-                            <div className={`subject-large-icon ${subject.color}`}>
-                                <BookOpen size={22} />
-                            </div>
-
+                            <div className={`subject-large-icon ${subject.color}`}><BookOpen size={20} /></div>
                             <div className="subject-card-actions">
-                                <button
-                                    className="subject-action-button"
-                                    onClick={() => openEditForm(subject)}
-                                    aria-label={`Edit ${subject.name}`}
-                                    title="Edit subject"
-                                >
-                                    <Pencil size={16} />
-                                </button>
-
-                                <button
-                                    className="subject-action-button delete-action"
-                                    onClick={() => handleDelete(subject.id)}
-                                    aria-label={`Delete ${subject.name}`}
-                                    title="Delete subject"
-                                >
-                                    <Trash2 size={16} />
-                                </button>
+                                <button className="subject-action-button" onClick={() => openEditForm(subject)} aria-label={`Edit ${subject.name}`}><Pencil size={15} /></button>
+                                <button className="subject-action-button delete-action" onClick={() => handleDelete(subject.id)} aria-label={`Delete ${subject.name}`}><Trash2 size={15} /></button>
+                                <button className="subject-action-button" aria-label="More actions"><MoreHorizontal size={15} /></button>
                             </div>
                         </div>
-
-                        <h2>{subject.name}</h2>
-                        <p>{subject.description || "No description added yet."}</p>
-
-                        <div className="subject-card-footer">
-                            <span>Subject workspace</span>
-                            <BookOpen size={16} />
+                        <div className="subject-card-copy">
+                            <h2>{subject.name}</h2>
+                            <p>{subject.description || "No description added yet."}</p>
+                        </div>
+                        <div className="subject-card-stats">
+                            <span><FileText size={12} /> {subjectStats.get(subject.id)?.notes ?? 0} notes</span>
+                            <span><FolderOpen size={12} /> {subjectStats.get(subject.id)?.resources ?? 0} resources</span>
+                        </div>
+                        <div className="subject-card-footer subject-card-footer-v2">
+                            <button type="button"><FileText size={13} /> Notes</button>
+                            <button type="button"><FolderOpen size={13} /> Resources</button>
+                            <button type="button"><span className="mini-stack" /> Flashcards</button>
+                            <button className="subject-open-button" type="button" aria-label={`Open ${subject.name}`}><ArrowRight size={15} /></button>
                         </div>
                     </article>
                 ))}
