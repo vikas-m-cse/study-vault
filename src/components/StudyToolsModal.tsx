@@ -4,6 +4,7 @@ import {
   BrainCircuit,
   BookOpenCheck,
   Check,
+  ClipboardCheck,
   ChevronRight,
   CircleHelp,
   Copy,
@@ -17,6 +18,7 @@ import {
   RotateCcw,
   Sparkles,
   Target,
+  Send,
   X,
   Zap,
 } from "lucide-react";
