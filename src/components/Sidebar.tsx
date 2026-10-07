@@ -48,15 +48,21 @@ export function Sidebar({
 }: SidebarProps) {
     return (
         <aside className="sidebar">
+            <div className="sidebar-orb" aria-hidden="true" />
             <div className="sidebar-brand">
                 <div className="brand-icon">
                     <Library size={22} />
                 </div>
 
                 <div className="brand-text">
-                    <h2>StudyVault</h2>
-                    <span>Your learning space</span>
+                    <h2>StudyVault<span className="brand-mark">/OS</span></h2>
+                    <span>Local learning intelligence</span>
                 </div>
+            </div>
+
+            <div className="sidebar-quick">
+                <span className="sidebar-live-dot" /> SYSTEM READY
+                <span className="sidebar-quick-key">LOCAL</span>
             </div>
 
             <div className="sidebar-section">
@@ -77,6 +83,7 @@ export function Sidebar({
                             >
                                 <Icon size={19} strokeWidth={1.8} />
                                 <span>{item.label}</span>
+                        {isActive && <span className="nav-pulse" aria-hidden="true" />}
                             </button>
                         );
                     })}
@@ -95,6 +102,7 @@ export function Sidebar({
 
                 <div className="sidebar-footer">
                     <div className="user-avatar">V</div>
+                    <div className="workspace-orbit" aria-hidden="true" />
                     <div>
                         <strong>My Workspace</strong>
                         <span>Personal account</span>
