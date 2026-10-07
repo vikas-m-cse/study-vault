@@ -148,6 +148,13 @@ function App() {
             if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "k") {
                 event.preventDefault();
                 setIsSearchOpen(true);
+                return;
+            }
+
+            if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "n") {
+                event.preventDefault();
+                setEditingResource(null);
+                setIsAddResourceOpen(true);
             }
         };
         window.addEventListener("keydown", handleShortcut);
