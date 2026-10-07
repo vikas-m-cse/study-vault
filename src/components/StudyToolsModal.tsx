@@ -91,15 +91,43 @@ function cleanSnippet(value: string, max = 180): string {
 }
 
 function conceptName(block: string): string {
-  const cleaned = cleanSnippet(block, 100);
+  const cleaned = cleanSnippet(block, 140);
+
   const definition = cleaned.match(/^(.{2,90}?)(?:\s+is|\s+are|\s+means|\s+refers to|\s+is defined as)\b/i);
   if (definition) return definition[1].trim();
 
-  const firstClause = cleaned.split(/[:—–,-]/)[0]?.trim();
-  if (firstClause && firstClause.length >= 4 && firstClause.length <= 70) return firstClause;
+  const heading = cleaned.match(/^(?:\d+(?:\.\d+)*[.)]?\s*)?([A-Z][A-Za-z][A-Za-z\s/&-]{2,70})$/);
+  if (heading) return heading[1].trim();
 
-  const words = cleaned.split(/\s+/).slice(0, 6).join(" ");
-  return words || "Core idea";
+  const phrases = [
+    cleaned.match(/^(?:what is|introduction to|overview of|basics of)\s+(.{3,70})$/i)?.[1],
+    cleaned.match(/^(?:computer|operating|memory|process|storage|file|device|cpu|kernel|thread|deadlock|scheduling)[^.!?]{0,70}/i)?.[0],
+  ].filter(Boolean) as string[];
+
+  if (phrases[0]) return phrases[0].trim();
+
+  const firstClause = cleaned.split(/[:—–,-]/)[0]?.trim();
+  if (firstClause && firstClause.length >= 4 && firstClause.length <= 55) return firstClause;
+
+  return cleaned.split(/\s+/).slice(0, 5).join(" ") || "Core idea";
+}
+
+function missionBlocks(note: Note): string[] {
+  const raw = note.plainText
+    .split(/\n{1,}/)
+    .map(line => line.replace(/\s+/g, " ").trim())
+    .filter(Boolean);
+
+  const filtered = raw.filter(line => {
+    const lower = line.toLowerCase();
+    if (lower === (note.title || "").trim().toLowerCase()) return false;
+    if (/^(?:untitled note|day \d+ course|course:|subject:|study mode:|semester:|vtu|scheme:)/i.test(line)) return false;
+    if (/^\d{1,4}\s+(?:words?|source words?|concept signals?)/i.test(line)) return false;
+    return line.length >= 55;
+  });
+
+  const joined = filtered.join("\n\n");
+  return sections(joined).length ? sections(joined) : sentences(joined);
 }
 
 function makeFlashcards(note: Note): Flashcard[] {
@@ -159,8 +187,7 @@ function evaluateAttempt(answer: string, reference: string): number {
 }
 
 function makeMission(note: Note): MissionChallenge[] {
-  const blocks = sections(note.plainText);
-  const source = blocks.length ? blocks : sentences(note.plainText);
+  const source = missionBlocks(note);
   const usable = source.slice(0, 4);
   const challenges: MissionChallenge[] = [];
 
