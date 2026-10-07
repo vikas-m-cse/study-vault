@@ -1,75 +1,78 @@
-# React + TypeScript + Vite
+# StudyVault
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+StudyVault is a local-first student knowledge workspace for collecting, organizing, searching, writing, and **actively reviewing** academic material.
 
-Currently, two official plugins are available:
+## What makes this version different
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+StudyVault is being designed from learning-science evidence rather than from a generic notes-app feature checklist.
 
-## React Compiler
+### Evidence-informed principles
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- **Active recall first** — the Review workspace asks the student to reconstruct knowledge before revealing the note.
+- **Spaced review** — review intervals expand after successful recalls instead of encouraging constant rereading.
+- **Self-explanation** — students are prompted to explain ideas in their own words.
+- **Structured organization** — subjects, folders, tags, notes, and resources make retrieval easier.
+- **Useful dashboards** — progress should lead to a learning action, not become a vanity metric.
+- **Local-first privacy** — core notes and resources remain in browser storage.
 
-## Expanding the ESLint configuration
+## Current stack
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+- React 19
+- TypeScript
+- Vite
+- TipTap
+- IndexedDB
+- Lucide React
+- Vitest + Testing Library
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+## Current workspace
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+- Dashboard
+- Subjects
+- My Resources
+- Notes
+- Favourites
+- **Review — active recall + spaced review**
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+## Research direction
 
+The product research is based on a broad evidence set spanning retrieval practice, spacing, self-regulated learning, learning analytics, digital information organization, concept mapping, note-taking, time management, and student-facing learning systems.
+
+Important findings include:
+
+- Retrieval practice consistently improves learning in applied classroom research; a 2021 review synthesized 50 experiments and found medium/large benefits in 57% of experiments.
+- A 2025 meta-analysis of 44 studies found a small overall advantage for retrieval over several elaborative learning conditions, with feedback substantially increasing the benefit.
+- A 2025 applied meta-analysis found distributed practice produced a moderate advantage over massed practice (d = 0.54).
+- A 2021 meta-analysis of 49 university SRL-training studies found positive effects on academic performance (g = 0.37), metacognitive strategies (g = 0.40), resource-management strategies (g = 0.39), and motivation (g = 0.35).
+- A 2026 meta-analysis of 31 studies involving 13,506 college students found a positive relationship between time management and learning outcomes (r = 0.25), while also highlighting high heterogeneity.
+- Research on student-facing learning analytics warns that dashboards work best when they support learning decisions rather than merely displaying analytics.
+- Digital-library research repeatedly shows that usefulness, task fit, navigation, and search quality strongly influence whether students actually use academic information systems.
+- Note-taking research warns that fast transcription can encourage shallower processing; StudyVault therefore emphasizes recall and explanation instead of simply storing more text.
+
+These findings are design inputs, not guarantees of individual grade improvement. StudyVault will be evaluated with real student usage and outcome data before making causal claims.
+
+## Development
+
+Install dependencies:
+
+```bash
+npm install
 ```
 
-You can also install [eslint-plugin-react-x](https://npmx.dev/package/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://npmx.dev/package/eslint-plugin-react-dom) for React-specific lint rules:
+Run locally:
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-
+```bash
+npm run dev
 ```
+
+Validate:
+
+```bash
+npm run lint
+npm run test
+npm run build
+```
+
+## Repository
+
+The canonical repository is maintained on GitHub under the `main` branch.
