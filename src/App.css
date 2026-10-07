@@ -3366,3 +3366,29 @@ button {
     grid-template-columns: 1fr 1fr;
   }
 }
+
+
+/* Notes -> Review quick action */
+.notes-editor-header-actions { display: flex; align-items: center; gap: 10px; }
+.notes-review-button {
+  display: inline-flex; align-items: center; gap: 6px; padding: 7px 10px;
+  border: 1px solid #dfe5eb; border-radius: 8px; background: #fff; color: #52657d;
+  font-size: 11px; font-weight: 750;
+}
+.notes-review-button:hover { border-color: #c2ccd6; background: #f6f8fa; color: #263a5b; }
+
+/* Review mode selector */
+.review-mode-switch {
+  display: inline-flex; margin-top: 14px; padding: 3px; border: 1px solid #e2e7ec;
+  border-radius: 9px; background: #f7f9fb;
+}
+.review-mode-switch button {
+  padding: 7px 11px; border: 0; border-radius: 7px; background: transparent;
+  color: #7b8798; font-size: 11px; font-weight: 750;
+}
+.review-mode-switch button.active { background: #fff; color: #263a5b; box-shadow: 0 1px 4px rgba(30,40,80,.08); }
+.review-mode-switch button:hover:not(.active) { color: #52657d; }
+
+@media (max-width: 700px) {
+  .notes-editor-header-actions { flex-wrap: wrap; justify-content: flex-end; }
+}
