@@ -1,7 +1,17 @@
 import { useEffect, useMemo, useState } from "react";
-import { BrainCircuit, CheckCircle2, RotateCcw, Sparkles } from "lucide-react";
+import {
+  BrainCircuit,
+  CheckCircle2,
+  ChevronRight,
+  Clock3,
+  Eye,
+  EyeOff,
+  RotateCcw,
+  Sparkles,
+  Target,
+} from "lucide-react";
 import { getAllNotes } from "./services/noteStorage";
-import type { Note } from "./types/note";
+import type { Note, TipTapNode } from "./types/note";
 import type { Resource } from "./types/resource";
 import type { Subject } from "./Subjects";
 
@@ -16,9 +26,29 @@ type ReviewState = {
   level: number;
   nextReviewAt: number;
   lastReviewedAt: number;
+  streak: number;
+  attempts: number;
 };
 
-const STORAGE_KEY = "studyvault-review-v1";
+type ReviewBlock = {
+  kind: "heading" | "text";
+  text: string;
+};
+
+type ReviewConcept = {
+  id: string;
+  noteId: string;
+  noteTitle: string;
+  title: string;
+  prompt: string;
+  answer: string;
+  index: number;
+  totalInNote: number;
+  subjectName?: string;
+  tags: string[];
+};
+
+const STORAGE_KEY = "studyvault-review-v2";
 const INTERVALS_MS = [
   10 * 60 * 1000,
   24 * 60 * 60 * 1000,
@@ -41,7 +71,7 @@ function writeReviewState(state: Record<string, ReviewState>) {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
   } catch {
-    // Review scheduling is an enhancement; note content remains in IndexedDB.
+    // Note content remains safe in IndexedDB even if scheduling cannot be saved.
   }
 }
 
@@ -54,11 +84,137 @@ function formatInterval(ms: number): string {
   return `${days} day${days === 1 ? "" : "s"}`;
 }
 
-function formatDate(value: number): string {
-  return new Date(value).toLocaleDateString(undefined, {
-    month: "short",
-    day: "numeric",
-  });
+function getNodeText(node: TipTapNode): string {
+  if (typeof node.text === "string") return node.text;
+  return (node.content ?? []).map(getNodeText).join(" ").replace(/\s+/g, " ").trim();
+}
+
+function collectBlocks(nodes: TipTapNode[], blocks: ReviewBlock[] = []): ReviewBlock[] {
+  for (const node of nodes) {
+    if (node.type === "heading") {
+      const text = getNodeText(node);
+      if (text) blocks.push({ kind: "heading", text });
+      continue;
+    }
+
+    if (node.type === "paragraph" || node.type === "list_item" || node.type === "blockquote" || node.type === "codeBlock") {
+      const text = getNodeText(node);
+      if (text) blocks.push({ kind: "text", text });
+      continue;
+    }
+
+    if (node.content) collectBlocks(node.content, blocks);
+  }
+  return blocks;
+}
+
+function splitLongText(text: string, maxChars = 850): string[] {
+  if (text.length <= maxChars) return [text];
+
+  const sentences = text.split(/(?<=[.!?])\s+/).filter(Boolean);
+  const chunks: string[] = [];
+  let current = "";
+
+  for (const sentence of sentences) {
+    if (current && current.length + sentence.length + 1 > maxChars) {
+      chunks.push(current.trim());
+      current = sentence;
+    } else {
+      current = current ? `${current} ${sentence}` : sentence;
+    }
+  }
+
+  if (current.trim()) chunks.push(current.trim());
+
+  if (chunks.length > 1) return chunks;
+
+  const words = text.split(/\s+/);
+  const fallback: string[] = [];
+  let wordChunk = "";
+  for (const word of words) {
+    if (wordChunk && wordChunk.length + word.length + 1 > maxChars) {
+      fallback.push(wordChunk);
+      wordChunk = word;
+    } else {
+      wordChunk = wordChunk ? `${wordChunk} ${word}` : word;
+    }
+  }
+  if (wordChunk) fallback.push(wordChunk);
+  return fallback;
+}
+
+function buildConcepts(note: Note, subjectName?: string): ReviewConcept[] {
+  const blocks = collectBlocks(note.content.content);
+  const concepts: Omit<ReviewConcept, "index" | "totalInNote">[] = [];
+
+  const hasHeadings = blocks.some((block) => block.kind === "heading");
+  if (hasHeadings) {
+    let currentTitle = note.title;
+    let currentBlocks: string[] = [];
+
+    const flush = () => {
+      if (!currentBlocks.length) return;
+      const chunks = splitLongText(currentBlocks.join("\n\n"));
+      chunks.forEach((answer, chunkIndex) => {
+        const suffix = chunks.length > 1 ? ` · Part ${chunkIndex + 1}` : "";
+        concepts.push({
+          id: `${note.id}::${concepts.length}`,
+          noteId: note.id,
+          noteTitle: note.title,
+          title: `${currentTitle}${suffix}`,
+          prompt: `Explain ${currentTitle}${suffix} in your own words. Include the key ideas, relationships, and an example if you can.`,
+          answer,
+          subjectName,
+          tags: note.tags,
+        });
+      });
+      currentBlocks = [];
+    };
+
+    for (const block of blocks) {
+      if (block.kind === "heading") {
+        flush();
+        currentTitle = block.text;
+      } else {
+        currentBlocks.push(block.text);
+      }
+    }
+    flush();
+  } else {
+    const paragraphs = blocks.map((block) => block.text);
+    const chunks: string[] = [];
+    let current = "";
+
+    for (const paragraph of paragraphs) {
+      if (current && current.length + paragraph.length + 2 > 850) {
+        chunks.push(current.trim());
+        current = paragraph;
+      } else {
+        current = current ? `${current}\n\n${paragraph}` : paragraph;
+      }
+    }
+    if (current.trim()) chunks.push(current.trim());
+
+    if (!chunks.length && note.plainText.trim()) {
+      chunks.push(...splitLongText(note.plainText.trim()));
+    }
+
+    chunks.forEach((answer, index) => {
+      concepts.push({
+        id: `${note.id}::${index}`,
+        noteId: note.id,
+        noteTitle: note.title,
+        title: chunks.length > 1 ? `${note.title} · Part ${index + 1}` : note.title,
+        prompt: `What are the most important ideas from this part of the note? Explain them from memory rather than trying to reproduce the wording.`,
+        answer,
+        subjectName,
+        tags: note.tags,
+      });
+    });
+  }
+
+  const total = concepts.length;
+  return concepts.map((concept, index) => ({ ...concept, index: index + 1, totalInNote: total }));
 }
 
 export default function Review({ subjects }: ReviewProps) {
@@ -81,65 +237,95 @@ export default function Review({ subjects }: ReviewProps) {
       .finally(() => {
         if (!cancelled) setIsLoading(false);
       });
-    return () => { cancelled = true; };
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
+
+  const concepts = useMemo(
+    () => notes.flatMap((note) => {
+      const subjectName = note.subjectId === undefined
+        ? undefined
+        : subjects.find((subject) => subject.id === note.subjectId)?.name;
+      return buildConcepts(note, subjectName);
+    }),
+    [notes, subjects],
+  );
 
   const now = Date.now();
 
-  const dueNotes = useMemo(() => notes
-    .filter((note) => {
-      const state = reviewState[note.id];
-      return !state || state.nextReviewAt <= now;
-    })
-    .sort((a, b) => {
-      const aState = reviewState[a.id];
-      const bState = reviewState[b.id];
-      const aDue = aState?.nextReviewAt ?? new Date(a.createdAt).getTime();
-      const bDue = bState?.nextReviewAt ?? new Date(b.createdAt).getTime();
-      return aDue - bDue;
-    }), [notes, reviewState, now]);
+  const dueConcepts = useMemo(
+    () => concepts
+      .filter((concept) => {
+        const state = reviewState[concept.id];
+        return !state || state.nextReviewAt <= now;
+      })
+      .sort((a, b) => {
+        const aState = reviewState[a.id];
+        const bState = reviewState[b.id];
+        const aDue = aState?.nextReviewAt ?? 0;
+        const bDue = bState?.nextReviewAt ?? 0;
+        return aDue - bDue;
+      }),
+    [concepts, reviewState, now],
+  );
 
   useEffect(() => {
-    if (!selectedId || !dueNotes.some((note) => note.id === selectedId)) {
-      setSelectedId(dueNotes[0]?.id ?? null);
+    if (!selectedId || !dueConcepts.some((concept) => concept.id === selectedId)) {
+      setSelectedId(dueConcepts[0]?.id ?? null);
       setRecall("");
       setRevealed(false);
     }
-  }, [dueNotes, selectedId]);
+  }, [dueConcepts, selectedId]);
 
-  const selected = dueNotes.find((note) => note.id === selectedId) ?? null;
-  const subjectName = selected?.subjectId === undefined
-    ? undefined
-    : subjects.find((subject) => subject.id === selected.subjectId)?.name;
+  const selected = dueConcepts.find((concept) => concept.id === selectedId) ?? null;
+  const currentState = selected ? reviewState[selected.id] : undefined;
+
+  const reveal = () => {
+    if (!recall.trim()) return;
+    setRevealed(true);
+  };
 
   const rate = (rating: Rating) => {
-    if (!selected) return;
+    if (!selected || !revealed) return;
+
     const previous = reviewState[selected.id];
     const previousLevel = previous?.level ?? 0;
     let level = previousLevel;
     let interval: number;
+    let streak = previous?.streak ?? 0;
 
     if (rating === "again") {
-      level = Math.max(0, previousLevel - 1);
+      level = 0;
       interval = INTERVALS_MS[0];
+      streak = 0;
     } else if (rating === "hard") {
+      level = previousLevel;
       interval = INTERVALS_MS[Math.min(level, INTERVALS_MS.length - 1)];
+      streak = 0;
     } else if (rating === "good") {
       level = Math.min(previousLevel + 1, INTERVALS_MS.length - 1);
       interval = INTERVALS_MS[level];
+      streak += 1;
     } else {
       level = Math.min(previousLevel + 2, INTERVALS_MS.length - 1);
       interval = INTERVALS_MS[level];
+      streak += 1;
     }
 
+    const timestamp = Date.now();
     const next = {
       ...reviewState,
       [selected.id]: {
         level,
-        nextReviewAt: Date.now() + interval,
-        lastReviewedAt: Date.now(),
+        nextReviewAt: timestamp + interval,
+        lastReviewedAt: timestamp,
+        streak,
+        attempts: (previous?.attempts ?? 0) + 1,
       },
     };
+
     setReviewState(next);
     writeReviewState(next);
     setRecall("");
@@ -148,115 +334,193 @@ export default function Review({ subjects }: ReviewProps) {
   };
 
   if (isLoading) {
-    return <div className="review-page"><div className="content-card"><p>Loading review queue…</p></div></div>;
+    return (
+      <div className="review-page">
+        <div className="content-card"><p>Building your review queue…</p></div>
+      </div>
+    );
   }
+
+  const totalDue = dueConcepts.length;
+  const reviewedConcepts = concepts.filter((concept) => reviewState[concept.id]?.lastReviewedAt).length;
+  const learnedConcepts = concepts.filter((concept) => (reviewState[concept.id]?.level ?? 0) >= 3).length;
 
   return (
     <div className="review-page">
-      <div className="review-heading">
+      <div className="review-v2-header">
         <div>
-          <p className="eyebrow">EVIDENCE-INFORMED STUDY MODE</p>
+          <p className="eyebrow">RETRIEVAL + SPACING WORKSPACE</p>
           <h1>Review</h1>
-          <p className="review-subtitle">
-            Recall first, check your notes second, then space the next review.
-            This turns StudyVault from a storage system into a learning system.
+          <p className="review-v2-subtitle">
+            StudyVault turns long notes into small, retrievable concepts. Recall first, get feedback second,
+            then revisit the same concept after a delay.
           </p>
         </div>
-        <div className="review-progress">
-          <strong>{dueNotes.length} due now</strong>
-          <span>{notes.length} active notes in your review system</span>
+
+        <div className="review-v2-stats">
+          <div><strong>{totalDue}</strong><span>due now</span></div>
+          <div><strong>{reviewedConcepts}</strong><span>reviewed</span></div>
+          <div><strong>{learnedConcepts}</strong><span>well practiced</span></div>
         </div>
       </div>
 
-      <div className="review-layout">
-        <section className="review-card">
+      <div className="review-v2-layout">
+        <section className="review-v2-main">
           {!selected ? (
-            <div className="review-empty">
-              <div className="review-empty-icon"><CheckCircle2 size={24} /></div>
-              <h2>You're caught up 🎉</h2>
+            <div className="review-v2-empty">
+              <div className="review-v2-empty-icon"><CheckCircle2 size={26} /></div>
+              <h2>{concepts.length ? "You're caught up 🎉" : "Your review system is ready"}</h2>
               <p>
-                No notes are due right now. Come back when the next review is scheduled.
-                Spacing is intentionally used instead of asking you to reread everything every day.
+                {concepts.length
+                  ? "Nothing is due right now. Spacing deliberately gives your memory time to work between retrieval sessions."
+                  : "Create an active note first. StudyVault will automatically turn its sections into reviewable concepts."}
               </p>
             </div>
           ) : (
             <>
-              <div className="review-kicker">Active recall</div>
-              <h2>{selected.title}</h2>
-              <div className="review-meta">
-                {subjectName && <span className="review-chip">{subjectName}</span>}
-                {selected.tags.slice(0, 4).map((tag) => <span className="review-chip" key={tag}>#{tag}</span>)}
-                <span className="review-chip">Review #{(reviewState[selected.id]?.level ?? 0) + 1}</span>
+              <div className="review-v2-topline">
+                <div className="review-v2-source">
+                  <span className="review-v2-source-label">FROM NOTE</span>
+                  <strong>{selected.noteTitle}</strong>
+                </div>
+                <div className="review-v2-progress">
+                  Concept {selected.index} of {selected.totalInNote}
+                </div>
               </div>
 
-              <p className="review-prompt">Without opening the note, what can you explain from memory?</p>
-              <p className="review-hint">
-                Write the key ideas, definitions, relationships, examples or steps you remember.
-                Don't worry about perfect wording.
-              </p>
-              <textarea
-                className="review-recall"
-                value={recall}
-                onChange={(event) => setRecall(event.target.value)}
-                placeholder="Write what you remember…"
-                aria-label="Active recall answer"
-              />
+              <div className="review-v2-concept">
+                <div className="review-v2-kicker"><Target size={15} /> Active recall</div>
+                <h2>{selected.title}</h2>
 
-              <button
-                type="button"
-                className="secondary-button"
-                style={{ marginTop: 12 }}
-                onClick={() => setRevealed(true)}
-                disabled={revealed}
-              >
-                <RotateCcw size={15} style={{ verticalAlign: "middle", marginRight: 6 }} />
-                {revealed ? "Answer revealed" : "Reveal my note"}
-              </button>
+                <div className="review-v2-meta">
+                  {selected.subjectName && <span>{selected.subjectName}</span>}
+                  {selected.tags.slice(0, 4).map((tag) => <span key={tag}>#{tag}</span>)}
+                  {currentState && <span>Streak {currentState.streak}</span>}
+                </div>
+
+                <div className="review-v2-question">
+                  <strong>{selected.prompt}</strong>
+                  <p>Try to reconstruct the idea from memory. Don't copy the note and don't worry about exact wording.</p>
+                </div>
+
+                <textarea
+                  className="review-v2-recall"
+                  value={recall}
+                  onChange={(event) => setRecall(event.target.value)}
+                  placeholder="Write what you can explain from memory…"
+                  aria-label="Active recall answer"
+                  disabled={revealed}
+                />
+
+                <div className="review-v2-controls">
+                  <button
+                    type="button"
+                    className="review-v2-reveal"
+                    onClick={reveal}
+                    disabled={!recall.trim() || revealed}
+                  >
+                    {revealed ? <EyeOff size={16} /> : <Eye size={16} />}
+                    {revealed ? "Reference shown" : "Reveal reference"}
+                  </button>
+
+                  <span className="review-v2-rule">
+                    <Clock3 size={14} />
+                    Recall before feedback
+                  </span>
+                </div>
+              </div>
 
               {revealed && (
-                <div className="review-reveal">
-                  <strong>Compare with your memory</strong>
-                  <p>{selected.plainText || "This note has no plain-text content yet."}</p>
+                <div className="review-v2-compare">
+                  <div className="review-v2-panel your-memory">
+                    <div className="review-v2-panel-heading">
+                      <span>YOUR RECALL</span>
+                      <strong>{recall.trim().split(/\s+/).filter(Boolean).length} words</strong>
+                    </div>
+                    <p>{recall.trim()}</p>
+                  </div>
+
+                  <div className="review-v2-panel reference">
+                    <div className="review-v2-panel-heading">
+                      <span>REFERENCE FOR THIS CONCEPT</span>
+                      <strong>Not the whole note</strong>
+                    </div>
+                    <p>{selected.answer}</p>
+                  </div>
                 </div>
               )}
 
-              <div className="review-actions">
-                <button className="review-rating" type="button" onClick={() => rate("again")}>Again · 10 min</button>
-                <button className="review-rating" type="button" onClick={() => rate("hard")}>Hard · {formatInterval(INTERVALS_MS[Math.min(reviewState[selected.id]?.level ?? 0, INTERVALS_MS.length - 1)])}</button>
-                <button className="review-rating primary" type="button" onClick={() => rate("good")}>Good · next interval</button>
-                <button className="review-rating" type="button" onClick={() => rate("easy")}>Easy · skip ahead</button>
+              <div className="review-v2-rating">
+                <div>
+                  <strong>How well did you retrieve it?</strong>
+                  <span>Rate your memory, not your writing quality.</span>
+                </div>
+                <div className="review-v2-rating-buttons">
+                  <button type="button" disabled={!revealed} onClick={() => rate("again")}>
+                    <span>Again</span><small>10 min</small>
+                  </button>
+                  <button type="button" disabled={!revealed} onClick={() => rate("hard")}>
+                    <span>Hard</span><small>{formatInterval(INTERVALS_MS[Math.min(currentState?.level ?? 0, INTERVALS_MS.length - 1)])}</small>
+                  </button>
+                  <button type="button" className="good" disabled={!revealed} onClick={() => rate("good")}>
+                    <span>Good</span><small>next interval</small>
+                  </button>
+                  <button type="button" disabled={!revealed} onClick={() => rate("easy")}>
+                    <span>Easy</span><small>skip ahead</small>
+                  </button>
+                </div>
+              </div>
+
+              <div className="review-v2-next">
+                <Sparkles size={15} />
+                <span>Next: another concept. The queue keeps long notes broken into manageable retrieval targets.</span>
+                <ChevronRight size={15} />
               </div>
             </>
           )}
         </section>
 
-        <aside className="review-side">
-          <div className="review-side-card">
-            <h3><BrainCircuit size={16} style={{ verticalAlign: "middle", marginRight: 6 }} />Why this exists</h3>
+        <aside className="review-v2-sidebar">
+          <div className="review-v2-side-card">
+            <h3><BrainCircuit size={17} /> Why this design</h3>
             <p>
-              Research consistently favors retrieval practice and distributed practice over
-              passive rereading. The goal is not more time in the app; it is better memory per session.
+              Retrieval practice is one of the strongest-supported learning techniques. A 2021 review
+              coded 50 real classroom experiments (5,374 learners), with 57% showing medium or large
+              retrieval benefits. A 2017 meta-analysis of 118 articles and 15,427 participants also found
+              practice testing beneficial versus non-testing conditions.
             </p>
           </div>
-          <div className="review-side-card">
-            <h3><Sparkles size={16} style={{ verticalAlign: "middle", marginRight: 6 }} />Spacing ladder</h3>
-            <div className="review-intervals">
+
+          <div className="review-v2-side-card">
+            <h3><RotateCcw size={17} /> Feedback matters</h3>
+            <p>
+              You don't just reveal an answer. You compare your recall with a focused reference excerpt.
+              Recent meta-analytic work found the retrieval advantage was stronger when corrective feedback
+              was provided.
+            </p>
+          </div>
+
+          <div className="review-v2-side-card">
+            <h3><Clock3 size={17} /> Spaced, not crammed</h3>
+            <div className="review-v2-intervals">
               {INTERVALS_MS.map((interval, index) => (
-                <div className="review-interval" key={interval}>
-                  <span>Level {index + 1}</span>
-                  <strong>{formatInterval(interval)}</strong>
-                </div>
+                <div key={interval}><span>Level {index + 1}</span><strong>{formatInterval(interval)}</strong></div>
               ))}
             </div>
-          </div>
-          <div className="review-side-card">
-            <h3>How to use it</h3>
-            <p>
-              1. Recall before revealing.<br />
-              2. Compare your answer with the note.<br />
-              3. Rate honestly.<br />
-              4. Return when the next interval arrives.
+            <p className="review-v2-small">
+              These intervals are a practical product schedule, not a claim that one exact ladder is universally optimal.
             </p>
+          </div>
+
+          <div className="review-v2-side-card review-v2-principles">
+            <h3><Target size={17} /> The rule</h3>
+            <ol>
+              <li>Recall without looking.</li>
+              <li>Compare with the focused reference.</li>
+              <li>Notice what you missed.</li>
+              <li>Rate honestly.</li>
+              <li>Return after spacing.</li>
+            </ol>
           </div>
         </aside>
       </div>
