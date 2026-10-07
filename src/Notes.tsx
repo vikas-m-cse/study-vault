@@ -704,6 +704,9 @@ export default function Notes({ resources, subjects, openNoteId, openFolderId, i
                     )}
                 </section>
             </div>
+            {studyToolsOpen && selectedNote && !selectedRecord?.legacy && (
+                <StudyToolsModal note={selectedNote} onClose={() => setStudyToolsOpen(false)} />
+            )}
         </div>
     );
 }
