@@ -241,7 +241,7 @@ function App() {
             setNotesTarget({ folderId: result.id });
             navigate("Notes");
         }
-    }, []);
+    }, [navigate]);
 
     // -----------------------------------------------------------------------
     // Loading guard — show nothing until IndexedDB data is ready
