@@ -3683,6 +3683,12 @@ button {
 .study-tools-card-rating.known { background:rgba(90,198,159,.055); color:#7bc9ad; }
 .study-tools-card-rating.missed:hover { border-color:rgba(226,100,110,.3); background:rgba(226,100,110,.09); }
 .study-tools-card-rating.known:hover { border-color:rgba(90,198,159,.3); background:rgba(90,198,159,.09); }
+.study-tools-card-next {
+  display:flex; align-items:center; justify-content:center; gap:7px; width:100%; margin-top:9px;
+  padding:10px 12px; border:1px solid rgba(116,167,237,.18); border-radius:10px;
+  background:rgba(75,139,238,.07); color:#8fb9ec; font-size:9px; font-weight:850;
+}
+.study-tools-card-next:hover { background:rgba(75,139,238,.13); color:#c9e2ff; }
 .study-tools-card-status { display:flex; justify-content:center; gap:18px; flex-wrap:wrap; margin-top:11px; color:#536b87; font-size:8px; font-weight:800; letter-spacing:.05em; }
 .study-tools-card-status span:nth-child(1) { color:#72bca2; }
 .study-tools-card-status span:nth-child(2) { color:#b7878d; }
