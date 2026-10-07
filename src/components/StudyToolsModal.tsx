@@ -672,25 +672,56 @@ export default function StudyToolsModal({ note, onClose }: StudyToolsModalProps)
                         <span className="flashcard-number">{String(flashcardIndex + 1).padStart(2, "0")}</span>
                       </div>
 
-                      <button
-                        type="button"
-                        className={`flashcard-surface ${flashcardFlipped ? "revealed" : ""}`}
-                        onClick={() => setFlashcardFlipped(value => !value)}
-                        aria-label={flashcardFlipped ? "Hide answer" : "Reveal answer"}
-                      >
-                        <span className="flashcard-surface-inner">
-                          <span className="flashcard-face flashcard-question-face">
-                            <span className="flashcard-face-label"><Target size={13} /> RETRIEVE FROM MEMORY</span>
-                            <strong>{flashcards[flashcardIndex].question}</strong>
-                            <span className="flashcard-card-hint">{flashcardNeed === "retention" ? "Retention is fading · retrieve before rereading" : flashcardNeed === "calibration" ? "Confidence needs a reality check · explain it" : flashcardNeed === "understanding" ? "Recall is ahead · focus on why it works" : "Try to reconstruct the answer before revealing"} <kbd>Space</kbd></span>
+                      <div className="flashcard-stage">
+                        <div className="flashcard-side-rail">
+                          <span className="flashcard-rail-label">DECK</span>
+                          {flashcards.map((_, index) => (
+                            <button
+                              key={index}
+                              type="button"
+                              aria-label={`Open card ${index + 1}`}
+                              className={`flashcard-rail-dot ${index === flashcardIndex ? "active" : ""} ${flashcardRatings[index] ?? ""}`}
+                              onClick={() => { setFlashcardIndex(index); setFlashcardFlipped(false); }}
+                            />
+                          ))}
+                        </div>
+
+                        <button
+                          type="button"
+                          className={`flashcard-surface ${flashcardFlipped ? "revealed" : ""}`}
+                          onClick={() => setFlashcardFlipped(value => !value)}
+                          aria-label={flashcardFlipped ? "Hide answer" : "Reveal answer"}
+                        >
+                          <span className="flashcard-surface-inner">
+                            <span className="flashcard-face flashcard-question-face">
+                              <span className="flashcard-card-top">
+                                <span className="flashcard-face-label"><Target size={13} /> RETRIEVAL</span>
+                                <span className="flashcard-card-index">0{flashcardIndex + 1}</span>
+                              </span>
+                              <strong>{flashcards[flashcardIndex].question}</strong>
+                              <span className="flashcard-card-hint">{flashcardNeed === "retention" ? "Retention is fading · retrieve before rereading" : flashcardNeed === "calibration" ? "Confidence needs a reality check · explain it" : flashcardNeed === "understanding" ? "Recall is ahead · focus on why it works" : "Reconstruct the answer before revealing"} <kbd>Space</kbd></span>
+                              <span className="flashcard-card-motif" aria-hidden="true"><span /><span /><span /><span /></span>
+                            </span>
+                            <span className="flashcard-face flashcard-answer-face">
+                              <span className="flashcard-card-top">
+                                <span className="flashcard-face-label"><Check size={13} /> VERIFIED SOURCE</span>
+                                <span className="flashcard-card-index">0{flashcardIndex + 1}</span>
+                              </span>
+                              <strong>{flashcards[flashcardIndex].answer}</strong>
+                              <span className="flashcard-card-hint">Compare → judge your recall → rate it</span>
+                            </span>
                           </span>
-                          <span className="flashcard-face flashcard-answer-face">
-                            <span className="flashcard-face-label"><Check size={13} /> SOURCE-GROUNDED ANSWER</span>
-                            <strong>{flashcards[flashcardIndex].answer}</strong>
-                            <span className="flashcard-card-hint">Compare → judge your recall → rate it</span>
-                          </span>
-                        </span>
-                      </button>
+                        </button>
+
+                        <aside className="flashcard-context">
+                          <span>LEARNING SIGNAL</span>
+                          <strong>{flashcardNeed === "retention" ? "RECALL AGAIN" : flashcardNeed === "calibration" ? "CHECK CONFIDENCE" : flashcardNeed === "understanding" ? "EXPLAIN WHY" : "BUILD RECALL"}</strong>
+                          <p>{flashcardAction.reason}</p>
+                          <div className="flashcard-context-metric"><b>{flashcardMasteryPercent}%</b><span>mastery</span></div>
+                          <div className="flashcard-context-rule" />
+                          <small>StudyVault chooses the next action from your learning evidence.</small>
+                        </aside>
+                      </div>
 
                       <div className="flashcard-reveal-row">
                         {!flashcardFlipped ? (
