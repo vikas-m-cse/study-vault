@@ -421,6 +421,8 @@ export default function StudyToolsModal({ note, onClose }: StudyToolsModalProps)
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [tool, deckComplete, flashcardIndex, flashcards.length]);
+  const outcomeLabel = (type: "known" | "missed") => type === "known" ? "RECORDED" : "RECOVERY";
+
   const goToFlashcard = (index: number, direction: 1 | -1) => {
     setFlashcardDirection(direction);
     setFlashcardIndex(index);
@@ -872,7 +874,7 @@ export default function StudyToolsModal({ note, onClose }: StudyToolsModalProps)
                           <b>{flashcardInsight.label}</b>
                           <span>{flashcardInsight.reason}</span>
                         </div>
-                        <strong>{flashcardMasteryPercent}%</strong>
+                        <span className="sv-signal-status">{outcomeLabel(flashcardInsight.type)}</span>
                       </motion.div>
                     )}
                   </>
