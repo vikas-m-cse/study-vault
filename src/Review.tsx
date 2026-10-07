@@ -229,7 +229,6 @@ export default function Review({ subjects, focusNoteId }: ReviewProps) {
   const [mode, setMode] = useState<"recall" | "questions">("recall");
   const [confidence, setConfidence] = useState(0);
   const [outcome, setOutcome] = useState<"correct" | "partial" | "incorrect" | null>(null);
-  const [masteryTick, setMasteryTick] = useState(0);
 
   useEffect(() => {
     let cancelled = false;
@@ -337,7 +336,6 @@ export default function Review({ subjects, focusNoteId }: ReviewProps) {
       at: timestamp,
     });
     recordMasteryLevel(selected.id, level);
-    setMasteryTick((value) => value + 1);
     setRecall("");
     setRevealed(false);
     setConfidence(0);
