@@ -8558,3 +8558,208 @@ button:focus-visible,input:focus-visible,textarea:focus-visible{
 @media(prefers-reduced-motion:reduce){
   .sv-hero-primary{transition:none!important}
 }
+
+
+/* ==========================================================================
+   KOHINOOR FLASHCARD FIT PASS
+   One complete card, readable type, no clipped learning surface.
+========================================================================== */
+
+.study-tools-modal{
+  width:min(1360px,100%);
+  height:min(900px,calc(100vh - 28px));
+  border-radius:22px;
+}
+
+.study-tools-header{
+  min-height:68px;
+  padding:15px 20px;
+}
+
+.study-tools-orbit{width:34px;height:34px;border-radius:10px}
+.study-tools-header h2{font-size:19px}
+.study-tools-subtitle{font-size:9px;margin-top:4px}
+
+.study-tools-content{padding:18px 22px 22px}
+.study-tools-command-bar{margin-bottom:10px}
+.study-tools-command-bar h3{font-size:17px}
+.study-tools-signal-row{margin-bottom:11px}
+.study-tools-signal-row > div{padding:5px 8px}
+
+.sv-retrieval{
+  padding:2px 0 12px;
+  --sv-card-height:310px;
+}
+
+.sv-retrieval::before{
+  inset:-30px -40px -60px;
+  background:
+    radial-gradient(600px 260px at 50% 25%,rgba(86,118,255,.045),transparent 70%),
+    linear-gradient(180deg,#07090d,#080b10);
+}
+
+.sv-retrieval::after{opacity:.08;background-size:52px 52px}
+
+.sv-retrieval-header{
+  align-items:center;
+  gap:18px;
+  padding:0 4px 10px;
+}
+
+.sv-retrieval-header h4{
+  margin:5px 0 3px;
+  font-size:clamp(23px,2.2vw,30px);
+  letter-spacing:-.05em;
+}
+
+.sv-retrieval-header p{font-size:9px}
+
+.sv-retrieval-counter{padding:8px 11px;border-radius:11px}
+.sv-retrieval-counter span{font-size:21px}
+
+.sv-retrieval-progress{height:13px;margin:0 4px 4px}
+
+.sv-deck-meta{padding:6px 6px 9px;gap:12px}
+.sv-deck-meta strong{font-size:9px}
+.sv-deck-meta-right{font-size:7px;gap:9px}
+
+.sv-card-stage{
+  min-height:var(--sv-card-height);
+  height:var(--sv-card-height);
+  margin:0 2px;
+  overflow:visible;
+}
+
+.sv-stage-light{opacity:.35;transform:scale(.7)}
+.sv-stage-grid{opacity:.25}
+
+.sv-card-peek{
+  width:min(690px,78%);
+  height:292px;
+  padding:22px 28px;
+  border-radius:21px;
+  transform:translateY(18px) scale(.965);
+  opacity:.34!important;
+}
+
+.sv-card-peek strong{
+  margin-top:13px;
+  font-size:16px;
+  line-height:1.15;
+  max-width:68%;
+}
+
+.sv-card-shell{
+  width:min(760px,86%);
+  height:var(--sv-card-height);
+}
+
+.sv-card-edge{border-radius:21px}
+
+.sv-card-face{
+  border-radius:21px;
+  box-shadow:0 24px 55px rgba(0,0,0,.38),0 7px 20px rgba(0,0,0,.20),inset 0 1px rgba(255,255,255,.06);
+}
+
+.sv-card-top{padding:17px 20px}
+.sv-card-chip{font-size:7px;letter-spacing:.13em}
+.sv-card-index{width:30px;height:30px;border-radius:9px}
+
+.sv-card-content{padding:12px 34px 22px}
+
+.sv-card-overline{
+  margin-bottom:11px;
+  font-size:6px;
+  letter-spacing:.18em;
+}
+
+.sv-card-content strong{
+  max-width:640px;
+  font-size:clamp(23px,2.55vw,35px);
+  line-height:1.08;
+  letter-spacing:-.05em;
+}
+
+.sv-card-back .sv-card-content strong{
+  max-width:650px;
+  font-size:clamp(17px,1.7vw,23px);
+  line-height:1.35;
+  letter-spacing:-.025em;
+}
+
+.sv-card-footer{padding:12px 20px 17px;font-size:6px}
+.sv-card-art{width:40%;opacity:.42}
+
+.sv-card-gesture-hint{bottom:-17px;font-size:6px}
+
+.sv-command-row{
+  width:min(700px,88%);
+  gap:7px;
+  margin:11px auto 0;
+}
+
+.sv-command{
+  min-height:48px!important;
+  padding:7px 10px!important;
+  border-radius:11px!important;
+}
+
+.sv-command b{font-size:9px!important}
+.sv-command small{font-size:6px!important}
+
+.sv-learning-signal{
+  width:min(700px,88%);
+  margin:8px auto 0!important;
+  padding:8px 10px!important;
+}
+
+.sv-retrieval-footer{
+  margin:10px 6px 0;
+  padding-top:8px;
+  font-size:6px;
+}
+
+@media (max-height:820px){
+  .study-tools-modal{height:calc(100vh - 18px);border-radius:18px}
+  .study-tools-header{min-height:58px;padding:11px 16px}
+  .study-tools-content{padding:13px 18px 16px}
+  .study-tools-signal-row{display:none}
+  .sv-retrieval-header{padding-bottom:7px}
+  .sv-card-stage{--sv-card-height:270px;min-height:270px;height:270px}
+  .sv-card-shell{height:270px}
+  .sv-card-peek{height:254px}
+  .sv-card-top{padding:13px 17px}
+  .sv-card-content{padding:8px 28px 17px}
+  .sv-card-content strong{font-size:clamp(21px,2.4vw,30px)}
+  .sv-card-back .sv-card-content strong{font-size:17px}
+  .sv-card-footer{padding:9px 17px 13px}
+  .sv-command-row{margin-top:8px}
+}
+
+@media (max-width:900px){
+  .study-tools-modal{height:calc(100vh - 16px);border-radius:18px}
+  .study-tools-header{padding:13px 15px}
+  .study-tools-content{padding:15px 14px 18px}
+  .sv-card-stage{--sv-card-height:285px;min-height:285px;height:285px}
+  .sv-card-shell{height:285px;width:min(720px,94%)}
+  .sv-card-content{padding:10px 26px 18px}
+  .sv-card-content strong{font-size:clamp(20px,4.2vw,30px)}
+  .sv-card-back .sv-card-content strong{font-size:17px}
+  .sv-card-peek{width:88%;height:268px}
+  .sv-command-row{width:96%}
+}
+
+@media (max-width:560px){
+  .sv-retrieval-header{align-items:flex-start}
+  .sv-retrieval-counter{display:none}
+  .sv-deck-meta-right{display:none}
+  .sv-card-stage{--sv-card-height:250px;min-height:250px;height:250px}
+  .sv-card-shell{height:250px;width:96%}
+  .sv-card-peek{height:235px}
+  .sv-card-content{padding:8px 21px 14px}
+  .sv-card-content strong{font-size:21px}
+  .sv-card-back .sv-card-content strong{font-size:15px}
+  .sv-card-footer{padding:8px 15px 11px}
+  .sv-card-art{display:none}
+  .sv-command-row{grid-template-columns:1fr;gap:6px}
+}
