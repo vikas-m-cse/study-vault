@@ -653,6 +653,7 @@ export default function StudyToolsModal({ note, onClose }: StudyToolsModalProps)
                     )}
                   </div>
                 )}
+                {!deckComplete && (
                 <div className="study-tools-card-actions">
                   <button
                     type="button"
@@ -699,6 +700,8 @@ export default function StudyToolsModal({ note, onClose }: StudyToolsModalProps)
                   <span>{missedCount} to revisit</span>
                   <span>{flashcardFlipped ? "Tap to see the question" : "Recall first · flip to verify"}</span>
                 </div>
+
+                )}
               </div>
             )}
 
