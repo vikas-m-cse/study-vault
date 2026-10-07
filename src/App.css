@@ -7984,3 +7984,28 @@ button,input,textarea{font:inherit}
   .app-layout::after,.orbit-a,.orbit-b,.orbit-c{animation:none!important}
   .nav-item,.resource-row,.sv-hero-primary{transition:none!important}
 }
+
+
+/* Native SPA view transitions: browser-composited state changes where supported. */
+@view-transition{navigation:auto}
+
+::view-transition-group(root){
+  animation-duration:.42s;
+  animation-timing-function:cubic-bezier(.22,.75,.24,1);
+}
+::view-transition-old(root){
+  animation:svPageOut .24s both cubic-bezier(.4,0,1,1);
+}
+::view-transition-new(root){
+  animation:svPageIn .42s both cubic-bezier(.18,.78,.22,1);
+}
+@keyframes svPageOut{
+  to{opacity:0;filter:blur(3px);transform:translateY(-4px) scale(.997)}
+}
+@keyframes svPageIn{
+  from{opacity:0;filter:blur(3px);transform:translateY(8px) scale(.997)}
+  to{opacity:1;filter:blur(0);transform:translateY(0) scale(1)}
+}
+@media(prefers-reduced-motion:reduce){
+  ::view-transition-old(root),::view-transition-new(root){animation:none}
+}
