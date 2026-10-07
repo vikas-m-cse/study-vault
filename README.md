@@ -76,3 +76,16 @@ npm run build
 ## Repository
 
 The canonical repository is maintained on GitHub under the `main` branch.
+
+
+## Learning transformation studio
+
+StudyVault now includes a source-grounded **Study Tools** workspace inside Notes. From an editable note, students can transform the material into:
+
+- Flashcards
+- Retrieval / why / how / compare / application / teach-back questions
+- Mnemonic hooks
+- One-page quick revision
+- A structured teach-back exercise
+
+The transformation layer is intentionally source-grounded and local-first. It is designed as the first surface over the larger Learning Core: concepts → practice → feedback → mastery → adaptive review. Generated material is a study aid, not a claim that an automatic transformation is always correct.
