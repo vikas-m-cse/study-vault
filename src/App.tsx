@@ -58,6 +58,18 @@ const DEFAULT_SUBJECTS: Subject[] = [
 
 function App() {
     const [activePage, setActivePage] = useState("Dashboard");
+
+    const navigate = useCallback((page: string) => {
+        const transitionDocument = document as Document & {
+            startViewTransition?: (update: () => void) => unknown;
+        };
+
+        if (transitionDocument.startViewTransition) {
+            transitionDocument.startViewTransition(() => setActivePage(page));
+        } else {
+            setActivePage(page);
+        }
+    }, []);
     const [isSearchOpen, setIsSearchOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
     const [notesTarget, setNotesTarget] = useState<{ noteId?: string; folderId?: string } | null>(null);
@@ -218,16 +230,16 @@ function App() {
 
         if (result.type === "Note") {
             setNotesTarget(result.legacy ? { noteId: result.id } : { noteId: result.id });
-            setActivePage("Notes");
+            navigate("Notes");
         } else if (result.type === "Resource") {
             setResourceTargetId(result.id);
-            setActivePage("My Resources");
+            navigate("My Resources");
         } else if (result.type === "Subject") {
             setSubjectTargetId(Number(result.id));
-            setActivePage("Subjects");
+            navigate("Subjects");
         } else {
             setNotesTarget({ folderId: result.id });
-            setActivePage("Notes");
+            navigate("Notes");
         }
     }, []);
 
@@ -251,7 +263,7 @@ function App() {
 
     return (
         <div className="app-layout">
-            <Sidebar activePage={activePage} onNavigate={setActivePage} />
+            <Sidebar activePage={activePage} onNavigate={navigate} />
 
             <main className="main-content">
                 <Topbar
@@ -297,7 +309,7 @@ function App() {
                             openFolderId={notesTarget?.folderId}
                             onOpenReview={(noteId) => {
                                 setReviewNoteId(noteId);
-                                setActivePage("Review");
+                                navigate("Review");
                             }}
                         />
                     ) : activePage === "Favourites" ? (
