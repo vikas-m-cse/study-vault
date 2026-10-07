@@ -5152,3 +5152,206 @@ button {
     margin-left:0
   }
 }
+
+/* =========================================================
+   FLASHCARD COCKPIT v3 — FOCUSED / COLORFUL / NO-OVERFLOW
+   The card is the product. Everything else supports it.
+========================================================= */
+.study-tools-content{
+  overflow-x:hidden;
+}
+.flashcard-cockpit{
+  width:100%;
+  max-width:none;
+  padding:2px 0 18px;
+  overflow:visible;
+}
+.flashcard-cockpit-head{
+  min-height:52px;
+  margin-bottom:13px;
+}
+.flashcard-cockpit-head h4{
+  font-size:24px;
+  color:#f7f9fd;
+}
+.flashcard-session-score{
+  min-width:104px;
+  padding:8px 13px;
+  border-radius:14px;
+  background:linear-gradient(135deg,rgba(113,151,255,.12),rgba(216,183,122,.09));
+  border-color:rgba(144,171,221,.18);
+}
+.flashcard-progress-track{
+  height:4px;
+  margin-bottom:17px;
+  background:rgba(255,255,255,.07);
+}
+.flashcard-progress-track>span{
+  background:linear-gradient(90deg,#6f8fff 0%,#b18cff 32%,#e4b56f 68%,#64d0ad 100%);
+  box-shadow:0 0 18px rgba(130,155,255,.28);
+}
+.flashcard-stage{
+  grid-template-columns:42px minmax(0,1fr) 154px;
+  gap:13px;
+  width:100%;
+  min-width:0;
+}
+.flashcard-side-rail{
+  min-width:0;
+  border-radius:16px;
+  background:linear-gradient(180deg,rgba(18,31,51,.92),rgba(8,17,30,.72));
+  border-color:rgba(151,181,218,.13);
+}
+.flashcard-rail-dot{
+  margin:7px 0;
+  background:#344861;
+}
+.flashcard-rail-dot.active{
+  background:#f0c678;
+  box-shadow:0 0 0 4px rgba(240,198,120,.1),0 0 20px rgba(240,198,120,.3);
+}
+.flashcard-board{
+  min-width:0;
+  overflow:visible;
+}
+.flashcard-surface{
+  width:100%;
+  min-width:0;
+  height:350px;
+  min-height:350px;
+  border-radius:25px;
+  box-shadow:0 30px 75px rgba(0,0,0,.34),0 0 0 1px rgba(255,255,255,.08);
+}
+.flashcard-face{
+  min-width:0;
+  padding:34px 42px 29px;
+  border-radius:25px;
+}
+.flashcard-question-face{
+  background:
+    radial-gradient(circle at 87% 16%,rgba(123,150,255,.17),transparent 23%),
+    radial-gradient(circle at 12% 90%,rgba(103,211,177,.10),transparent 22%),
+    linear-gradient(135deg,#fffefa 0%,#f0ece3 100%);
+}
+.flashcard-question-face::before{
+  width:5px;
+  background:linear-gradient(180deg,#7397ff 0%,#b28eff 35%,#e2b56e 70%,#66d0ae 100%);
+}
+.flashcard-face strong{
+  max-width:760px;
+  margin-top:37px;
+  font-size:clamp(29px,3vw,43px);
+  line-height:1.08;
+}
+.flashcard-card-hint{
+  padding-top:18px;
+  font-size:8px;
+}
+.flashcard-card-motif{
+  right:29px;
+  bottom:25px;
+  transform:scale(.78);
+}
+.flashcard-answer-face{
+  background:
+    radial-gradient(circle at 82% 13%,rgba(105,207,175,.18),transparent 27%),
+    radial-gradient(circle at 15% 85%,rgba(117,146,255,.10),transparent 25%),
+    linear-gradient(135deg,#102a2b,#0a1b28);
+}
+.flashcard-answer-face strong{
+  margin-top:32px;
+  font-size:clamp(18px,2vw,26px);
+}
+.flashcard-context{
+  min-height:350px;
+  padding:14px 12px;
+  border-left:1px solid rgba(151,181,218,.09);
+}
+.flashcard-context>strong{
+  color:#edf3fb;
+  font-size:10px;
+}
+.flashcard-context p{
+  font-size:8px;
+  line-height:1.55;
+}
+.flashcard-context-metric{
+  margin-top:15px;
+}
+.flashcard-context-metric b{
+  color:#f0c678;
+  font-size:25px;
+}
+.flashcard-reveal-row{
+  padding-left:55px;
+  margin-top:10px;
+}
+.flashcard-reveal-button{
+  min-height:42px;
+  padding:0 18px;
+  border-radius:12px;
+  background:linear-gradient(135deg,#f4d79d,#dcae68);
+  box-shadow:0 10px 25px rgba(220,174,104,.18);
+}
+.flashcard-adaptive-strip,
+.flashcard-rating-panel,
+.flashcard-insight-toast,
+.flashcard-session-footer{
+  margin-left:55px;
+}
+.flashcard-adaptive-strip{
+  margin-right:167px;
+  margin-top:9px;
+  padding:9px 12px;
+}
+.flashcard-rating-panel{
+  margin-right:167px;
+  margin-top:9px;
+  padding:10px 12px;
+}
+.flashcard-session-footer{
+  margin-right:167px;
+  margin-top:10px;
+}
+
+/* Make the learning signal visually intentional, not a dead text column. */
+.flashcard-context::before{
+  content:"";
+  width:28px;
+  height:3px;
+  margin-bottom:18px;
+  border-radius:99px;
+  background:linear-gradient(90deg,#7598ff,#c08cff,#e2b56e,#68cfaf);
+  box-shadow:0 0 16px rgba(129,154,255,.22);
+}
+
+/* Remove accidental horizontal scrolling from the cockpit. */
+.flashcard-stage,
+.flashcard-board,
+.flashcard-surface,
+.flashcard-surface-inner,
+.flashcard-face{
+  max-width:100%;
+}
+@media(max-width:1050px){
+  .flashcard-stage{grid-template-columns:40px minmax(0,1fr)}
+  .flashcard-context{display:none}
+  .flashcard-reveal-row,
+  .flashcard-adaptive-strip,
+  .flashcard-rating-panel,
+  .flashcard-insight-toast,
+  .flashcard-session-footer{margin-left:53px;margin-right:0}
+}
+@media(max-width:700px){
+  .flashcard-cockpit-head h4{font-size:20px}
+  .flashcard-stage{grid-template-columns:1fr}
+  .flashcard-side-rail{display:none}
+  .flashcard-surface{height:330px;min-height:330px}
+  .flashcard-face{padding:30px 25px}
+  .flashcard-face strong{font-size:27px;margin-top:32px}
+  .flashcard-reveal-row,
+  .flashcard-adaptive-strip,
+  .flashcard-rating-panel,
+  .flashcard-insight-toast,
+  .flashcard-session-footer{margin-left:0;margin-right:0}
+}
