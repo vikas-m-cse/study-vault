@@ -22,7 +22,7 @@ import {
   X,
   Zap,
 } from "lucide-react";
-import type { Note } from "../types/note";
+import type { Note, TipTapNode } from "../types/note";
 
 type StudyTool = "mission" | "flashcards" | "questions" | "mnemonics" | "revision" | "teach";
 
@@ -121,7 +121,50 @@ function conceptName(block: string): string {
   return cleaned.split(/\s+/).slice(0, 4).join(" ") || "Core idea";
 }
 
+function studyNodeText(node: TipTapNode): string {
+  if (typeof node.text === "string") return node.text;
+  return (node.content ?? []).map(studyNodeText).join(" ").replace(/\s+/g, " ").trim();
+}
+
+function structuredLearningBlocks(note: Note): string[] {
+  const nodes = note.content?.content ?? [];
+  const hasHeadings = nodes.some(node => node.type === "heading");
+  if (!hasHeadings) return [];
+
+  const blocks: string[] = [];
+  let heading = "";
+  let body: string[] = [];
+
+  const flush = () => {
+    if (!body.length) return;
+    const combined = heading ? `${heading}: ${body.join(" ")}` : body.join(" ");
+    const lower = combined.toLowerCase();
+    const metadataHits = (lower.match(/day\s+\d+|course\s*:|subject\s*:|study mode\s*:|semester\s*:|scheme\s*:|vtu\b/g) ?? []).length;
+    if (metadataHits < 2 && combined.length >= 55) blocks.push(combined);
+    body = [];
+  };
+
+  for (const node of nodes) {
+    if (node.type === "heading") {
+      flush();
+      heading = studyNodeText(node);
+      continue;
+    }
+
+    if (node.type === "paragraph" || node.type === "list_item" || node.type === "blockquote" || node.type === "codeBlock") {
+      const text = studyNodeText(node);
+      if (text) body.push(text);
+    }
+  }
+
+  flush();
+  return blocks;
+}
+
 function missionBlocks(note: Note): string[] {
+  const structured = structuredLearningBlocks(note);
+  if (structured.length) return structured;
+
   const raw = note.plainText
     .split(/\n{1,}/)
     .map(line => line.replace(/\s+/g, " ").trim())
