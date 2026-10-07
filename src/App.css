@@ -8436,3 +8436,125 @@ body{font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-ser
 .review-v2-header{margin-bottom:16px!important}.review-v2-header h1{font-size:30px!important;letter-spacing:-.045em!important}.review-v2-subtitle{font-size:10px!important;color:#697484!important}.review-v2-stats{gap:8px!important}.review-v2-stats .content-card{padding:11px 13px!important;border-radius:9px!important}.review-v2-stats strong{font-size:17px!important}.review-v2-stats span{font-size:7px!important}.review-v2-layout{gap:12px!important}.review-v2-main,.review-v2-sidebar{min-width:0!important}.review-v2-main .content-card,.review-v2-side-card{border-radius:11px!important;border-color:var(--q-line)!important;background:#101319!important;box-shadow:none!important}.review-v2-concept{font-size:21px!important;letter-spacing:-.03em!important}.review-v2-question{font-size:18px!important;line-height:1.35!important}.review-v2-controls button,.review-v2-confidence-buttons button,.review-v2-rating-buttons button{min-height:34px!important;border-radius:7px!important;font-size:9px!important}
 @media(max-width:900px){.subjects-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}}
 @media(max-width:600px){.subjects-grid{grid-template-columns:1fr!important}.subjects-heading,.page-heading{align-items:flex-start!important;flex-direction:column!important}.subjects-heading h1,.page-heading h1{font-size:26px!important}.notes-editor-scroll{padding:15px!important}}
+
+
+/* ================================================================
+   KOHINOOR V2 — INFORMATION DENSITY + QUIET LUXURY
+================================================================ */
+.dashboard{max-width:1160px!important}
+.sv-dashboard-intro{
+  display:flex;align-items:flex-end;justify-content:space-between;gap:30px;
+  margin:0 0 16px;padding:0 2px;
+}
+.sv-section-index{
+  display:block;color:#596474;font:700 7px/1 ui-monospace,SFMono-Regular,Menlo,monospace;
+  letter-spacing:.18em;text-transform:uppercase;
+}
+.sv-dashboard-intro h2{
+  margin:8px 0 0;color:#e6eaf0;font-size:22px;line-height:1.08;
+  font-weight:560;letter-spacing:-.04em;
+}
+.sv-dashboard-intro h2 em{font-style:normal;color:#727d8e}
+.sv-intro-rule{
+  display:flex;align-items:center;gap:9px;color:#535e6d;
+  font:700 7px/1 ui-monospace,SFMono-Regular,Menlo,monospace;
+  letter-spacing:.14em;padding-bottom:4px;
+}
+.sv-intro-rule i{width:20px;height:1px;background:#313844;display:block}
+.sv-command-strip-premium{
+  margin-top:18px!important;margin-bottom:28px!important;
+  border-top:1px solid rgba(255,255,255,.035)!important;
+  border-bottom:1px solid rgba(255,255,255,.075)!important;
+}
+.sv-command-strip-premium>div:not(.sv-strip-message){min-width:108px}
+.sv-command-strip-premium .sv-strip-message{margin-left:auto}
+
+/* Hero becomes a product surface rather than a marketing banner. */
+.sv-home-hero{
+  position:relative!important;
+  isolation:isolate!important;
+  overflow:hidden!important;
+  min-height:300px!important;
+  border-radius:14px!important;
+  background:
+    linear-gradient(110deg,rgba(255,255,255,.018),transparent 42%),
+    radial-gradient(420px 240px at 84% 50%,rgba(110,142,220,.055),transparent 72%),
+    #0f1217!important;
+  box-shadow:0 24px 70px rgba(0,0,0,.20),inset 0 1px 0 rgba(255,255,255,.025)!important;
+}
+.sv-home-hero::after{
+  content:"";
+  position:absolute;inset:0;pointer-events:none;z-index:-1;
+  background-image:linear-gradient(rgba(255,255,255,.018) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.018) 1px,transparent 1px);
+  background-size:44px 44px;
+  mask-image:linear-gradient(90deg,black,transparent 78%);
+}
+.sv-hero-copy{padding-left:2px!important}
+.sv-hero-kicker{font-size:7px!important}
+.sv-hero-copy h1{
+  font-size:clamp(42px,4.3vw,59px)!important;
+  font-weight:590!important;
+  letter-spacing:-.065em!important;
+}
+.sv-hero-copy>p{max-width:485px!important;font-size:11px!important;line-height:1.72!important;color:#707b8b!important}
+.sv-hero-primary{
+  box-shadow:0 7px 20px rgba(0,0,0,.20)!important;
+  transition:transform .2s cubic-bezier(.2,.8,.2,1),box-shadow .2s ease!important;
+}
+.sv-hero-primary:hover{transform:translateY(-2px)!important;box-shadow:0 11px 26px rgba(0,0,0,.28)!important}
+.sv-hero-visual{right:65px!important;opacity:.54!important;filter:saturate(.75)!important}
+.sv-orbit{border-color:rgba(156,177,229,.11)!important}
+.sv-core{background:rgba(255,255,255,.025)!important;box-shadow:0 0 45px rgba(115,145,218,.055)!important}
+.sv-orbit-label{color:#596475!important}
+
+/* The library is the hero after the hero. */
+.dashboard-grid{gap:12px!important}
+.content-card{
+  border-radius:11px!important;
+  background:#0f1217!important;
+  border-color:rgba(255,255,255,.065)!important;
+}
+.dashboard-grid .content-card:first-child{
+  box-shadow:0 18px 50px rgba(0,0,0,.16)!important;
+}
+.resource-row{
+  min-height:60px!important;
+  border-bottom-color:rgba(255,255,255,.045)!important;
+}
+.resource-row:hover{
+  background:rgba(255,255,255,.028)!important;
+  transform:none!important;
+  box-shadow:inset 2px 0 0 rgba(143,174,255,.42)!important;
+}
+.resource-info h3{font-size:11px!important;letter-spacing:-.005em!important}
+.resource-type{letter-spacing:.04em!important}
+.section-heading h2{font-size:13px!important;font-weight:580!important}
+.section-heading p{font-size:8px!important}
+.subject-list .subject-row{min-height:52px!important}
+
+/* Make every secondary workspace feel authored, not themed. */
+.subjects-page,.resources-page,.notes-page,.review-page{max-width:1160px!important}
+.subject-card,.resources-library-list,.notes-panel,.review-v2-main .content-card,.review-v2-side-card{
+  box-shadow:0 18px 50px rgba(0,0,0,.14)!important;
+}
+.subject-card{border-radius:10px!important}
+.subject-card:hover{transform:translateY(-1px)!important}
+.resources-library-list{border-radius:10px!important}
+.review-v2-question{letter-spacing:-.02em!important}
+.review-v2-concept{font-weight:570!important}
+.notes-editor-panel{box-shadow:inset 1px 0 0 rgba(255,255,255,.025)!important}
+
+/* Better focus states — premium interfaces still need obvious keyboard affordance. */
+button:focus-visible,input:focus-visible,textarea:focus-visible{
+  outline:1px solid rgba(143,174,255,.72)!important;
+  outline-offset:2px!important;
+}
+
+/* Remove decorative excess on constrained displays. */
+@media(max-width:900px){
+  .sv-dashboard-intro{align-items:flex-start;flex-direction:column;gap:12px}
+  .sv-intro-rule{padding:0}
+}
+@media(prefers-reduced-motion:reduce){
+  .sv-hero-primary{transition:none!important}
+}
