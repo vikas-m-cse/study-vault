@@ -300,7 +300,7 @@ export default function Review({ subjects, focusNoteId }: ReviewProps) {
 
   const selectedMastery = selected ? getMastery()[selected.id] : undefined;
   const adaptiveAction = selected ? getNextBestAction(selectedMastery) : null;
-  const questionType: QuestionType = adaptiveAction?.questionType ?? "recall";
+  const questionType: QuestionType = mode === "questions" ? (adaptiveAction?.questionType ?? "recall") : "recall";
 
   const adaptivePrompt = selected && adaptiveAction
     ? adaptiveAction.questionType === "why"
