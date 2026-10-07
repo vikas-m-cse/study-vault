@@ -3451,3 +3451,78 @@ button {
   .study-tools-content { padding: 17px; }
   .study-tools-footer span { display: none; }
 }
+
+
+/* =========================================
+   LEARNING CORE — CONFIDENCE + OUTCOME
+========================================= */
+.review-v2-confidence,
+.review-v2-outcome {
+  margin: 0 28px 14px;
+  padding: 13px 14px;
+  border: 1px solid #e4e9ee;
+  border-radius: 10px;
+  background: #fbfcfd;
+}
+.review-v2-confidence {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+}
+.review-v2-confidence strong,
+.review-v2-outcome strong {
+  display: block;
+  color: #44536a;
+  font-size: 11px;
+}
+.review-v2-confidence span {
+  display: block;
+  margin-top: 3px;
+  color: #9aa4b3;
+  font-size: 9px;
+}
+.review-v2-confidence-buttons,
+.review-v2-outcome > div {
+  display: flex;
+  gap: 5px;
+}
+.review-v2-confidence-buttons button,
+.review-v2-outcome button {
+  min-width: 34px;
+  padding: 7px 9px;
+  border: 1px solid #dce3e9;
+  border-radius: 7px;
+  background: #fff;
+  color: #68778b;
+  font-size: 10px;
+  font-weight: 800;
+}
+.review-v2-confidence-buttons button.selected,
+.review-v2-outcome button.selected {
+  border-color: #263a5b;
+  background: #263a5b;
+  color: #fff;
+}
+.review-v2-outcome > div {
+  margin-top: 9px;
+}
+.review-v2-outcome button {
+  min-width: 0;
+}
+.review-v2-outcome button:hover:not(.selected),
+.review-v2-confidence-buttons button:hover:not(.selected) {
+  border-color: #c2ccd6;
+  background: #f5f7f9;
+}
+@media (max-width: 560px) {
+  .review-v2-confidence,
+  .review-v2-outcome {
+    margin-left: 17px;
+    margin-right: 17px;
+  }
+  .review-v2-confidence {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
