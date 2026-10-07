@@ -11,6 +11,8 @@ import {
     FolderPlus,
     Heart,
     Menu,
+    Maximize2,
+    Minimize2,
     Pin,
     Plus,
     Search,
@@ -89,6 +91,31 @@ export default function Notes({ resources, subjects, openNoteId, openFolderId, i
     const [folderName, setFolderName] = useState("");
     const [workspaceNow] = useState(() => Date.now());
     const [studyToolsOpen, setStudyToolsOpen] = useState(false);
+    const [isNotesFullscreen, setIsNotesFullscreen] = useState(false);
+    const workspaceRef = useRef<HTMLDivElement | null>(null);
+
+    const toggleNotesFullscreen = useCallback(async () => {
+        const workspace = workspaceRef.current;
+        if (!workspace) return;
+
+        try {
+            if (document.fullscreenElement === workspace) {
+                await document.exitFullscreen();
+            } else {
+                await workspace.requestFullscreen();
+            }
+        } catch (error) {
+            console.error("[StudyVault] Notes fullscreen unavailable:", error);
+        }
+    }, []);
+
+    useEffect(() => {
+        const handleFullscreenChange = () => {
+            setIsNotesFullscreen(document.fullscreenElement === workspaceRef.current);
+        };
+        document.addEventListener("fullscreenchange", handleFullscreenChange);
+        return () => document.removeEventListener("fullscreenchange", handleFullscreenChange);
+    }, []);
 
     const saveTimers = useRef<Record<string, number>>({});
     const saveVersions = useRef<Record<string, number>>({});
@@ -371,7 +398,10 @@ export default function Notes({ resources, subjects, openNoteId, openFolderId, i
 
             {loadError && <div className="notes-error" role="alert">{loadError}</div>}
 
-            <div className={`notes-workspace ${leftOpen ? "left-open" : "left-closed"} ${rightOpen ? "right-open" : "right-closed"}`}>
+            <div
+                ref={workspaceRef}
+                className={`notes-workspace ${leftOpen ? "left-open" : "left-closed"} ${rightOpen ? "right-open" : "right-closed"} ${isNotesFullscreen ? "is-fullscreen" : ""}`}
+            >
                 <aside className="notes-panel notes-left-panel" aria-label="Notes navigation">
                     <div className="notes-panel-heading">
                         <div>
@@ -537,6 +567,16 @@ export default function Notes({ resources, subjects, openNoteId, openFolderId, i
                                 </div>
                                 <div className="notes-editor-header-actions">
                                     <span className={`notes-save-status ${saveState}`}>{statusLabel}</span>
+                                    <button
+                                        type="button"
+                                        className="notes-fullscreen-button"
+                                        onClick={() => void toggleNotesFullscreen()}
+                                        aria-label={isNotesFullscreen ? "Exit fullscreen notes" : "Open notes in fullscreen"}
+                                        title={isNotesFullscreen ? "Exit fullscreen" : "Open note in fullscreen"}
+                                    >
+                                        {isNotesFullscreen ? <Minimize2 size={15} /> : <Maximize2 size={15} />}
+                                        <span>{isNotesFullscreen ? "Exit focus" : "Focus"}</span>
+                                    </button>
                                     {selectedNote && !selectedRecord?.legacy && (
                                         <button
                                             type="button"
