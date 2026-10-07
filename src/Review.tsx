@@ -14,6 +14,7 @@ import { getAllNotes } from "./services/noteStorage";
 import type { Note, TipTapNode } from "./types/note";
 import type { Resource } from "./types/resource";
 import type { Subject } from "./Subjects";
+import { chooseNextInterval, masteryPercent, recordLearningEvent, recordMasteryLevel, getMastery, type QuestionType } from "./services/learningCore";
 
 type ReviewProps = {
   resources: Resource[];
@@ -226,6 +227,9 @@ export default function Review({ subjects, focusNoteId }: ReviewProps) {
   const [revealed, setRevealed] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [mode, setMode] = useState<"recall" | "questions">("recall");
+  const [confidence, setConfidence] = useState(0);
+  const [outcome, setOutcome] = useState<"correct" | "partial" | "incorrect" | null>(null);
+  const [masteryTick, setMasteryTick] = useState(0);
 
   useEffect(() => {
     let cancelled = false;
@@ -280,6 +284,8 @@ export default function Review({ subjects, focusNoteId }: ReviewProps) {
       setSelectedId(dueConcepts[0]?.id ?? null);
       setRecall("");
       setRevealed(false);
+      setConfidence(0);
+      setOutcome(null);
     }
   }, [dueConcepts, selectedId]);
 
@@ -291,34 +297,25 @@ export default function Review({ subjects, focusNoteId }: ReviewProps) {
     setRevealed(true);
   };
 
+  const questionType: QuestionType =
+    mode === "questions"
+      ? (selected?.title.toLowerCase().includes("why") ? "why" : "recall")
+      : "recall";
+
   const rate = (rating: Rating) => {
-    if (!selected || !revealed) return;
+    if (!selected || !revealed || !outcome || confidence === 0) return;
 
     const previous = reviewState[selected.id];
     const previousLevel = previous?.level ?? 0;
-    let level = previousLevel;
-    let interval: number;
-    let streak = previous?.streak ?? 0;
-
-    if (rating === "again") {
-      level = 0;
-      interval = INTERVALS_MS[0];
-      streak = 0;
-    } else if (rating === "hard") {
-      level = previousLevel;
-      interval = INTERVALS_MS[Math.min(level, INTERVALS_MS.length - 1)];
-      streak = 0;
-    } else if (rating === "good") {
-      level = Math.min(previousLevel + 1, INTERVALS_MS.length - 1);
-      interval = INTERVALS_MS[level];
-      streak += 1;
-    } else {
-      level = Math.min(previousLevel + 2, INTERVALS_MS.length - 1);
-      interval = INTERVALS_MS[level];
-      streak += 1;
-    }
-
     const timestamp = Date.now();
+    const interval = chooseNextInterval(outcome, confidence * 20, previousLevel);
+    const level = outcome === "incorrect"
+      ? 0
+      : outcome === "partial"
+        ? previousLevel
+        : Math.min(previousLevel + (rating === "easy" ? 2 : 1), INTERVALS_MS.length - 1);
+    const streak = outcome === "correct" ? (previous?.streak ?? 0) + 1 : 0;
+
     const next = {
       ...reviewState,
       [selected.id]: {
@@ -332,8 +329,19 @@ export default function Review({ subjects, focusNoteId }: ReviewProps) {
 
     setReviewState(next);
     writeReviewState(next);
+    recordLearningEvent({
+      conceptId: selected.id,
+      questionType,
+      outcome,
+      confidence: confidence * 20,
+      at: timestamp,
+    });
+    recordMasteryLevel(selected.id, level);
+    setMasteryTick((value) => value + 1);
     setRecall("");
     setRevealed(false);
+    setConfidence(0);
+    setOutcome(null);
     setSelectedId(null);
   };
 
@@ -347,7 +355,8 @@ export default function Review({ subjects, focusNoteId }: ReviewProps) {
 
   const totalDue = dueConcepts.length;
   const reviewedConcepts = concepts.filter((concept) => reviewState[concept.id]?.lastReviewedAt).length;
-  const learnedConcepts = concepts.filter((concept) => (reviewState[concept.id]?.level ?? 0) >= 3).length;
+  const mastery = getMastery();
+  const learnedConcepts = concepts.filter((concept) => masteryPercent(mastery[concept.id]) >= 70).length;
 
   return (
     <div className="review-page">
@@ -420,6 +429,7 @@ export default function Review({ subjects, focusNoteId }: ReviewProps) {
                   {selected.subjectName && <span>{selected.subjectName}</span>}
                   {selected.tags.slice(0, 4).map((tag) => <span key={tag}>#{tag}</span>)}
                   {currentState && <span>Streak {currentState.streak}</span>}
+                  {mastery[selected.id] && <span>Mastery {masteryPercent(mastery[selected.id])}%</span>}
                 </div>
 
                 <div className="review-v2-question">
@@ -443,6 +453,31 @@ export default function Review({ subjects, focusNoteId }: ReviewProps) {
                   aria-label="Active recall answer"
                   disabled={revealed}
                 />
+
+                <div className="review-v2-confidence">
+                  <div>
+                    <strong>How confident were you before seeing the reference?</strong>
+                    <span>This measures calibration, not intelligence.</span>
+                  </div>
+                  <div className="review-v2-confidence-buttons">
+                    {[1, 2, 3, 4, 5].map((value) => (
+                      <button key={value} type="button" className={confidence === value ? "selected" : ""} onClick={() => setConfidence(value)}>
+                        {value}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {revealed && (
+                  <div className="review-v2-outcome">
+                    <strong>After comparing, how did the retrieval go?</strong>
+                    <div>
+                      <button type="button" className={outcome === "incorrect" ? "selected" : ""} onClick={() => setOutcome("incorrect")}>Missed it</button>
+                      <button type="button" className={outcome === "partial" ? "selected" : ""} onClick={() => setOutcome("partial")}>Partly knew it</button>
+                      <button type="button" className={outcome === "correct" ? "selected" : ""} onClick={() => setOutcome("correct")}>Got it</button>
+                    </div>
+                  </div>
+                )}
 
                 <div className="review-v2-controls">
                   <button
@@ -488,16 +523,16 @@ export default function Review({ subjects, focusNoteId }: ReviewProps) {
                   <span>Rate your memory, not your writing quality.</span>
                 </div>
                 <div className="review-v2-rating-buttons">
-                  <button type="button" disabled={!revealed} onClick={() => rate("again")}>
+                  <button type="button" disabled={!revealed || !outcome || confidence === 0} onClick={() => rate("again")}>
                     <span>Again</span><small>10 min</small>
                   </button>
-                  <button type="button" disabled={!revealed} onClick={() => rate("hard")}>
+                  <button type="button" disabled={!revealed || !outcome || confidence === 0} onClick={() => rate("hard")}>
                     <span>Hard</span><small>{formatInterval(INTERVALS_MS[Math.min(currentState?.level ?? 0, INTERVALS_MS.length - 1)])}</small>
                   </button>
-                  <button type="button" className="good" disabled={!revealed} onClick={() => rate("good")}>
+                  <button type="button" className="good" disabled={!revealed || !outcome || confidence === 0} onClick={() => rate("good")}>
                     <span>Good</span><small>next interval</small>
                   </button>
-                  <button type="button" disabled={!revealed} onClick={() => rate("easy")}>
+                  <button type="button" disabled={!revealed || !outcome || confidence === 0} onClick={() => rate("easy")}>
                     <span>Easy</span><small>skip ahead</small>
                   </button>
                 </div>
