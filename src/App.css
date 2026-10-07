@@ -8904,3 +8904,290 @@ button:focus-visible,input:focus-visible,textarea:focus-visible{
     font-size:16px!important;
   }
 }
+
+
+/* ==========================================================================
+   FLASHCARD STUDIO V3 — LEARNING FIRST
+   The previous fit pass was still too cinematic. Make the card a compact
+   instrument and give the actual question the visual priority.
+========================================================================== */
+
+.study-tools-modal{
+  width:min(1180px,calc(100vw - 32px))!important;
+  height:min(760px,calc(100vh - 28px))!important;
+  max-height:calc(100vh - 28px)!important;
+  border-radius:18px!important;
+}
+
+.study-tools-header{
+  min-height:56px!important;
+  padding:10px 16px!important;
+}
+
+.study-tools-content{
+  padding:12px 18px 14px!important;
+  overflow:hidden!important;
+}
+
+.study-tools-command-bar{
+  margin-bottom:6px!important;
+}
+
+.study-tools-command-bar h3{
+  font-size:15px!important;
+}
+
+.study-tools-signal-row{
+  margin-bottom:7px!important;
+}
+
+.study-tools-signal-row > div{
+  padding:4px 7px!important;
+}
+
+.sv-retrieval{
+  --sv-card-height:250px!important;
+  padding:0 0 6px!important;
+}
+
+.sv-retrieval::before{
+  opacity:.55!important;
+}
+
+.sv-retrieval-header{
+  padding:0 2px 7px!important;
+  gap:12px!important;
+}
+
+.sv-retrieval-header h4{
+  margin:2px 0!important;
+  font-size:23px!important;
+}
+
+.sv-retrieval-header p{
+  font-size:8px!important;
+}
+
+.sv-retrieval-counter{
+  padding:6px 9px!important;
+}
+
+.sv-retrieval-counter span{
+  font-size:18px!important;
+}
+
+.sv-retrieval-progress{
+  height:9px!important;
+  margin:0 2px 2px!important;
+}
+
+.sv-deck-meta{
+  padding:4px 3px 6px!important;
+}
+
+.sv-card-stage{
+  min-height:250px!important;
+  height:250px!important;
+  margin:0!important;
+}
+
+.sv-stage-light{
+  opacity:.16!important;
+}
+
+.sv-stage-grid{
+  opacity:.13!important;
+}
+
+.sv-card-peek{
+  width:min(620px,72%)!important;
+  height:232px!important;
+  border-radius:17px!important;
+  transform:translateY(12px) scale(.965)!important;
+  opacity:.20!important;
+}
+
+.sv-card-shell{
+  width:min(690px,82%)!important;
+  height:250px!important;
+}
+
+.sv-card-face{
+  border-radius:17px!important;
+  box-shadow:0 16px 38px rgba(0,0,0,.32),inset 0 1px rgba(255,255,255,.055)!important;
+}
+
+.sv-card-top{
+  padding:12px 16px!important;
+}
+
+.sv-card-chip{
+  font-size:6px!important;
+}
+
+.sv-card-index{
+  width:27px!important;
+  height:27px!important;
+  border-radius:8px!important;
+}
+
+.sv-card-content{
+  padding:7px 28px 12px!important;
+}
+
+.sv-card-overline{
+  margin-bottom:8px!important;
+  font-size:6px!important;
+}
+
+.sv-card-content strong{
+  max-width:570px!important;
+  font-size:clamp(21px,2.15vw,29px)!important;
+  line-height:1.08!important;
+  letter-spacing:-.045em!important;
+}
+
+.sv-card-back .sv-card-content strong{
+  max-width:590px!important;
+  font-size:17px!important;
+  line-height:1.35!important;
+  letter-spacing:-.02em!important;
+}
+
+.sv-card-footer{
+  padding:8px 16px 11px!important;
+  font-size:6px!important;
+}
+
+.sv-card-art{
+  width:30%!important;
+  opacity:.22!important;
+}
+
+.sv-card-gesture-hint{
+  bottom:-13px!important;
+  font-size:5px!important;
+}
+
+.sv-command-row{
+  width:min(620px,82%)!important;
+  gap:6px!important;
+  margin:7px auto 0!important;
+}
+
+.sv-command{
+  min-height:42px!important;
+  padding:6px 9px!important;
+  border-radius:9px!important;
+}
+
+.sv-command b{
+  font-size:8px!important;
+}
+
+.sv-command small{
+  font-size:5px!important;
+}
+
+.sv-learning-signal{
+  width:min(620px,82%)!important;
+  margin:6px auto 0!important;
+  padding:6px 9px!important;
+}
+
+.sv-retrieval-footer{
+  margin:6px 3px 0!important;
+  padding-top:5px!important;
+  font-size:5px!important;
+}
+
+@media(max-height:820px){
+  .study-tools-modal{
+    height:calc(100vh - 18px)!important;
+    max-height:calc(100vh - 18px)!important;
+  }
+
+  .study-tools-header{
+    min-height:50px!important;
+    padding:8px 14px!important;
+  }
+
+  .study-tools-content{
+    padding:9px 14px 11px!important;
+  }
+
+  .study-tools-signal-row{
+    display:none!important;
+  }
+
+  .sv-retrieval-header{
+    padding-bottom:5px!important;
+  }
+
+  .sv-card-stage{
+    --sv-card-height:225px!important;
+    min-height:225px!important;
+    height:225px!important;
+  }
+
+  .sv-card-shell{
+    height:225px!important;
+  }
+
+  .sv-card-peek{
+    height:210px!important;
+  }
+
+  .sv-card-content{
+    padding:5px 24px 9px!important;
+  }
+
+  .sv-card-content strong{
+    font-size:clamp(19px,2vw,26px)!important;
+  }
+
+  .sv-command-row{
+    margin-top:5px!important;
+  }
+
+  .sv-command{
+    min-height:38px!important;
+  }
+}
+
+@media(max-width:700px){
+  .study-tools-modal{
+    width:calc(100vw - 12px)!important;
+    height:calc(100vh - 12px)!important;
+    max-height:calc(100vh - 12px)!important;
+  }
+
+  .sv-card-shell{
+    width:94%!important;
+  }
+
+  .sv-card-stage{
+    --sv-card-height:220px!important;
+    min-height:220px!important;
+    height:220px!important;
+  }
+
+  .sv-card-shell{height:220px!important}
+
+  .sv-card-content{
+    padding:5px 20px 8px!important;
+  }
+
+  .sv-card-content strong{
+    font-size:20px!important;
+  }
+
+  .sv-card-back .sv-card-content strong{
+    font-size:15px!important;
+  }
+
+  .sv-command-row,
+  .sv-learning-signal{
+    width:94%!important;
+  }
+}
