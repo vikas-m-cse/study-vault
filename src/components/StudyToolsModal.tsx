@@ -691,7 +691,29 @@ export default function StudyToolsModal({ note, onClose }: StudyToolsModalProps)
                                 </span>
                                 <strong>{flashcards[flashcardIndex].question}</strong>
                                 <span className="flashcard-card-hint">{flashcardNeed === "retention" ? "Retention is fading · retrieve before rereading" : flashcardNeed === "calibration" ? "Confidence needs a reality check · explain it" : flashcardNeed === "understanding" ? "Recall is ahead · focus on why it works" : "Reconstruct the answer before revealing"} <kbd>Space</kbd></span>
-                                <span className="flashcard-card-motif" aria-hidden="true"><span /><span /><span /><span /></span>
+                                <svg className="flashcard-constellation" viewBox="0 0 420 300" aria-hidden="true">
+                                  <defs>
+                                    <linearGradient id="svFlashGradient" x1="0" y1="0" x2="1" y2="1">
+                                      <stop offset="0%" stopColor="currentColor" stopOpacity=".05" />
+                                      <stop offset="55%" stopColor="currentColor" stopOpacity=".28" />
+                                      <stop offset="100%" stopColor="currentColor" stopOpacity=".02" />
+                                    </linearGradient>
+                                    <filter id="svFlashGlow">
+                                      <feGaussianBlur stdDeviation="5" result="blur" />
+                                      <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
+                                    </filter>
+                                  </defs>
+                                  <path d="M390 38 C285 24 228 70 236 132 C244 194 168 214 78 270" fill="none" stroke="url(#svFlashGradient)" strokeWidth="1.2" />
+                                  <path d="M390 72 C310 58 270 91 273 139 C277 190 217 218 128 268" fill="none" stroke="currentColor" strokeOpacity=".10" />
+                                  <path d="M390 107 C331 97 309 119 311 145 C313 174 275 200 190 243" fill="none" stroke="currentColor" strokeOpacity=".08" />
+                                  <circle cx="390" cy="38" r="5" fill="currentColor" filter="url(#svFlashGlow)" />
+                                  <circle cx="236" cy="132" r="3" fill="currentColor" opacity=".65" />
+                                  <circle cx="78" cy="270" r="4" fill="currentColor" opacity=".38" />
+                                  <g transform="translate(326 215)">
+                                    <rect x="0" y="0" width="18" height="18" rx="2" transform="rotate(45 9 9)" fill="none" stroke="currentColor" strokeOpacity=".22" />
+                                    <rect x="30" y="8" width="12" height="12" rx="2" transform="rotate(45 36 14)" fill="none" stroke="currentColor" strokeOpacity=".12" />
+                                  </g>
+                                </svg>
                               </span>
                               <span className="flashcard-face flashcard-answer-face">
                                 <span className="flashcard-card-top">
