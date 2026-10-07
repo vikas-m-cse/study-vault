@@ -5774,3 +5774,127 @@ button {
   .flashcard-constellation{width:65%;right:-4%;opacity:.42}
   .flashcard-card-hint{max-width:85%}
 }
+
+/* =========================================================
+   FLASHCARD QUEUE MOTION — the completed card exits right,
+   the next card rises from underneath.
+========================================================= */
+.flashcard-card-zone{
+  position:relative;
+  min-height:410px;
+  perspective:1200px;
+}
+.flashcard-next-card{
+  position:absolute;
+  z-index:0;
+  left:24px;
+  right:24px;
+  top:28px;
+  height:345px;
+  padding:30px 38px;
+  border-radius:25px;
+  overflow:hidden;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  border:1px solid color-mix(in srgb,var(--flash-a) 30%,rgba(255,255,255,.08));
+  background:
+    radial-gradient(circle at 90% 10%,color-mix(in srgb,var(--flash-b) 16%,transparent),transparent 25%),
+    linear-gradient(135deg,#14243d,#10192d);
+  color:#eef4ff;
+  opacity:.72;
+  transform:translateY(34px) scale(.965);
+  transform-origin:center bottom;
+  transition:transform .36s cubic-bezier(.2,.8,.2,1),opacity .28s ease,filter .36s ease;
+  box-shadow:0 20px 50px rgba(0,0,0,.2);
+}
+.flashcard-next-card::after{
+  content:"";
+  position:absolute;
+  right:-50px;
+  bottom:-90px;
+  width:230px;
+  height:230px;
+  border-radius:50%;
+  border:1px solid color-mix(in srgb,var(--flash-a) 18%,transparent);
+  box-shadow:
+    0 0 0 24px color-mix(in srgb,var(--flash-a) 5%,transparent),
+    0 0 0 48px color-mix(in srgb,var(--flash-a) 3%,transparent);
+}
+.flashcard-next-label{
+  position:relative;
+  z-index:1;
+  color:var(--flash-a);
+  font-size:8px;
+  font-weight:800;
+  letter-spacing:.18em;
+}
+.flashcard-next-card strong{
+  position:relative;
+  z-index:1;
+  max-width:720px;
+  margin-top:18px;
+  font-size:30px;
+  line-height:1.12;
+  letter-spacing:-.045em;
+}
+.flashcard-next-number{
+  position:absolute;
+  z-index:1;
+  top:25px;
+  right:30px;
+  display:grid;
+  place-items:center;
+  width:34px;
+  height:34px;
+  border-radius:50%;
+  background:color-mix(in srgb,var(--flash-a) 12%,transparent);
+  color:color-mix(in srgb,var(--flash-a) 70%,#fff);
+  font-size:9px;
+  font-weight:800;
+}
+.flashcard-card-zone > .flashcard-surface,
+.flashcard-card-zone > .flashcard-action-deck{
+  position:relative;
+  z-index:2;
+}
+.flashcard-card-zone > .flashcard-surface{
+  transform:translateY(0) translateX(0) rotate(0deg) scale(1);
+  transition:transform .36s cubic-bezier(.22,.8,.2,1),opacity .25s ease,filter .25s ease;
+}
+.flashcard-card-zone > .flashcard-action-deck{
+  transition:transform .36s cubic-bezier(.22,.8,.2,1),opacity .2s ease;
+}
+.flashcard-card-zone.is-exiting > .flashcard-surface{
+  transform:translate3d(118%, -10px, 0) rotate(7deg) scale(.94);
+  opacity:0;
+  filter:blur(2px);
+}
+.flashcard-card-zone.is-exiting > .flashcard-action-deck{
+  transform:translate3d(28%, 0, 0);
+  opacity:0;
+}
+.flashcard-card-zone.is-exiting .flashcard-next-card{
+  transform:translateY(0) scale(1);
+  opacity:1;
+  filter:none;
+  box-shadow:0 30px 65px rgba(0,0,0,.32);
+}
+.flashcard-card-zone.is-exiting .flashcard-stack-layer.stack-one{
+  transform:rotate(-1deg) translate(-2px,2px);
+}
+.flashcard-card-zone.is-exiting .flashcard-stack-layer.stack-two{
+  transform:rotate(1deg) translate(2px,4px);
+}
+@media(max-width:700px){
+  .flashcard-card-zone{min-height:383px}
+  .flashcard-next-card{
+    left:12px;right:12px;top:20px;height:320px;padding:25px;
+  }
+  .flashcard-next-card strong{font-size:25px}
+}
+@media(prefers-reduced-motion:reduce){
+  .flashcard-card-zone > .flashcard-surface,
+  .flashcard-card-zone > .flashcard-action-deck,
+  .flashcard-next-card{transition:none}
+}
