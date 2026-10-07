@@ -22,7 +22,7 @@ import {
 } from "lucide-react";
 import type { Note } from "../types/note";
 
-type StudyTool = "flashcards" | "questions" | "mnemonics" | "revision" | "teach";
+type StudyTool = "mission" | "flashcards" | "questions" | "mnemonics" | "revision" | "teach";\n\ntype MissionChallenge = {\n  type: "recall" | "why" | "apply" | "teach";\n  label: string;\n  title: string;\n  prompt: string;\n  reference: string;\n  concept: string;\n};
 type Flashcard = { question: string; answer: string; source: string };
 type StudyQuestion = { type: string; level: string; question: string; hint: string };
 
@@ -131,6 +131,74 @@ function makeFlashcards(note: Note): Flashcard[] {
   return cards;
 }
 
+function meaningfulWords(value: string): string[] {
+  return [...new Set(
+    value.toLowerCase()
+      .match(/[a-z][a-z-]{4,}/g)
+      ?.filter(word => !STOP_WORDS.has(word)) ?? [],
+  )];
+}
+
+function evaluateAttempt(answer: string, reference: string): number {
+  const attempt = new Set(meaningfulWords(answer));
+  const expected = meaningfulWords(reference);
+  if (!answer.trim() || expected.length === 0) return 0;
+  const matched = expected.filter(word => attempt.has(word)).length;
+  return Math.min(100, Math.round((matched / Math.min(expected.length, 12)) * 100));
+}
+
+function makeMission(note: Note): MissionChallenge[] {
+  const blocks = sections(note.plainText);
+  const source = blocks.length ? blocks : sentences(note.plainText);
+  const usable = source.slice(0, 4);
+  const challenges: MissionChallenge[] = [];
+
+  usable.forEach((block, index) => {
+    const concept = conceptName(block);
+    const reference = cleanSnippet(block, 420);
+    challenges.push({
+      type: "recall",
+      label: "RECALL",
+      title: `Reconstruct ${concept}`,
+      prompt: `Without opening the source, what do you know about ${concept}? Start with the core idea, then add the most important detail.`,
+      reference,
+      concept,
+    });
+    if (index === 0) {
+      challenges.push({
+        type: "why",
+        label: "REASON",
+        title: `Why does ${concept} matter?`,
+        prompt: `What problem does ${concept} solve? Explain why it exists and what would go wrong without it.`,
+        reference,
+        concept,
+      });
+    }
+  });
+
+  const firstConcept = usable[0] ? conceptName(usable[0]) : "this topic";
+  const secondConcept = usable[1] ? conceptName(usable[1]) : firstConcept;
+  const combinedReference = usable.slice(0, 2).map(cleanSnippet).join(" ");
+  challenges.push({
+    type: "apply",
+    label: "TRANSFER",
+    title: `Use ${firstConcept} in a new situation`,
+    prompt: `Imagine a new exam or real-world situation involving ${firstConcept}. What would you do, and how would ${secondConcept} affect your reasoning?`,
+    reference: combinedReference || note.plainText.slice(0, 420),
+    concept: firstConcept,
+  });
+  challenges.push({
+    type: "teach",
+    label: "TEACH",
+    title: `Teach ${firstConcept} in 60 seconds`,
+    prompt: `Explain ${firstConcept} to a beginner. Include the idea, why it matters, one example, and one common confusion.`,
+    reference: combinedReference || note.plainText.slice(0, 420),
+    concept: firstConcept,
+  });
+
+  return challenges.slice(0, 6);
+}
+
 function makeQuestions(note: Note): StudyQuestion[] {
   const keys = keywords(note.plainText, 6).map(titleCase);
   const anchor = keys[0] ?? "the central concept";
@@ -178,11 +246,19 @@ export default function StudyToolsModal({ note, onClose }: StudyToolsModalProps)
   const [tool, setTool] = useState<StudyTool>("flashcards");
   const [copied, setCopied] = useState(false);
   const [revealed, setRevealed] = useState<Record<number, boolean>>({});
+  const [missionAnswer, setMissionAnswer] = useState("");
+  const [missionStep, setMissionStep] = useState(0);
+  const [missionSubmitted, setMissionSubmitted] = useState(false);
+  const [missionConfidence, setMissionConfidence] = useState(0);
 
   const flashcards = useMemo(() => makeFlashcards(note), [note]);
   const questions = useMemo(() => makeQuestions(note), [note]);
   const mnemonic = useMemo(() => makeMnemonic(note), [note]);
   const revision = useMemo(() => makeRevision(note), [note]);
+  const mission = useMemo(() => makeMission(note), [note]);
+  const currentMission = mission[missionStep] ?? mission[0];
+  const missionScore = missionSubmitted && currentMission ? evaluateAttempt(missionAnswer, currentMission.reference) : 0;
+  const missionDone = missionStep >= mission.length - 1 && missionSubmitted;
   const wordCount = note.plainText.trim().split(/\s+/).filter(Boolean).length;
   const conceptCount = keywords(note.plainText, 10).length;
 
@@ -196,13 +272,16 @@ export default function StudyToolsModal({ note, onClose }: StudyToolsModalProps)
     }
   };
 
-  const copyCurrent = tool === "flashcards"
+  const copyCurrent = tool === "mission"
+    ? mission.map((m, i) => `${i + 1}. [${m.label}] ${m.title}\n${m.prompt}`).join("\n\n")
+    : tool === "flashcards"
     ? flashcards.map(c => `Q: ${c.question}\nA: ${c.answer}`).join("\n\n")
     : tool === "questions"
       ? questions.map(q => `[${q.type}] ${q.question}\nHint: ${q.hint}`).join("\n\n")
       : tool === "mnemonics" ? mnemonic : revision;
 
   const tabs: Array<{ id: StudyTool; label: string; icon: typeof BookOpenCheck; meta: string }> = [
+    { id: "mission", label: "Learning mission", icon: ClipboardCheck, meta: "Adaptive" },
     { id: "flashcards", label: "Flashcards", icon: BookOpenCheck, meta: "Retrieve" },
     { id: "questions", label: "Questions", icon: CircleHelp, meta: "Reason" },
     { id: "mnemonics", label: "Memory paths", icon: Lightbulb, meta: "Encode" },
@@ -256,6 +335,7 @@ export default function StudyToolsModal({ note, onClose }: StudyToolsModalProps)
               <div>
                 <span className="study-tools-label">{tool.toUpperCase()}</span>
                 <h3>
+                  {tool === "mission" && "One concept. One attempt. One next step."}
                   {tool === "flashcards" && "Retrieve before you reread."}
                   {tool === "questions" && "Make the brain do the work."}
                   {tool === "mnemonics" && "Build a memory structure that sticks."}
@@ -271,9 +351,115 @@ export default function StudyToolsModal({ note, onClose }: StudyToolsModalProps)
             <div className="study-tools-signal-row">
               <div><FileText size={14} /><span><b>{wordCount.toLocaleString()}</b> source words</span></div>
               <div><Target size={14} /><span><b>{conceptCount}</b> concept signals</span></div>
-              <div><BrainCircuit size={14} /><span><b>5</b> cognitive modes</span></div>
+              <div><BrainCircuit size={14} /><span><b>{mission.length}</b> mission challenges</span></div>
               <div className="study-tools-signal-live"><span className="status-dot" /> LOCAL ENGINE</div>
             </div>
+
+            {tool === "mission" && currentMission && (
+              <div className="study-tools-mission">
+                <div className="study-tools-mission-hero">
+                  <div className="study-tools-mission-top">
+                    <div>
+                      <span className="study-tools-feature-label">LEARNING MISSION</span>
+                      <h4>{missionDone ? "Mission complete. Evidence collected." : currentMission.title}</h4>
+                    </div>
+                    <div className="study-tools-mission-count">{Math.min(missionStep + 1, mission.length)} / {mission.length}</div>
+                  </div>
+                  <div className="study-tools-mission-progress">
+                    <span style={{ width: `${Math.min(100, ((missionStep + (missionSubmitted ? 1 : 0)) / mission.length) * 100)}%` }} />
+                  </div>
+                  <div className="study-tools-mission-type">{currentMission.label} · {currentMission.concept}</div>
+                </div>
+
+                {!missionSubmitted ? (
+                  <>
+                    <div className="study-tools-mission-prompt">
+                      <span>CHALLENGE</span>
+                      <strong>{currentMission.prompt}</strong>
+                      <p>Do not open the source. Your first answer is the evidence StudyVault can learn from.</p>
+                    </div>
+
+                    <textarea
+                      className="study-tools-mission-input"
+                      value={missionAnswer}
+                      onChange={event => setMissionAnswer(event.target.value)}
+                      placeholder="Build the answer from memory…"
+                      autoFocus
+                    />
+
+                    <div className="study-tools-mission-confidence">
+                      <div>
+                        <span>CALIBRATION</span>
+                        <strong>How confident are you?</strong>
+                      </div>
+                      <div>
+                        {[1,2,3,4,5].map(value => (
+                          <button key={value} type="button" className={missionConfidence === value ? "selected" : ""} onClick={() => setMissionConfidence(value)}>{value}</button>
+                        ))}
+                      </div>
+                    </div>
+
+                    <button
+                      type="button"
+                      className="study-tools-mission-submit"
+                      disabled={!missionAnswer.trim() || missionConfidence === 0}
+                      onClick={() => setMissionSubmitted(true)}
+                    >
+                      <Send size={14} /> Submit evidence <ArrowUpRight size={13} />
+                    </button>
+                  </>
+                ) : (
+                  <div className="study-tools-mission-result">
+                    <div className="study-tools-mission-score">
+                      <div>
+                        <span>LOCAL EVIDENCE SIGNAL</span>
+                        <strong>{missionScore}%</strong>
+                      </div>
+                      <div className="study-tools-mission-verdict">
+                        {missionScore >= 70 ? "Strong reconstruction" : missionScore >= 40 ? "Partial reconstruction" : "Rebuild needed"}
+                      </div>
+                    </div>
+                    <div className="study-tools-mission-feedback">
+                      <div>
+                        <span>YOUR ATTEMPT</span>
+                        <p>{missionAnswer}</p>
+                      </div>
+                      <div>
+                        <span>SOURCE REFERENCE</span>
+                        <p>{currentMission.reference}</p>
+                      </div>
+                    </div>
+                    <div className="study-tools-mission-next">
+                      <div className="study-tools-directive-icon"><Sparkles size={16} /></div>
+                      <div>
+                        <span>NEXT BEST ACTION</span>
+                        <strong>{missionDone ? "Return later for spaced retrieval." : missionScore < 40 ? "Rebuild the concept, then try again." : currentMission.type === "recall" ? "Now test the reason behind it." : currentMission.type === "why" ? "Now transfer it to a new situation." : "Now teach it without the source."}</strong>
+                        <p>Confidence: {missionConfidence}/5 · This signal is a local heuristic, not an AI judgment.</p>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      className="study-tools-mission-continue"
+                      onClick={() => {
+                        if (missionDone) {
+                          setMissionStep(0);
+                          setMissionAnswer("");
+                          setMissionSubmitted(false);
+                          setMissionConfidence(0);
+                        } else {
+                          setMissionStep(step => step + 1);
+                          setMissionAnswer("");
+                          setMissionSubmitted(false);
+                          setMissionConfidence(0);
+                        }
+                      }}
+                    >
+                      {missionDone ? "Restart mission" : "Continue mission"} <ChevronRight size={14} />
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
 
             {tool === "flashcards" && (
               <>
