@@ -131,43 +131,62 @@ function missionBlocks(note: Note): string[] {
 }
 
 function makeFlashcards(note: Note): Flashcard[] {
-  const blocks = sections(note.plainText);
-  const sourceSentences = sentences(note.plainText);
-  const candidates = [...blocks, ...sourceSentences];
+  const blocks = missionBlocks(note);
+  const candidates = blocks.length ? blocks : sections(note.plainText);
   const seen = new Set<string>();
   const cards: Flashcard[] = [];
 
-  for (const raw of candidates) {
-    const answer = cleanSnippet(raw, 230);
-    if (answer.length < 45) continue;
-
-    const concept = conceptName(raw);
-    const key = concept.toLowerCase();
-    if (seen.has(key)) continue;
+  const add = (question: string, answer: string, source: string) => {
+    const cleanQuestion = question.replace(/\s+/g, " ").trim();
+    const cleanAnswer = cleanSnippet(answer, 210);
+    const key = cleanQuestion.toLowerCase();
+    if (!cleanAnswer || cleanAnswer.length < 35 || seen.has(key)) return;
     seen.add(key);
+    cards.push({ question: cleanQuestion, answer: cleanAnswer, source });
+  };
 
-    const definition = answer.match(/^(.{2,90}?)(?:\s+is|\s+are|\s+means|\s+refers to|\s+is defined as)\s+(.{15,})$/i);
+  for (const raw of candidates) {
+    const text = cleanSnippet(raw, 360);
+    if (text.length < 35) continue;
 
-    cards.push({
-      question: definition
-        ? `What is ${concept}?`
-        : `What do you remember about ${concept}?`,
-      answer,
-      source: definition ? "Definition" : "Core idea",
-    });
+    const definition = text.match(
+      /^(.{2,80}?)(?:\s+is|\s+are|\s+means|\s+refers to|\s+is defined as)\s+(.{20,})$/i,
+    );
 
-    if (cards.length === 6) break;
+    if (definition) {
+      const concept = definition[1].trim();
+      add("What is " + concept + "?", definition[2].trim(), "Definition");
+      continue;
+    }
+
+    const why = text.match(/^(.{2,80}?)(?:\s+because|\s+so that|\s+in order to)\s+(.{15,})$/i);
+    if (why) {
+      add("Why does " + why[1].trim() + " work this way?", text, "Mechanism");
+      continue;
+    }
+
+    const mechanism = text.match(
+      /^(.{2,75}?)(?:\s+works by|\s+uses|\s+allows|\s+enables|\s+consists of)\s+(.{15,})$/i,
+    );
+    if (mechanism) {
+      add("How does " + mechanism[1].trim() + " work?", text, "Mechanism");
+      continue;
+    }
+
+    const concept = conceptName(text);
+    add("What is the core idea behind " + concept + "?", text, "Core idea");
   }
 
-  if (!cards.length) {
-    return [{
-      question: "What is the most important idea in this note?",
-      answer: note.plainText.trim().slice(0, 230),
-      source: "Source",
-    }];
+  if (cards.length < 6) {
+    const keys = keywords(note.plainText, 8);
+    const source = cleanSnippet(note.plainText, 210);
+    for (const key of keys) {
+      if (cards.length >= 6) break;
+      add("What role does " + titleCase(key) + " play in this topic?", source, "Concept");
+    }
   }
 
-  return cards;
+  return cards.slice(0, 6);
 }
 
 function meaningfulWords(value: string): string[] {
@@ -561,6 +580,21 @@ export default function StudyToolsModal({ note, onClose }: StudyToolsModalProps)
                     <Check size={14} /> I knew it
                   </button>
                 </div>
+
+                {flashcardRatings[flashcardIndex] === "missed" && (
+                  <button
+                    type="button"
+                    className="study-tools-card-next"
+                    onClick={() => {
+                      if (flashcardIndex < flashcards.length - 1) {
+                        setFlashcardIndex(value => value + 1);
+                        setFlashcardFlipped(false);
+                      }
+                    }}
+                  >
+                    Continue to next card <ChevronRight size={13} />
+                  </button>
+                )}
 
                 <div className="study-tools-card-status">
                   <span>{Object.values(flashcardRatings).filter(value => value === "known").length} known</span>
