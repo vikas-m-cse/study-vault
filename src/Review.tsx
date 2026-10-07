@@ -18,6 +18,7 @@ import type { Subject } from "./Subjects";
 type ReviewProps = {
   resources: Resource[];
   subjects: Subject[];
+  focusNoteId?: string | null;
 };
 
 type Rating = "again" | "hard" | "good" | "easy";
@@ -217,13 +218,14 @@ function buildConcepts(note: Note, subjectName?: string): ReviewConcept[] {
   return concepts.map((concept, index) => ({ ...concept, index: index + 1, totalInNote: total }));
 }
 
-export default function Review({ subjects }: ReviewProps) {
+export default function Review({ subjects, focusNoteId }: ReviewProps) {
   const [notes, setNotes] = useState<Note[]>([]);
   const [reviewState, setReviewState] = useState<Record<string, ReviewState>>(() => readReviewState());
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [recall, setRecall] = useState("");
   const [revealed, setRevealed] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [mode, setMode] = useState<"recall" | "questions">("recall");
 
   useEffect(() => {
     let cancelled = false;
@@ -258,6 +260,8 @@ export default function Review({ subjects }: ReviewProps) {
   const dueConcepts = useMemo(
     () => concepts
       .filter((concept) => {
+        if (focusNoteId && concept.noteId !== focusNoteId) return false;
+        if (focusNoteId) return true;
         const state = reviewState[concept.id];
         return !state || state.nextReviewAt <= now;
       })
@@ -355,6 +359,26 @@ export default function Review({ subjects }: ReviewProps) {
             StudyVault turns long notes into small, retrievable concepts. Recall first, get feedback second,
             then revisit the same concept after a delay.
           </p>
+          <div className="review-mode-switch" role="tablist" aria-label="Review mode">
+            <button
+              type="button"
+              className={mode === "recall" ? "active" : ""}
+              onClick={() => { setMode("recall"); setRecall(""); setRevealed(false); }}
+              role="tab"
+              aria-selected={mode === "recall"}
+            >
+              Active recall
+            </button>
+            <button
+              type="button"
+              className={mode === "questions" ? "active" : ""}
+              onClick={() => { setMode("questions"); setRecall(""); setRevealed(false); }}
+              role="tab"
+              aria-selected={mode === "questions"}
+            >
+              Questions
+            </button>
+          </div>
         </div>
 
         <div className="review-v2-stats">
@@ -399,8 +423,16 @@ export default function Review({ subjects }: ReviewProps) {
                 </div>
 
                 <div className="review-v2-question">
-                  <strong>{selected.prompt}</strong>
-                  <p>Try to reconstruct the idea from memory. Don't copy the note and don't worry about exact wording.</p>
+                  <strong>
+                    {mode === "questions"
+                      ? `Imagine you studied this ${focusNoteId ? "today" : "earlier"} and now you've forgotten it. What is ${selected.title}? Explain it as if someone asked you in an exam or viva.`
+                      : selected.prompt}
+                  </strong>
+                  <p>
+                    {mode === "questions"
+                      ? "Answer from memory. Start with the definition or core idea, then add key points, steps, relationships, or an example."
+                      : "Try to reconstruct the idea from memory. Don't copy the note and don't worry about exact wording."}
+                  </p>
                 </div>
 
                 <textarea
