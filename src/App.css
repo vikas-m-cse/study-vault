@@ -3633,6 +3633,67 @@ button {
   color: #58718f; font-size: 7px; font-weight: 900; letter-spacing: .08em; text-transform: uppercase;
 }
 
+.study-tools-flashcards { max-width: 760px; margin: 0 auto; }
+.study-tools-flashcard-topline { display:flex; align-items:flex-end; justify-content:space-between; gap:16px; margin-bottom:12px; }
+.study-tools-flashcard-topline h4 { margin:5px 0 0; color:#edf4ff; font-size:19px; letter-spacing:-.025em; }
+.study-tools-flashcard-count { display:flex; align-items:center; gap:5px; padding:8px 10px; border:1px solid rgba(145,174,215,.13); border-radius:9px; color:#a7bdd7; font-size:11px; font-weight:900; }
+.study-tools-flashcard-count span { color:#536b87; }
+.study-tools-flashcard-progress { height:4px; margin-bottom:22px; overflow:hidden; border-radius:999px; background:rgba(255,255,255,.055); }
+.study-tools-flashcard-progress span { display:block; height:100%; border-radius:inherit; background:linear-gradient(90deg,#68a9ff,#8b79ff); box-shadow:0 0 14px rgba(104,169,255,.35); transition:width .25s ease; }
+
+.study-tools-physical-card {
+  position:relative; width:100%; min-height:390px; padding:0; border:0; background:transparent;
+  cursor:pointer; perspective:1400px; text-align:left;
+}
+.study-tools-card-face {
+  position:absolute; inset:0; display:flex; flex-direction:column; justify-content:space-between;
+  padding:34px; box-sizing:border-box; border:1px solid rgba(139,174,219,.2); border-radius:25px;
+  backface-visibility:hidden; -webkit-backface-visibility:hidden;
+  background:
+    radial-gradient(circle at 85% 12%, rgba(91,151,255,.16), transparent 28%),
+    linear-gradient(145deg,#172a43,#0b1728 70%);
+  box-shadow:0 24px 70px rgba(0,0,0,.3), inset 0 1px rgba(255,255,255,.04);
+  transition:transform .55s cubic-bezier(.2,.7,.2,1), opacity .2s ease;
+}
+.study-tools-card-front { transform:rotateY(0deg); }
+.study-tools-card-back {
+  transform:rotateY(180deg);
+  background:
+    radial-gradient(circle at 15% 90%, rgba(99,212,169,.1), transparent 30%),
+    linear-gradient(145deg,#102c2a,#0a1c25 70%);
+}
+.study-tools-physical-card.is-flipped .study-tools-card-front { transform:rotateY(-180deg); }
+.study-tools-physical-card.is-flipped .study-tools-card-back { transform:rotateY(0deg); }
+.study-tools-card-face small { color:#6685aa; font-size:8px; font-weight:900; letter-spacing:.17em; }
+.study-tools-card-face strong {
+  max-width:680px; margin:auto 0; color:#f0f6ff; font-size:27px; line-height:1.35;
+  letter-spacing:-.035em; font-weight:780;
+}
+.study-tools-card-back strong { color:#d9eee8; font-size:20px; line-height:1.55; }
+.study-tools-flip-hint {
+  display:inline-flex; align-items:center; gap:7px; color:#7191b4; font-size:9px; font-weight:800;
+}
+.study-tools-card-actions { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:13px; }
+.study-tools-card-rating {
+  display:flex; align-items:center; justify-content:center; gap:8px; padding:12px;
+  border:1px solid rgba(145,174,215,.13); border-radius:11px; font-size:10px; font-weight:850;
+  transition:.18s ease;
+}
+.study-tools-card-rating.missed { background:rgba(226,100,110,.055); color:#d89a9f; }
+.study-tools-card-rating.known { background:rgba(90,198,159,.055); color:#7bc9ad; }
+.study-tools-card-rating.missed:hover { border-color:rgba(226,100,110,.3); background:rgba(226,100,110,.09); }
+.study-tools-card-rating.known:hover { border-color:rgba(90,198,159,.3); background:rgba(90,198,159,.09); }
+.study-tools-card-status { display:flex; justify-content:center; gap:18px; flex-wrap:wrap; margin-top:11px; color:#536b87; font-size:8px; font-weight:800; letter-spacing:.05em; }
+.study-tools-card-status span:nth-child(1) { color:#72bca2; }
+.study-tools-card-status span:nth-child(2) { color:#b7878d; }
+
+@media (max-width:600px) {
+  .study-tools-card-face { padding:24px; }
+  .study-tools-physical-card { min-height:330px; }
+  .study-tools-card-face strong { font-size:21px; }
+  .study-tools-card-actions { grid-template-columns:1fr; }
+}
+
 .study-tools-card-list, .study-tools-question-list { display: grid; gap: 10px; }
 .study-tools-card {
   position: relative; overflow: hidden; padding: 16px 17px;
