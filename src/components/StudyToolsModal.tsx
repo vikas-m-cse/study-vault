@@ -1,20 +1,30 @@
 import { useMemo, useState } from "react";
 import {
+  ArrowUpRight,
   BrainCircuit,
   BookOpenCheck,
+  Check,
+  ChevronRight,
+  CircleHelp,
   Copy,
-  HelpCircle,
+  FileText,
+  Gauge,
+  GraduationCap,
   Lightbulb,
   ListChecks,
+  LockKeyhole,
+  Orbit,
+  RotateCcw,
   Sparkles,
+  Target,
   X,
+  Zap,
 } from "lucide-react";
 import type { Note } from "../types/note";
 
-type StudyTool = "flashcards" | "mnemonics" | "questions" | "revision" | "teach";
-
-type Flashcard = { question: string; answer: string };
-type StudyQuestion = { type: string; question: string; hint: string };
+type StudyTool = "flashcards" | "questions" | "mnemonics" | "revision" | "teach";
+type Flashcard = { question: string; answer: string; source: string };
+type StudyQuestion = { type: string; level: string; question: string; hint: string };
 
 type StudyToolsModalProps = {
   note: Note;
@@ -26,14 +36,22 @@ const STOP_WORDS = new Set([
   "more","most","other","over","same","some","such","than","that","their","there","these","they",
   "this","through","using","what","when","where","which","while","with","would","your","then","them",
   "were","will","been","each","only","very","does","must","should","where","whose","those","used",
+  "system","user","mode","note","topic","main","role","play","thing","following","following",
 ]);
 
-function sentences(text: string): string[] {
-  return text.replace(/\s+/g, " ").split(/(?<=[.!?])\s+/).map(s => s.trim()).filter(s => s.length >= 35);
+function sections(text: string): string[] {
+  return text
+    .split(/\n{2,}/)
+    .map(s => s.replace(/\s+/g, " ").trim())
+    .filter(s => s.length >= 45);
 }
 
-function sections(text: string): string[] {
-  return text.split(/\n{2,}/).map(s => s.replace(/\s+/g, " ").trim()).filter(s => s.length >= 45);
+function sentences(text: string): string[] {
+  return text
+    .replace(/\s+/g, " ")
+    .split(/(?<=[.!?])\s+/)
+    .map(s => s.trim())
+    .filter(s => s.length >= 45);
 }
 
 function keywords(text: string, limit = 8): string[] {
@@ -42,58 +60,76 @@ function keywords(text: string, limit = 8): string[] {
     if (STOP_WORDS.has(word)) continue;
     counts.set(word, (counts.get(word) ?? 0) + 1);
   }
-  return [...counts.entries()].sort((a,b) => b[1] - a[1]).slice(0, limit).map(([word]) => word);
+  return [...counts.entries()]
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, limit)
+    .map(([word]) => word);
+}
+
+function titleCase(value: string): string {
+  return value.replace(/\b\w/g, char => char.toUpperCase());
 }
 
 function makeFlashcards(note: Note): Flashcard[] {
-  const lines = sections(note.plainText);
+  const blocks = sections(note.plainText);
+  const sourceSentences = sentences(note.plainText);
   const cards: Flashcard[] = [];
 
-  for (const line of lines.slice(0, 12)) {
-    const definition = line.match(/^(.{2,80}?)(?:\s+is|\s+are|\s+means|\s+refers to)\s+(.{15,})$/i);
+  for (const block of blocks.slice(0, 9)) {
+    const definition = block.match(/^(.{2,90}?)(?:\s+is|\s+are|\s+means|\s+refers to|\s+is defined as)\s+(.{15,})$/i);
     if (definition) {
       cards.push({
         question: `What is ${definition[1].trim()}?`,
         answer: definition[2].trim(),
+        source: "Source-grounded definition",
       });
     } else {
-      const words = line.split(/\s+/);
-      const subject = words.slice(0, Math.min(7, words.length)).join(" ");
+      const firstSentence = block.match(/^.{35,220}?[.!?]/)?.[0] ?? block.slice(0, 220);
+      const lead = firstSentence.replace(/[.!?]+$/, "");
       cards.push({
-        question: `What is the key idea behind: “${subject}…”?`,
-        answer: line,
+        question: `Reconstruct the key idea behind: “${lead}…”`,
+        answer: block,
+        source: "Source-grounded concept",
       });
     }
   }
 
-  const keys = keywords(note.plainText, 5);
-  keys.forEach((key) => cards.push({
-    question: `What role does “${key}” play in ${note.title || "this topic"}?`,
-    answer: `Explain how ${key} connects to the main ideas in your own words, using the source as your reference.`,
-  }));
+  if (cards.length < 12) {
+    sourceSentences.slice(0, 12 - cards.length).forEach(sentence => {
+      cards.push({
+        question: `What can you reconstruct from this cue: “${sentence.slice(0, 110)}…”?`,
+        answer: sentence,
+        source: "Retrieval cue",
+      });
+    });
+  }
 
-  return cards.slice(0, 15);
+  return cards.slice(0, 12);
 }
 
 function makeQuestions(note: Note): StudyQuestion[] {
-  const keys = keywords(note.plainText, 6);
-  const result: StudyQuestion[] = [
-    { type: "RECALL", question: `Without looking, what are the 3–5 most important ideas in “${note.title || "this note"}”?`, hint: "Start from memory. Do not reopen the note yet." },
-    { type: "WHY", question: `Why does ${keys[0] ?? "the central concept"} matter? What problem does it solve?`, hint: "Connect purpose → mechanism → consequence." },
-    { type: "HOW", question: `How would you explain the main process or mechanism in this note step by step?`, hint: "Reconstruct the sequence rather than copying sentences." },
-    { type: "COMPARE", question: `What is one important distinction between two related ideas in this note?`, hint: "Look for concepts that could easily be confused." },
-    { type: "APPLICATION", question: `Imagine a new real-world or exam scenario involving ${keys[1] ?? "this topic"}. How would you use what you learned?`, hint: "Transfer the idea to a situation you have not seen verbatim." },
-    { type: "TEACH", question: `Teach the most important concept here to a beginner in 60 seconds. What must they understand?`, hint: "Definition → why → example → common mistake." },
+  const keys = keywords(note.plainText, 6).map(titleCase);
+  const anchor = keys[0] ?? "the central concept";
+  const second = keys[1] ?? "a related concept";
+
+  return [
+    { type: "RECALL", level: "Remember", question: `Without looking, what are the 3–5 most important ideas in “${note.title || "this note"}”?`, hint: "Reconstruct first. Open the source only after your attempt." },
+    { type: "WHY", level: "Understand", question: `Why does ${anchor} matter? What problem does it solve, and what would fail without it?`, hint: "Purpose → mechanism → consequence." },
+    { type: "HOW", level: "Reason", question: `How would you reconstruct the main process or mechanism step by step?`, hint: "Explain the sequence and why each step exists." },
+    { type: "COMPARE", level: "Distinguish", question: `What is the most important difference between ${anchor} and ${second}?`, hint: "State the difference, then explain when it matters." },
+    { type: "APPLICATION", level: "Apply", question: `You face a new problem involving ${anchor}. How would you use what you learned to solve it?`, hint: "Transfer the principle; do not repeat the example from the note." },
+    { type: "TEACH", level: "Teach", question: `Teach the hardest idea here to a beginner in 60 seconds.`, hint: "Definition → why → example → common misconception." },
   ];
-  return result;
 }
 
 function makeMnemonic(note: Note): string {
   const keys = keywords(note.plainText, 6);
-  if (keys.length < 3) return "Not enough distinct concepts yet. Add a little more structured content, then generate a mnemonic again.";
+  if (keys.length < 3) {
+    return "Not enough distinct concepts yet. Add more structured content, then generate the memory path again.";
+  }
   const initials = keys.map(k => k[0].toUpperCase()).join("");
-  const phrase = keys.map(k => k[0].toUpperCase() + k.slice(1)).join(" → ");
-  return `Memory chain: ${phrase}\n\nInitials: ${initials}\n\nTry building your own vivid sentence using these initials. Then close the note and reconstruct the chain from memory. Personal mnemonics are usually more useful when they are meaningful to you.`;
+  const phrase = keys.map(k => titleCase(k)).join(" → ");
+  return `Memory path\n\n${phrase}\n\nInitials: ${initials}\n\nBuild your own vivid sentence from the initials, then close the source and reconstruct the entire chain from memory.`;
 }
 
 function makeRevision(note: Note): string {
@@ -106,22 +142,25 @@ function makeRevision(note: Note): string {
     "## Core ideas",
     ...bullets,
     "",
-    "## Key terms",
-    keys.length ? keys.map(k => `• ${k}`).join("\n") : "• Add more structured content to extract key terms.",
+    "## Key concepts",
+    keys.length ? keys.map(k => `• ${titleCase(k)}`).join("\n") : "• Add more structured content to extract key concepts.",
     "",
     "## Final retrieval",
-    "Close the source and explain the topic from memory: definition → key ideas → relationships → example → application.",
+    "Close the source. Reconstruct: definition → relationships → example → application → one common mistake.",
   ].join("\n");
 }
 
 export default function StudyToolsModal({ note, onClose }: StudyToolsModalProps) {
   const [tool, setTool] = useState<StudyTool>("flashcards");
   const [copied, setCopied] = useState(false);
+  const [revealed, setRevealed] = useState<Record<number, boolean>>({});
 
   const flashcards = useMemo(() => makeFlashcards(note), [note]);
   const questions = useMemo(() => makeQuestions(note), [note]);
   const mnemonic = useMemo(() => makeMnemonic(note), [note]);
   const revision = useMemo(() => makeRevision(note), [note]);
+  const wordCount = note.plainText.trim().split(/\s+/).filter(Boolean).length;
+  const conceptCount = keywords(note.plainText, 10).length;
 
   const copyText = async (value: string) => {
     try {
@@ -133,77 +172,166 @@ export default function StudyToolsModal({ note, onClose }: StudyToolsModalProps)
     }
   };
 
+  const copyCurrent = tool === "flashcards"
+    ? flashcards.map(c => `Q: ${c.question}\nA: ${c.answer}`).join("\n\n")
+    : tool === "questions"
+      ? questions.map(q => `[${q.type}] ${q.question}\nHint: ${q.hint}`).join("\n\n")
+      : tool === "mnemonics" ? mnemonic : revision;
+
+  const tabs: Array<{ id: StudyTool; label: string; icon: typeof BookOpenCheck; meta: string }> = [
+    { id: "flashcards", label: "Flashcards", icon: BookOpenCheck, meta: "Retrieve" },
+    { id: "questions", label: "Questions", icon: CircleHelp, meta: "Reason" },
+    { id: "mnemonics", label: "Memory paths", icon: Lightbulb, meta: "Encode" },
+    { id: "revision", label: "Revision", icon: ListChecks, meta: "Compress" },
+    { id: "teach", label: "Teach-back", icon: GraduationCap, meta: "Transfer" },
+  ];
+
   return (
     <div className="study-tools-backdrop" role="presentation" onMouseDown={onClose}>
-      <section className="study-tools-modal" role="dialog" aria-modal="true" aria-label="Study tools" onMouseDown={e => e.stopPropagation()}>
+      <section className="study-tools-modal" role="dialog" aria-modal="true" aria-label="StudyVault learning studio" onMouseDown={e => e.stopPropagation()}>
+        <div className="study-tools-noise" aria-hidden="true" />
+
         <header className="study-tools-header">
-          <div>
-            <p className="eyebrow">LEARNING TRANSFORMATION STUDIO</p>
-            <h2>Turn this note into learning</h2>
-            <p>{note.title || "Untitled note"} · {note.plainText.trim().split(/\s+/).filter(Boolean).length} words</p>
+          <div className="study-tools-brand">
+            <div className="study-tools-orbit"><Orbit size={19} /></div>
+            <div>
+              <p className="study-tools-eyebrow"><span className="status-dot" /> STUDYVAULT · LEARNING OS</p>
+              <h2>Transform knowledge into capability.</h2>
+              <p className="study-tools-subtitle">{note.title || "Untitled note"} <span>·</span> {wordCount.toLocaleString()} words</p>
+            </div>
           </div>
-          <button type="button" className="study-tools-close" onClick={onClose} aria-label="Close"><X size={18} /></button>
+
+          <div className="study-tools-header-actions">
+            <div className="study-tools-source-lock"><LockKeyhole size={13} /> SOURCE LOCKED</div>
+            <button type="button" className="study-tools-close" onClick={onClose} aria-label="Close"><X size={18} /></button>
+          </div>
         </header>
 
         <div className="study-tools-layout">
-          <nav className="study-tools-nav" aria-label="Study transformations">
-            <button className={tool === "flashcards" ? "active" : ""} onClick={() => setTool("flashcards")}><BookOpenCheck size={17} /><span>Flashcards</span></button>
-            <button className={tool === "questions" ? "active" : ""} onClick={() => setTool("questions")}><HelpCircle size={17} /><span>Questions</span></button>
-            <button className={tool === "mnemonics" ? "active" : ""} onClick={() => setTool("mnemonics")}><Lightbulb size={17} /><span>Mnemonics</span></button>
-            <button className={tool === "revision" ? "active" : ""} onClick={() => setTool("revision")}><ListChecks size={17} /><span>Quick revision</span></button>
-            <button className={tool === "teach" ? "active" : ""} onClick={() => setTool("teach")}><BrainCircuit size={17} /><span>Teach-back</span></button>
-          </nav>
+          <aside className="study-tools-nav">
+            <div className="study-tools-nav-heading">LEARNING MODES</div>
+            {tabs.map(({ id, label, icon: Icon, meta }) => (
+              <button key={id} className={tool === id ? "active" : ""} onClick={() => setTool(id)}>
+                <span className="study-tools-nav-icon"><Icon size={16} /></span>
+                <span className="study-tools-nav-copy"><strong>{label}</strong><small>{meta}</small></span>
+                {tool === id && <ChevronRight size={14} className="study-tools-nav-arrow" />}
+              </button>
+            ))}
+
+            <div className="study-tools-nav-bottom">
+              <div className="study-tools-mini-card">
+                <Gauge size={15} />
+                <div><strong>Learning signal</strong><span>Source grounded</span></div>
+              </div>
+              <div className="study-tools-local"><Zap size={12} /> Runs locally · no source drift</div>
+            </div>
+          </aside>
 
           <main className="study-tools-content">
-            <div className="study-tools-title-row">
+            <div className="study-tools-command-bar">
               <div>
                 <span className="study-tools-label">{tool.toUpperCase()}</span>
                 <h3>
-                  {tool === "flashcards" && "Retrieve before you reread"}
-                  {tool === "questions" && "Challenge your understanding"}
-                  {tool === "mnemonics" && "Create memory hooks"}
-                  {tool === "revision" && "Compress the note into a final pass"}
-                  {tool === "teach" && "Prove that you can explain it"}
+                  {tool === "flashcards" && "Retrieve before you reread."}
+                  {tool === "questions" && "Make the brain do the work."}
+                  {tool === "mnemonics" && "Build a memory structure that sticks."}
+                  {tool === "revision" && "Compress the source into a final pass."}
+                  {tool === "teach" && "Prove you can reconstruct the idea."}
                 </h3>
               </div>
-              <button type="button" className="study-tools-copy" onClick={() => copyText(
-                tool === "flashcards" ? flashcards.map(c => `Q: ${c.question}\nA: ${c.answer}`).join("\n\n") :
-                tool === "questions" ? questions.map(q => `[${q.type}] ${q.question}\nHint: ${q.hint}`).join("\n\n") :
-                tool === "mnemonics" ? mnemonic : revision
-              )}><Copy size={14} />{copied ? "Copied" : "Copy"}</button>
+              <button type="button" className="study-tools-copy" onClick={() => copyText(copyCurrent)}>
+                <Copy size={13} /> {copied ? "Copied" : "Export"}
+              </button>
+            </div>
+
+            <div className="study-tools-signal-row">
+              <div><FileText size={14} /><span><b>{wordCount.toLocaleString()}</b> source words</span></div>
+              <div><Target size={14} /><span><b>{conceptCount}</b> concept signals</span></div>
+              <div><BrainCircuit size={14} /><span><b>5</b> cognitive modes</span></div>
+              <div className="study-tools-signal-live"><span className="status-dot" /> LOCAL ENGINE</div>
             </div>
 
             {tool === "flashcards" && (
               <div className="study-tools-card-list">
-                {flashcards.map((card, i) => <article className="study-tools-card" key={i}><span>Card {i + 1}</span><strong>{card.question}</strong><p>{card.answer}</p></article>)}
+                {flashcards.map((card, i) => (
+                  <article className={`study-tools-card ${revealed[i] ? "revealed" : ""}`} key={i}>
+                    <div className="study-tools-card-top">
+                      <span className="study-tools-index">{String(i + 1).padStart(2, "0")}</span>
+                      <span className="study-tools-card-source">{card.source}</span>
+                    </div>
+                    <strong>{card.question}</strong>
+                    {revealed[i] ? (
+                      <div className="study-tools-answer">
+                        <span>REFERENCE</span>
+                        <p>{card.answer}</p>
+                      </div>
+                    ) : (
+                      <button type="button" className="study-tools-reveal" onClick={() => setRevealed(prev => ({ ...prev, [i]: true }))}>
+                        <RotateCcw size={13} /> Reveal reference <ArrowUpRight size={12} />
+                      </button>
+                    )}
+                  </article>
+                ))}
               </div>
             )}
 
             {tool === "questions" && (
               <div className="study-tools-question-list">
-                {questions.map((q, i) => <article key={i}><span>{q.type}</span><strong>{q.question}</strong><p>Hint: {q.hint}</p></article>)}
+                {questions.map((q, i) => (
+                  <article key={i}>
+                    <div className="study-tools-question-meta"><span>{q.type}</span><small>{q.level}</small></div>
+                    <strong>{q.question}</strong>
+                    <div className="study-tools-hint"><Sparkles size={12} /> {q.hint}</div>
+                  </article>
+                ))}
               </div>
             )}
 
-            {tool === "mnemonics" && <article className="study-tools-feature"><Sparkles size={22} /><pre>{mnemonic}</pre><p>Best practice: personalize the final mnemonic, then retrieve the underlying concepts without looking.</p></article>}
+            {tool === "mnemonics" && (
+              <article className="study-tools-feature study-tools-memory-feature">
+                <div className="study-tools-feature-icon"><Lightbulb size={20} /></div>
+                <div>
+                  <span className="study-tools-feature-label">MEMORY ARCHITECTURE</span>
+                  <h4>Turn isolated facts into a connected path.</h4>
+                  <pre>{mnemonic}</pre>
+                  <p>Make the final mnemonic personal, then close the source and reconstruct the chain without looking.</p>
+                </div>
+              </article>
+            )}
 
-            {tool === "revision" && <article className="study-tools-feature"><ListChecks size={22} /><pre>{revision}</pre></article>}
+            {tool === "revision" && (
+              <article className="study-tools-feature">
+                <div className="study-tools-feature-icon"><ListChecks size={20} /></div>
+                <div>
+                  <span className="study-tools-feature-label">COMPRESSION LAYER</span>
+                  <h4>Your last-pass learning map.</h4>
+                  <pre>{revision}</pre>
+                </div>
+              </article>
+            )}
 
             {tool === "teach" && (
-              <article className="study-tools-feature">
-                <BrainCircuit size={22} />
-                <h4>60-second teach-back</h4>
-                <p>Close your note. Explain the topic aloud or write it as if teaching a beginner.</p>
-                <ol><li>Define the core idea.</li><li>Explain why it exists.</li><li>Show how it works.</li><li>Give one concrete example.</li><li>Name one common confusion or limitation.</li></ol>
-                <div className="study-tools-callout">The goal is not to sound perfect. The goal is to discover what you cannot reconstruct yet.</div>
+              <article className="study-tools-feature study-tools-teach-feature">
+                <div className="study-tools-feature-icon"><GraduationCap size={20} /></div>
+                <div>
+                  <span className="study-tools-feature-label">TRANSFER TEST</span>
+                  <h4>60-second teach-back</h4>
+                  <p className="study-tools-large-copy">Close your note. Explain the topic as if a beginner is sitting in front of you.</p>
+                  <div className="study-tools-teach-steps">
+                    {["Define the core idea.", "Explain why it exists.", "Show how it works.", "Give one concrete example.", "Name one common confusion."].map((step, i) => (
+                      <div key={step}><span>{i + 1}</span><p>{step}</p><Check size={13} /></div>
+                    ))}
+                  </div>
+                  <div className="study-tools-callout"><Sparkles size={13} /> The goal is not perfect wording. The goal is discovering what you cannot reconstruct yet.</div>
+                </div>
               </article>
             )}
           </main>
         </div>
 
         <footer className="study-tools-footer">
-          <span><Sparkles size={14} /> Generated from this note only. StudyVault keeps the learning loop grounded in your source.</span>
-          <button type="button" className="primary-button" onClick={onClose}>Done</button>
+          <div className="study-tools-footer-status"><span className="status-dot" /> Learning loop active <span>·</span> grounded in your source</div>
+          <button type="button" className="study-tools-done" onClick={onClose}>Return to workspace <ArrowUpRight size={14} /></button>
         </footer>
       </section>
     </div>
