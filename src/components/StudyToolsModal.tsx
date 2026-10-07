@@ -22,7 +22,16 @@ import {
 } from "lucide-react";
 import type { Note } from "../types/note";
 
-type StudyTool = "mission" | "flashcards" | "questions" | "mnemonics" | "revision" | "teach";\n\ntype MissionChallenge = {\n  type: "recall" | "why" | "apply" | "teach";\n  label: string;\n  title: string;\n  prompt: string;\n  reference: string;\n  concept: string;\n};
+type StudyTool = "mission" | "flashcards" | "questions" | "mnemonics" | "revision" | "teach";
+
+type MissionChallenge = {
+  type: "recall" | "why" | "apply" | "teach";
+  label: string;
+  title: string;
+  prompt: string;
+  reference: string;
+  concept: string;
+};
 type Flashcard = { question: string; answer: string; source: string };
 type StudyQuestion = { type: string; level: string; question: string; hint: string };
 
