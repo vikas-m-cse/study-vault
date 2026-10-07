@@ -756,6 +756,7 @@ export default function StudyToolsModal({ note, onClose }: StudyToolsModalProps)
                         </aside>
                       </div>
 
+                     </div>
                     {flashcardInsight && (
                       <div className={`flashcard-insight-toast ${flashcardInsight.type}`}>
                         <span>{flashcardInsight.type === "known" ? "✓" : "!"}</span>
