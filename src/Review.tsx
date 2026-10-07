@@ -14,7 +14,7 @@ import { getAllNotes } from "./services/noteStorage";
 import type { Note, TipTapNode } from "./types/note";
 import type { Resource } from "./types/resource";
 import type { Subject } from "./Subjects";
-import { chooseNextInterval, masteryPercent, recordLearningEvent, recordMasteryLevel, getMastery, getNextBestAction, type QuestionType } from "./services/learningCore";
+import { chooseNextInterval, masteryPercent, recordLearningEvent, recordMasteryLevel, getMastery, getNextBestAction, learningPriority, retentionEstimate, calibrationGap, type QuestionType } from "./services/learningCore";
 
 type ReviewProps = {
   resources: Resource[];
@@ -273,7 +273,9 @@ export default function Review({ subjects, focusNoteId }: ReviewProps) {
         const bState = reviewState[b.id];
         const aDue = aState?.nextReviewAt ?? 0;
         const bDue = bState?.nextReviewAt ?? 0;
-        return aDue - bDue;
+        const aPriority = learningPriority(getMastery()[a.id], now);
+        const bPriority = learningPriority(getMastery()[b.id], now);
+        return bPriority - aPriority || aDue - bDue;
       }),
     [concepts, reviewState, now],
   );
@@ -296,10 +298,23 @@ export default function Review({ subjects, focusNoteId }: ReviewProps) {
     setRevealed(true);
   };
 
-  const questionType: QuestionType =
-    mode === "questions"
-      ? (selected?.title.toLowerCase().includes("why") ? "why" : "recall")
-      : "recall";
+  const selectedMastery = selected ? getMastery()[selected.id] : undefined;
+  const adaptiveAction = selected ? getNextBestAction(selectedMastery) : null;
+  const questionType: QuestionType = adaptiveAction?.questionType ?? "recall";
+
+  const adaptivePrompt = selected && adaptiveAction
+    ? adaptiveAction.questionType === "why"
+      ? `Why does ${selected.title} work? Explain the mechanism or reasoning, not just the definition.`
+      : adaptiveAction.questionType === "how"
+        ? `How would you use or derive ${selected.title}? Give the sequence of steps and explain why each matters.`
+        : adaptiveAction.questionType === "application"
+          ? `Apply ${selected.title} to a new problem or real-world situation. What would you do and why?`
+          : adaptiveAction.questionType === "teach"
+            ? `Teach ${selected.title} to a beginner in 60 seconds. Use a simple explanation, one analogy, and one example.`
+            : adaptiveAction.questionType === "reverse"
+              ? `Transfer test: given a new situation, how would ${selected.title} help you reason about it? Reconstruct the connection from first principles.`
+              : selected.prompt
+    : selected?.prompt ?? "";
 
   const rate = (rating: Rating) => {
     if (!selected || !revealed || !outcome || confidence === 0) return;
@@ -356,6 +371,8 @@ export default function Review({ subjects, focusNoteId }: ReviewProps) {
   const mastery = getMastery();
   const learnedConcepts = concepts.filter((concept) => masteryPercent(mastery[concept.id]) >= 70).length;
   const nextAction = selected ? getNextBestAction(mastery[selected.id]) : null;
+  const selectedRetention = selected ? retentionEstimate(mastery[selected.id], now) : 0;
+  const selectedCalibrationGap = selected ? calibrationGap(mastery[selected.id]) : 0;
 
   return (
     <div className="review-page">
@@ -429,6 +446,8 @@ export default function Review({ subjects, focusNoteId }: ReviewProps) {
                   {selected.tags.slice(0, 4).map((tag) => <span key={tag}>#{tag}</span>)}
                   {currentState && <span>Streak {currentState.streak}</span>}
                   {mastery[selected.id] && <span>Mastery {masteryPercent(mastery[selected.id])}%</span>}
+                  {mastery[selected.id] && <span>Retention {Math.round(selectedRetention * 100)}%</span>}
+                  {mastery[selected.id] && selectedCalibrationGap >= 15 && <span>Calibration gap {selectedCalibrationGap}%</span>}
                 </div>
 
                 {nextAction && (
@@ -444,9 +463,7 @@ export default function Review({ subjects, focusNoteId }: ReviewProps) {
 
                 <div className="review-v2-question">
                   <strong>
-                    {mode === "questions"
-                      ? `Imagine you studied this ${focusNoteId ? "today" : "earlier"} and now you've forgotten it. What is ${selected.title}? Explain it as if someone asked you in an exam or viva.`
-                      : selected.prompt}
+                    {mode === "questions" ? adaptivePrompt : selected.prompt}
                   </strong>
                   <p>
                     {mode === "questions"
