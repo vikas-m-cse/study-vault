@@ -258,7 +258,7 @@ export default function StudyToolsModal({ note, onClose }: StudyToolsModalProps)
   const mission = useMemo(() => makeMission(note), [note]);
   const currentMission = mission[missionStep] ?? mission[0];
   const missionScore = missionSubmitted && currentMission ? evaluateAttempt(missionAnswer, currentMission.reference) : 0;
-  const missionDone = missionStep >= mission.length - 1 && missionSubmitted;
+  const missionDone = missionStep >= mission.length - 1 && missionSubmitted && missionScore >= 40;
   const wordCount = note.plainText.trim().split(/\s+/).filter(Boolean).length;
   const conceptCount = keywords(note.plainText, 10).length;
 
@@ -454,7 +454,7 @@ export default function StudyToolsModal({ note, onClose }: StudyToolsModalProps)
                         setMissionConfidence(0);
                       }}
                     >
-                      {missionDone ? "Restart mission" : "Continue mission"} <ChevronRight size={14} />
+                      {missionDone ? "Restart mission" : missionScore < 40 ? "Rebuild & retry" : "Continue mission"} <ChevronRight size={14} />
                     </button>
                   </div>
                 )}
