@@ -378,6 +378,10 @@ export default function StudyToolsModal({ note, onClose }: StudyToolsModalProps)
   const adaptiveMissionAction = getAdaptiveAction(currentMastery);
   const wordCount = note.plainText.trim().split(/\s+/).filter(Boolean).length;
   const conceptCount = keywords(note.plainText, 10).length;
+  const knownCount = Object.values(flashcardRatings).filter(value => value === "known").length;
+  const missedCount = Object.values(flashcardRatings).filter(value => value === "missed").length;
+  const deckComplete = flashcards.length > 0 && knownCount + missedCount === flashcards.length;
+  const missedCards = flashcards.map((_, index) => index).filter(index => flashcardRatings[index] === "missed");
 
   const copyText = async (value: string) => {
     try {
@@ -608,28 +612,47 @@ export default function StudyToolsModal({ note, onClose }: StudyToolsModalProps)
                   </div>
                 </div>
 
-                <div className="study-tools-flashcard-progress">
-                  <span style={{ width: `${((flashcardIndex + 1) / flashcards.length) * 100}%` }} />
+                <div className="study-tools-deck-rail">
+                  <div className="study-tools-flashcard-progress">
+                    <span style={{ width: `${((flashcardIndex + 1) / flashcards.length) * 100}%` }} />
+                  </div>
+                  <div className="study-tools-deck-dots" aria-label="Deck progress">
+                    {flashcards.map((_, index) => (
+                      <button key={index} type="button" aria-label={`Go to card ${index + 1}`} className={`study-tools-deck-dot ${index === flashcardIndex ? "active" : ""} ${flashcardRatings[index] ?? ""}`} onClick={() => { setFlashcardIndex(index); setFlashcardFlipped(false); }} />
+                    ))}
+                  </div>
                 </div>
-
-                <button
-                  type="button"
-                  className={`study-tools-physical-card ${flashcardFlipped ? "is-flipped" : ""}`}
-                  onClick={() => setFlashcardFlipped(value => !value)}
-                  aria-label={flashcardFlipped ? "Show question" : "Reveal answer"}
-                >
-                  <span className="study-tools-card-face study-tools-card-front">
-                    <small>QUESTION · {flashcards[flashcardIndex].source.toUpperCase()}</small>
-                    <strong>{flashcards[flashcardIndex].question}</strong>
-                    <span className="study-tools-flip-hint"><RotateCcw size={13} /> Tap to reveal</span>
-                  </span>
-                  <span className="study-tools-card-face study-tools-card-back">
-                    <small>ANSWER · VERIFY</small>
-                    <strong>{flashcards[flashcardIndex].answer}</strong>
-                    <span className="study-tools-flip-hint">Tap to return</span>
-                  </span>
-                </button>
-
+                {!deckComplete ? (
+                  <div className="study-tools-card-stage">
+                    <div className="study-tools-card-aura" aria-hidden="true" />
+                    <button type="button" className={`study-tools-physical-card palette-${flashcardIndex % 6} ${flashcardFlipped ? "is-flipped" : ""}`} onClick={() => setFlashcardFlipped(value => !value)} aria-label={flashcardFlipped ? "Show question" : "Reveal answer"}>
+                      <span className="study-tools-card-face study-tools-card-front">
+                        <span className="study-tools-card-orb" aria-hidden="true" />
+                        <div className="study-tools-card-headerline"><small>QUESTION · {flashcards[flashcardIndex].source.toUpperCase()}</small><b>{String(flashcardIndex + 1).padStart(2, "0")}</b></div>
+                        <strong>{flashcards[flashcardIndex].question}</strong>
+                        <span className="study-tools-flip-hint"><RotateCcw size={13} /> Think first · tap to reveal</span>
+                      </span>
+                      <span className="study-tools-card-face study-tools-card-back">
+                        <span className="study-tools-card-orb" aria-hidden="true" />
+                        <div className="study-tools-card-headerline"><small>ANSWER · VERIFY</small><b>✓</b></div>
+                        <strong>{flashcards[flashcardIndex].answer}</strong>
+                        <span className="study-tools-flip-hint">Tap to return to the question</span>
+                      </span>
+                    </button>
+                  </div>
+                ) : (
+                  <div className="study-tools-deck-complete">
+                    <div className="study-tools-deck-complete-icon"><Check size={24} /></div>
+                    <span className="study-tools-feature-label">DECK COMPLETE</span>
+                    <h4>Retrieval round finished.</h4>
+                    <p>{knownCount} known · {missedCount} marked for revisit. The missed cards are the ones worth spending another retrieval attempt on.</p>
+                    {missedCards.length > 0 ? (
+                      <button type="button" className="study-tools-card-next" onClick={() => { setFlashcardIndex(missedCards[0]); setFlashcardFlipped(false); }}>Revisit missed cards <RotateCcw size={13} /></button>
+                    ) : (
+                      <button type="button" className="study-tools-card-next" onClick={() => { setFlashcardRatings({}); setFlashcardIndex(0); setFlashcardFlipped(false); }}>Run the deck again <RotateCcw size={13} /></button>
+                    )}
+                  </div>
+                )}
                 <div className="study-tools-card-actions">
                   <button
                     type="button"
@@ -672,9 +695,9 @@ export default function StudyToolsModal({ note, onClose }: StudyToolsModalProps)
                 )}
 
                 <div className="study-tools-card-status">
-                  <span>{Object.values(flashcardRatings).filter(value => value === "known").length} known</span>
-                  <span>{Object.values(flashcardRatings).filter(value => value === "missed").length} to revisit</span>
-                  <span>Tap the card to flip</span>
+                  <span>{knownCount} known</span>
+                  <span>{missedCount} to revisit</span>
+                  <span>{flashcardFlipped ? "Tap to see the question" : "Recall first · flip to verify"}</span>
                 </div>
               </div>
             )}
