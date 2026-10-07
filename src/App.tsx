@@ -296,6 +296,7 @@ function App() {
                         <Subjects
                             subjects={subjects}
                             setSubjects={handleSetSubjects}
+                            resources={resources}
                             focusSubjectId={subjectTargetId}
                         />
                     ) : activePage === "My Resources" ? (
