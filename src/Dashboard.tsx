@@ -79,49 +79,21 @@ export default function Dashboard({
                 </div>
             </section>
 
-            {/* Statistics */}
-            <section className="sv-command-strip">
+            <section className="sv-command-strip sv-command-strip-premium">
                 <div><span className="sv-strip-index">01</span><b>{resources.length}</b><small>resources</small></div>
                 <div><span className="sv-strip-index">02</span><b>{subjects.length}</b><small>subjects</small></div>
                 <div><span className="sv-strip-index">03</span><b>{resources.filter(r => r.type === "Note").length}</b><small>notes</small></div>
-                <div className="sv-strip-message"><span className="sv-strip-live" /> KNOWLEDGE BASE ONLINE <span>·</span> LOCAL-FIRST</div>
+                <div className="sv-strip-message"><span className="sv-strip-live" /> PRIVATE LOCAL WORKSPACE <span>·</span> READY</div>
             </section>
 
-            <section className="stats-grid">
-
-                <div className="stat-card">
-                    <div className="stat-icon blue-icon">
-                        <FileText size={20} />
-                    </div>
-                    <p>Total resources</p>
-                    <h2>{resources.length}</h2>
-                    <span>Across all subjects</span>
+            <section className="sv-dashboard-intro">
+                <div>
+                    <span className="sv-section-index">02 / YOUR VAULT</span>
+                    <h2>Everything you need,<br /><em>without the noise.</em></h2>
                 </div>
-
-                <div className="stat-card">
-                    <div className="stat-icon violet-icon">
-                        <BookOpen size={20} />
-                    </div>
-                    <p>Subjects</p>
-                    <h2>{subjects.length}</h2>
-                    <span>Your learning categories</span>
+                <div className="sv-intro-rule">
+                    <span>COLLECT</span><i></i><span>RETRIEVE</span><i></i><span>MASTER</span>
                 </div>
-
-                <div className="stat-card">
-                    <div className="stat-icon orange-icon">
-                        <Star size={20} />
-                    </div>
-                    <p>Favourites</p>
-                    <h2>0</h2>
-                    <span>Quick access collection</span>
-                </div>
-
-            </section>
-
-            {/* Main dashboard content */}
-            <section className="sv-section-heading">
-                <div><span>THE VAULT</span><h2>Continue building your edge.</h2></div>
-                <p>Everything you collect becomes a future retrieval opportunity.</p>
             </section>
 
             <section className="dashboard-grid">
