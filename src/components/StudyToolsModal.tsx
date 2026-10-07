@@ -70,41 +70,65 @@ function titleCase(value: string): string {
   return value.replace(/\b\w/g, char => char.toUpperCase());
 }
 
+function cleanSnippet(value: string, max = 180): string {
+  return value
+    .replace(/^#+\s*/, "")
+    .replace(/^\d+(?:\.\d+)*[.)]?\s*/, "")
+    .replace(/\s+/g, " ")
+    .trim()
+    .replace(/[.!?]+$/, "");
+}
+
+function conceptName(block: string): string {
+  const cleaned = cleanSnippet(block, 100);
+  const definition = cleaned.match(/^(.{2,90}?)(?:\s+is|\s+are|\s+means|\s+refers to|\s+is defined as)\b/i);
+  if (definition) return definition[1].trim();
+
+  const firstClause = cleaned.split(/[:—–,-]/)[0]?.trim();
+  if (firstClause && firstClause.length >= 4 && firstClause.length <= 70) return firstClause;
+
+  const words = cleaned.split(/\s+/).slice(0, 6).join(" ");
+  return words || "Core idea";
+}
+
 function makeFlashcards(note: Note): Flashcard[] {
   const blocks = sections(note.plainText);
   const sourceSentences = sentences(note.plainText);
+  const candidates = [...blocks, ...sourceSentences];
+  const seen = new Set<string>();
   const cards: Flashcard[] = [];
 
-  for (const block of blocks.slice(0, 9)) {
-    const definition = block.match(/^(.{2,90}?)(?:\s+is|\s+are|\s+means|\s+refers to|\s+is defined as)\s+(.{15,})$/i);
-    if (definition) {
-      cards.push({
-        question: `What is ${definition[1].trim()}?`,
-        answer: definition[2].trim(),
-        source: "Source-grounded definition",
-      });
-    } else {
-      const firstSentence = block.match(/^.{35,220}?[.!?]/)?.[0] ?? block.slice(0, 220);
-      const lead = firstSentence.replace(/[.!?]+$/, "");
-      cards.push({
-        question: `Reconstruct the key idea behind: “${lead}…”`,
-        answer: block,
-        source: "Source-grounded concept",
-      });
-    }
-  }
+  for (const raw of candidates) {
+    const answer = cleanSnippet(raw, 230);
+    if (answer.length < 45) continue;
 
-  if (cards.length < 12) {
-    sourceSentences.slice(0, 12 - cards.length).forEach(sentence => {
-      cards.push({
-        question: `What can you reconstruct from this cue: “${sentence.slice(0, 110)}…”?`,
-        answer: sentence,
-        source: "Retrieval cue",
-      });
+    const concept = conceptName(raw);
+    const key = concept.toLowerCase();
+    if (seen.has(key)) continue;
+    seen.add(key);
+
+    const definition = answer.match(/^(.{2,90}?)(?:\s+is|\s+are|\s+means|\s+refers to|\s+is defined as)\s+(.{15,})$/i);
+
+    cards.push({
+      question: definition
+        ? `What is ${concept}?`
+        : `What do you remember about ${concept}?`,
+      answer,
+      source: definition ? "Definition" : "Core idea",
     });
+
+    if (cards.length === 6) break;
   }
 
-  return cards.slice(0, 12);
+  if (!cards.length) {
+    return [{
+      question: "What is the most important idea in this note?",
+      answer: note.plainText.trim().slice(0, 230),
+      source: "Source",
+    }];
+  }
+
+  return cards;
 }
 
 function makeQuestions(note: Note): StudyQuestion[] {
@@ -252,27 +276,37 @@ export default function StudyToolsModal({ note, onClose }: StudyToolsModalProps)
             </div>
 
             {tool === "flashcards" && (
-              <div className="study-tools-card-list">
-                {flashcards.map((card, i) => (
-                  <article className={`study-tools-card ${revealed[i] ? "revealed" : ""}`} key={i}>
-                    <div className="study-tools-card-top">
-                      <span className="study-tools-index">{String(i + 1).padStart(2, "0")}</span>
-                      <span className="study-tools-card-source">{card.source}</span>
-                    </div>
-                    <strong>{card.question}</strong>
-                    {revealed[i] ? (
-                      <div className="study-tools-answer">
-                        <span>REFERENCE</span>
-                        <p>{card.answer}</p>
+              <>
+                <div className="study-tools-learning-directive">
+                  <div className="study-tools-directive-icon"><BrainCircuit size={17} /></div>
+                  <div>
+                    <strong>Don’t read. Reconstruct.</strong>
+                    <p>Try to answer each prompt in your head first. Reveal the source only when you get stuck or want to verify.</p>
+                  </div>
+                  <span>{flashcards.length} high-signal prompts</span>
+                </div>
+                <div className="study-tools-card-list">
+                  {flashcards.map((card, i) => (
+                    <article className={`study-tools-card ${revealed[i] ? "revealed" : ""}`} key={i}>
+                      <div className="study-tools-card-top">
+                        <span className="study-tools-index">{String(i + 1).padStart(2, "0")} / {String(flashcards.length).padStart(2, "0")}</span>
+                        <span className="study-tools-card-source">{card.source}</span>
                       </div>
-                    ) : (
-                      <button type="button" className="study-tools-reveal" onClick={() => setRevealed(prev => ({ ...prev, [i]: true }))}>
-                        <RotateCcw size={13} /> Reveal reference <ArrowUpRight size={12} />
-                      </button>
-                    )}
-                  </article>
-                ))}
-              </div>
+                      <strong>{card.question}</strong>
+                      {revealed[i] ? (
+                        <div className="study-tools-answer">
+                          <span>VERIFY AGAINST SOURCE</span>
+                          <p>{card.answer}</p>
+                        </div>
+                      ) : (
+                        <button type="button" className="study-tools-reveal" onClick={() => setRevealed(prev => ({ ...prev, [i]: true }))}>
+                          <RotateCcw size={13} /> Check my memory <ArrowUpRight size={12} />
+                        </button>
+                      )}
+                    </article>
+                  ))}
+                </div>
+              </>
             )}
 
             {tool === "questions" && (
