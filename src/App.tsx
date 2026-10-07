@@ -61,6 +61,7 @@ function App() {
     const [isSearchOpen, setIsSearchOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
     const [notesTarget, setNotesTarget] = useState<{ noteId?: string; folderId?: string } | null>(null);
+    const [reviewNoteId, setReviewNoteId] = useState<string | null>(null);
     const [resourceTargetId, setResourceTargetId] = useState<string | null>(null);
     const [subjectTargetId, setSubjectTargetId] = useState<number | null>(null);
     const storageAvailable = isStorageAvailable();
@@ -294,6 +295,10 @@ function App() {
                             subjects={subjects}
                             openNoteId={notesTarget?.noteId}
                             openFolderId={notesTarget?.folderId}
+                            onOpenReview={(noteId) => {
+                                setReviewNoteId(noteId);
+                                setActivePage("Review");
+                            }}
                         />
                     ) : activePage === "Favourites" ? (
                         <Notes
@@ -305,6 +310,7 @@ function App() {
                         <Review
                             resources={resources}
                             subjects={subjects}
+                            focusNoteId={reviewNoteId}
                         />
                     ) : (
                         <div className="page-heading">
