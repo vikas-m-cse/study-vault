@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   ArrowUpRight,
   BrainCircuit,
@@ -601,106 +601,129 @@ export default function StudyToolsModal({ note, onClose }: StudyToolsModalProps)
             )}
 
             {tool === "flashcards" && flashcards.length > 0 && (
-              <div className="study-tools-flashcards">
-                <div className="study-tools-flashcard-topline">
+              <div className="flashcard-cockpit">
+                <div className="flashcard-cockpit-head">
                   <div>
-                    <span className="study-tools-feature-label">ACTIVE RECALL DECK</span>
-                    <h4>Think first. Flip only to verify.</h4>
+                    <div className="flashcard-breadcrumb">
+                      <span className="flashcard-live-dot" /> ACTIVE RECALL
+                      <span className="flashcard-slash">/</span>
+                      {note.title || "Study deck"}
+                    </div>
+                    <h4>Can you reconstruct this without the source?</h4>
                   </div>
-                  <div className="study-tools-flashcard-count">
-                    {flashcardIndex + 1} <span>/</span> {flashcards.length}
+                  <div className="flashcard-session-score">
+                    <span>SESSION</span>
+                    <strong>{String(flashcardIndex + 1).padStart(2, "0")} <em>/</em> {String(flashcards.length).padStart(2, "0")}</strong>
                   </div>
                 </div>
 
-                <div className="study-tools-deck-rail">
-                  <div className="study-tools-flashcard-progress">
-                    <span style={{ width: `${((flashcardIndex + 1) / flashcards.length) * 100}%` }} />
-                  </div>
-                  <div className="study-tools-deck-dots" aria-label="Deck progress">
+                <div className="flashcard-progress-track">
+                  <span style={{ width: `${((flashcardIndex + 1) / flashcards.length) * 100}%` }} />
+                  <div className="flashcard-progress-marks">
                     {flashcards.map((_, index) => (
-                      <button key={index} type="button" aria-label={`Go to card ${index + 1}`} className={`study-tools-deck-dot ${index === flashcardIndex ? "active" : ""} ${flashcardRatings[index] ?? ""}`} onClick={() => { setFlashcardIndex(index); setFlashcardFlipped(false); }} />
+                      <button
+                        key={index}
+                        type="button"
+                        aria-label={`Go to card ${index + 1}`}
+                        className={`flashcard-progress-mark ${index === flashcardIndex ? "current" : ""} ${flashcardRatings[index] ?? ""}`}
+                        onClick={() => { setFlashcardIndex(index); setFlashcardFlipped(false); }}
+                      />
                     ))}
                   </div>
                 </div>
+
                 {!deckComplete ? (
-                  <div className="study-tools-card-stage">
-                    <div className="study-tools-card-aura" aria-hidden="true" />
-                    <button type="button" className={`study-tools-physical-card palette-${flashcardIndex % 6} ${flashcardFlipped ? "is-flipped" : ""}`} onClick={() => setFlashcardFlipped(value => !value)} aria-label={flashcardFlipped ? "Show question" : "Reveal answer"}>
-                      <span className="study-tools-card-face study-tools-card-front">
-                        <span className="study-tools-card-orb" aria-hidden="true" />
-                        <div className="study-tools-card-headerline"><small>QUESTION · {flashcards[flashcardIndex].source.toUpperCase()}</small><b>{String(flashcardIndex + 1).padStart(2, "0")}</b></div>
-                        <strong>{flashcards[flashcardIndex].question}</strong>
-                        <span className="study-tools-flip-hint"><RotateCcw size={13} /> Think first · tap to reveal</span>
-                      </span>
-                      <span className="study-tools-card-face study-tools-card-back">
-                        <span className="study-tools-card-orb" aria-hidden="true" />
-                        <div className="study-tools-card-headerline"><small>ANSWER · VERIFY</small><b>✓</b></div>
-                        <strong>{flashcards[flashcardIndex].answer}</strong>
-                        <span className="study-tools-flip-hint">Tap to return to the question</span>
-                      </span>
-                    </button>
-                  </div>
-                ) : (
-                  <div className="study-tools-deck-complete">
-                    <div className="study-tools-deck-complete-icon"><Check size={24} /></div>
-                    <span className="study-tools-feature-label">DECK COMPLETE</span>
-                    <h4>Retrieval round finished.</h4>
-                    <p>{knownCount} known · {missedCount} marked for revisit. The missed cards are the ones worth spending another retrieval attempt on.</p>
-                    {missedCards.length > 0 ? (
-                      <button type="button" className="study-tools-card-next" onClick={() => { setFlashcardIndex(missedCards[0]); setFlashcardFlipped(false); }}>Revisit missed cards <RotateCcw size={13} /></button>
-                    ) : (
-                      <button type="button" className="study-tools-card-next" onClick={() => { setFlashcardRatings({}); setFlashcardIndex(0); setFlashcardFlipped(false); }}>Run the deck again <RotateCcw size={13} /></button>
+                  <>
+                    <div className={`flashcard-board palette-${flashcardIndex % 6}`}>
+                      <div className="flashcard-board-glow" aria-hidden="true" />
+                      <div className="flashcard-board-meta">
+                        <div>
+                          <span className="flashcard-eyebrow">{flashcards[flashcardIndex].source.toUpperCase()}</span>
+                          <span className="flashcard-concept-state">{flashcardFlipped ? "ANSWER REVEALED" : "RETRIEVAL REQUIRED"}</span>
+                        </div>
+                        <span className="flashcard-number">{String(flashcardIndex + 1).padStart(2, "0")}</span>
+                      </div>
+
+                      <button
+                        type="button"
+                        className={`flashcard-surface ${flashcardFlipped ? "revealed" : ""}`}
+                        onClick={() => setFlashcardFlipped(value => !value)}
+                        aria-label={flashcardFlipped ? "Hide answer" : "Reveal answer"}
+                      >
+                        <span className="flashcard-surface-inner">
+                          <span className="flashcard-face flashcard-question-face">
+                            <span className="flashcard-face-label"><Target size={13} /> RETRIEVE FROM MEMORY</span>
+                            <strong>{flashcards[flashcardIndex].question}</strong>
+                            <span className="flashcard-card-hint">Try to say the answer before revealing <kbd>Space</kbd></span>
+                          </span>
+                          <span className="flashcard-face flashcard-answer-face">
+                            <span className="flashcard-face-label"><Check size={13} /> SOURCE-GROUNDED ANSWER</span>
+                            <strong>{flashcards[flashcardIndex].answer}</strong>
+                            <span className="flashcard-card-hint">Compare → judge your recall → rate it</span>
+                          </span>
+                        </span>
+                      </button>
+
+                      <div className="flashcard-reveal-row">
+                        {!flashcardFlipped ? (
+                          <button type="button" className="flashcard-reveal-button" onClick={() => setFlashcardFlipped(true)}>
+                            Reveal answer <ChevronRight size={15} />
+                          </button>
+                        ) : (
+                          <span className="flashcard-judgement-prompt">How well did you actually retrieve it?</span>
+                        )}
+                        <span className="flashcard-key-hint"><kbd>Space</kbd> flip</span>
+                      </div>
+                    </div>
+
+                    {flashcardFlipped && (
+                      <div className="flashcard-rating-panel">
+                        <div className="flashcard-rating-copy">
+                          <span>RECALL QUALITY</span>
+                          <strong>Be honest. The system learns from this.</strong>
+                        </div>
+                        <div className="flashcard-rating-actions">
+                          <button type="button" className="flashcard-rate missed" onClick={() => {
+                            setFlashcardRatings(prev => ({ ...prev, [flashcardIndex]: "missed" }));
+                            if (flashcardIndex < flashcards.length - 1) { setFlashcardIndex(value => value + 1); setFlashcardFlipped(false); }
+                          }}>
+                            <X size={16} /><span><b>Again</b><small>Couldn’t recall</small></span>
+                          </button>
+                          <button type="button" className="flashcard-rate known" onClick={() => {
+                            setFlashcardRatings(prev => ({ ...prev, [flashcardIndex]: "known" }));
+                            if (flashcardIndex < flashcards.length - 1) { setFlashcardIndex(value => value + 1); setFlashcardFlipped(false); }
+                          }}>
+                            <Check size={16} /><span><b>Got it</b><small>Retrieved it</small></span>
+                          </button>
+                        </div>
+                      </div>
                     )}
+
+                    <div className="flashcard-session-footer">
+                      <div><span className="signal green">{knownCount}</span><small>retrieved</small></div>
+                      <div><span className="signal red">{missedCount}</span><small>revisit</small></div>
+                      <div><span className="signal neutral">{flashcards.length - knownCount - missedCount}</span><small>remaining</small></div>
+                      <span className="flashcard-session-tip"><Sparkles size={12} /> Retrieval first. Recognition is not mastery.</span>
+                    </div>
+                  </>
+                ) : (
+                  <div className="flashcard-finish">
+                    <div className="flashcard-finish-ring"><Check size={28} /></div>
+                    <span className="flashcard-eyebrow">SESSION COMPLETE</span>
+                    <h4>{knownCount === flashcards.length ? "Clean retrieval round." : "You found the gaps."}</h4>
+                    <p><b>{knownCount}</b> retrieved · <b>{missedCount}</b> need another pass. StudyVault keeps the weak cards visible instead of hiding them.</p>
+                    <div className="flashcard-finish-actions">
+                      {missedCards.length > 0 && (
+                        <button type="button" className="flashcard-primary-action" onClick={() => { setFlashcardIndex(missedCards[0]); setFlashcardFlipped(false); }}>
+                          Revisit {missedCards.length} weak {missedCards.length === 1 ? "card" : "cards"} <RotateCcw size={15} />
+                        </button>
+                      )}
+                      <button type="button" className="flashcard-secondary-action" onClick={() => { setFlashcardRatings({}); setFlashcardIndex(0); setFlashcardFlipped(false); }}>
+                        New round
+                      </button>
+                    </div>
                   </div>
                 )}
-                {!deckComplete && (
-                <div className="study-tools-card-actions">
-                  <button
-                    type="button"
-                    className="study-tools-card-rating missed"
-                    onClick={() => {
-                      setFlashcardRatings(prev => ({ ...prev, [flashcardIndex]: "missed" }));
-                      setFlashcardFlipped(true);
-                    }}
-                  >
-                    <X size={14} /> I missed it
-                  </button>
-                  <button
-                    type="button"
-                    className="study-tools-card-rating known"
-                    onClick={() => {
-                      setFlashcardRatings(prev => ({ ...prev, [flashcardIndex]: "known" }));
-                      if (flashcardIndex < flashcards.length - 1) {
-                        setFlashcardIndex(value => value + 1);
-                        setFlashcardFlipped(false);
-                      }
-                    }}
-                  >
-                    <Check size={14} /> I knew it
-                  </button>
-                </div>
-                )}
-
-                {flashcardRatings[flashcardIndex] === "missed" && (
-                  <button
-                    type="button"
-                    className="study-tools-card-next"
-                    onClick={() => {
-                      if (flashcardIndex < flashcards.length - 1) {
-                        setFlashcardIndex(value => value + 1);
-                        setFlashcardFlipped(false);
-                      }
-                    }}
-                  >
-                    Continue to next card <ChevronRight size={13} />
-                  </button>
-                )}
-
-                <div className="study-tools-card-status">
-                  <span>{knownCount} known</span>
-                  <span>{missedCount} to revisit</span>
-                  <span>{flashcardFlipped ? "Tap to see the question" : "Recall first · flip to verify"}</span>
-                </div>
               </div>
             )}
 
