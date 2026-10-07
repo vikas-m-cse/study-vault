@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { AnimatePresence, motion } from "motion/react";
+import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import {
   ArrowUpRight,
   BrainCircuit,
@@ -363,7 +363,7 @@ export default function StudyToolsModal({ note, onClose }: StudyToolsModalProps)
   const [flashcardFlipped, setFlashcardFlipped] = useState(false);
   const [flashcardRatings, setFlashcardRatings] = useState<Record<number, "known" | "missed">>({});
   const [flashcardInsight, setFlashcardInsight] = useState<{ type: "known" | "missed"; concept: string; label: string; reason: string } | null>(null);
-  const [flashcardTransition, setFlashcardTransition] = useState<"idle" | "exiting">("idle");
+  const [flashcardDirection, setFlashcardDirection] = useState<1 | -1>(1);
   const [missionAnswer, setMissionAnswer] = useState("");
   const [missionStep, setMissionStep] = useState(0);
   const [missionSubmitted, setMissionSubmitted] = useState(false);
@@ -393,29 +393,65 @@ export default function StudyToolsModal({ note, onClose }: StudyToolsModalProps)
   const flashcardMasteryPercent = masteryPercent(flashcardMastery);
   const flashcardRetention = retentionEstimate(flashcardMastery);
 
+  const prefersReducedMotion = useReducedMotion();
+
   useEffect(() => {
     if (tool !== "flashcards") return;
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.code === "Space" && document.activeElement?.tagName !== "TEXTAREA") {
         event.preventDefault();
-        if (!deckComplete && flashcardTransition === "idle") setFlashcardFlipped(value => !value);
+        if (!deckComplete) setFlashcardFlipped(value => !value);
       }
-      if (event.code === "ArrowRight" && !deckComplete && flashcardFlipped && flashcardIndex < flashcards.length - 1 && flashcardTransition === "idle") {
-        setFlashcardTransition("exiting");
-        window.setTimeout(() => {
-          setFlashcardIndex(value => value + 1);
-          setFlashcardFlipped(false);
-          setFlashcardTransition("idle");
-        }, 360);
+
+      if (event.code === "ArrowRight" && !deckComplete && flashcardIndex < flashcards.length - 1) {
+        event.preventDefault();
+        setFlashcardDirection(1);
+        setFlashcardIndex(value => value + 1);
+        setFlashcardFlipped(false);
       }
+
       if (event.code === "ArrowLeft" && !deckComplete && flashcardIndex > 0) {
+        event.preventDefault();
+        setFlashcardDirection(-1);
         setFlashcardIndex(value => value - 1);
         setFlashcardFlipped(false);
       }
     };
+
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [tool, deckComplete, flashcardFlipped, flashcardIndex, flashcards.length, flashcardTransition]);
+  }, [tool, deckComplete, flashcardIndex, flashcards.length]);
+  const goToFlashcard = (index: number, direction: 1 | -1) => {
+    setFlashcardDirection(direction);
+    setFlashcardIndex(index);
+    setFlashcardFlipped(false);
+  };
+
+  const rateFlashcard = (outcome: "known" | "missed") => {
+    if (!flashcardFlipped || !currentFlashcard) return;
+
+    setFlashcardRatings(prev => ({ ...prev, [flashcardIndex]: outcome }));
+
+    recordLearningEvent({
+      conceptId: note.id + "::" + flashcardConcept,
+      questionType: "recall",
+      outcome: outcome === "known" ? "correct" : "incorrect",
+      confidence: outcome === "known" ? 80 : 30,
+      evidenceScore: outcome === "known" ? 35 : 0,
+      at: Date.now(),
+    });
+
+    setFlashcardInsight(
+      outcome === "known"
+        ? { type: "known", concept: flashcardConcept, label: "Retrieval recorded", reason: "This concept now has another piece of evidence in the learning model." }
+        : { type: "missed", concept: flashcardConcept, label: "Recovery queued", reason: "This concept stays visible so the next pass targets the gap." },
+    );
+
+    if (flashcardIndex < flashcards.length - 1) {
+      goToFlashcard(flashcardIndex + 1, 1);
+    }
+  };
+
 
   const copyText = async (value: string) => {
     try {
@@ -635,32 +671,36 @@ export default function StudyToolsModal({ note, onClose }: StudyToolsModalProps)
             )}
 
             {tool === "flashcards" && flashcards.length > 0 && (
-              <div className="flashcard-cockpit">
-                <div className="flashcard-cockpit-head">
+              <section className="sv-retrieval" aria-label="Active recall deck">
+                <header className="sv-retrieval-header">
                   <div>
-                    <div className="flashcard-breadcrumb">
-                      <span className="flashcard-live-dot" /> ACTIVE RECALL
-                      <span className="flashcard-slash">/</span>
-                      {note.title || "Study deck"}
+                    <div className="sv-retrieval-kicker">
+                      <span className="sv-live" /> ACTIVE RECALL <span>/</span> {note.title || "Study deck"}
                     </div>
-                    <h4>Can you reconstruct this without the source?</h4>
+                    <h4>Reconstruct it. Then verify it.</h4>
+                    <p>Recognition is hidden until you commit to an answer.</p>
                   </div>
-                  <div className="flashcard-session-score">
-                    <span>SESSION</span>
-                    <strong>{String(flashcardIndex + 1).padStart(2, "0")} <em>/</em> {String(flashcards.length).padStart(2, "0")}</strong>
-                  </div>
-                </div>
 
-                <div className="flashcard-progress-track">
-                  <span style={{ width: `${((flashcardIndex + 1) / flashcards.length) * 100}%` }} />
-                  <div className="flashcard-progress-marks">
+                  <div className="sv-retrieval-counter" aria-label={`Card ${flashcardIndex + 1} of ${flashcards.length}`}>
+                    <span>{String(flashcardIndex + 1).padStart(2, "0")}</span>
+                    <i>/</i>
+                    <b>{String(flashcards.length).padStart(2, "0")}</b>
+                  </div>
+                </header>
+
+                <div className="sv-retrieval-progress" aria-hidden="true">
+                  <motion.span
+                    animate={{ scaleX: (flashcardIndex + 1) / flashcards.length }}
+                    transition={{ type: "spring", stiffness: 240, damping: 28 }}
+                  />
+                  <div>
                     {flashcards.map((_, index) => (
                       <button
                         key={index}
                         type="button"
-                        aria-label={`Go to card ${index + 1}`}
-                        className={`flashcard-progress-mark ${index === flashcardIndex ? "current" : ""} ${flashcardRatings[index] ?? ""}`}
-                        onClick={() => { setFlashcardIndex(index); setFlashcardFlipped(false); }}
+                        className={`sv-progress-node ${index === flashcardIndex ? "is-current" : ""} ${flashcardRatings[index] ?? ""}`}
+                        aria-label={`Open card ${index + 1}`}
+                        onClick={() => goToFlashcard(index, index >= flashcardIndex ? 1 : -1)}
                       />
                     ))}
                   </div>
@@ -668,183 +708,200 @@ export default function StudyToolsModal({ note, onClose }: StudyToolsModalProps)
 
                 {!deckComplete ? (
                   <>
-                    <div className={`flashcard-board palette-${flashcardIndex % 6}`}>
-                      <div className="flashcard-board-glow" aria-hidden="true" />
-                      <div className="flashcard-board-meta">
-                        <div>
-                          <span className="flashcard-eyebrow">{flashcards[flashcardIndex].source.toUpperCase()}</span>
-                          <span className="flashcard-concept-state">{flashcardFlipped ? "ANSWER REVEALED" : "RETRIEVAL REQUIRED"}</span>
-                        </div>
-                        <span className="flashcard-number">{String(flashcardIndex + 1).padStart(2, "0")}</span>
+                    <div className="sv-deck-meta">
+                      <div>
+                        <span className="sv-meta-label">CURRENT OBJECTIVE</span>
+                        <strong>{flashcardNeed === "retention" ? "Recover a fading memory" : flashcardNeed === "calibration" ? "Calibrate your confidence" : flashcardNeed === "understanding" ? "Move from recall to mechanism" : "Build a clean retrieval trace"}</strong>
                       </div>
+                      <div className="sv-deck-meta-right">
+                        <span>{flashcards[flashcardIndex].source}</span>
+                        <span className="sv-key-hint"><kbd>SPACE</kbd> reveal</span>
+                      </div>
+                    </div>
 
-                      <div className="flashcard-stage">
-                        <div className="flashcard-stack-layer stack-two" aria-hidden="true" />
-                        <div className="flashcard-stack-layer stack-one" aria-hidden="true" />
+                    <div className={`sv-card-stage ${flashcardFlipped ? "is-revealed" : ""}`}>
+                      <div className="sv-stage-light" aria-hidden="true" />
+                      <div className="sv-stage-grid" aria-hidden="true" />
 
-                        <div className={"flashcard-card-zone " + (flashcardTransition === "exiting" ? "is-exiting" : "")}>
-                          {flashcards[flashcardIndex + 1] && (
-                            <div className="flashcard-next-card" aria-hidden="true">
-                              <span className="flashcard-next-label">UP NEXT</span>
-                              <strong>{flashcards[flashcardIndex + 1].question}</strong>
-                              <span className="flashcard-next-number">{String(flashcardIndex + 2).padStart(2, "0")}</span>
-                            </div>
-                          )}
-                          <AnimatePresence initial={false} mode="wait">
-                            <motion.div
-                              key={flashcardIndex}
-                              className="flashcard-motion-shell"
-                              initial={{ opacity: 0, x: 72, y: 28, rotate: 4, scale: 0.94 }}
-                              animate={{ opacity: 1, x: 0, y: 0, rotate: 0, scale: 1 }}
-                              exit={{ opacity: 0, x: 110, y: -14, rotate: 6, scale: 0.93 }}
-                              transition={{ type: "spring", stiffness: 280, damping: 26, mass: 0.72 }}
-                            >
-                              <motion.button
-                                type="button"
-                                className={`flashcard-surface ${flashcardFlipped ? "revealed" : ""}`}
-                                onClick={() => setFlashcardFlipped(value => !value)}
-                                whileHover={{ y: -3, scale: 1.002 }}
-                                whileTap={{ scale: 0.997 }}
-                                aria-label={flashcardFlipped ? "Hide answer" : "Reveal answer"}
-                              >
-                            <span className="flashcard-surface-inner">
-                              <span className="flashcard-face flashcard-question-face">
-                                <span className="flashcard-card-top">
-                                  <span className="flashcard-face-label"><Target size={13} /> RETRIEVAL</span>
-                                  <span className="flashcard-card-index">{String(flashcardIndex + 1).padStart(2, "0")}</span>
+                      {flashcards[flashcardIndex + 1] && (
+                        <motion.div
+                          key={`peek-${flashcardIndex + 1}`}
+                          className="sv-card-peek"
+                          initial={{ y: 30, scale: 0.94, opacity: 0 }}
+                          animate={{ y: 24, scale: 0.965, opacity: 0.56 }}
+                          transition={{ type: "spring", stiffness: 180, damping: 24 }}
+                          aria-hidden="true"
+                        >
+                          <span>UP NEXT · {String(flashcardIndex + 2).padStart(2, "0")}</span>
+                          <strong>{flashcards[flashcardIndex + 1].question}</strong>
+                        </motion.div>
+                      )}
+
+                      <AnimatePresence initial={false} custom={flashcardDirection} mode="popLayout">
+                        <motion.article
+                          key={`card-${flashcardIndex}`}
+                          className="sv-card-shell"
+                          custom={flashcardDirection}
+                          initial={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, x: flashcardDirection * 90, y: 26, rotate: flashcardDirection * 4, scale: 0.96 }}
+                          animate={{ opacity: 1, x: 0, y: 0, rotate: 0, scale: 1 }}
+                          exit={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, x: flashcardDirection * -145, y: -24, rotate: flashcardDirection * -7, scale: 0.92 }}
+                          transition={{ type: "spring", stiffness: 260, damping: 27, mass: 0.78 }}
+                          drag={prefersReducedMotion ? false : "x"}
+                          dragDirectionLock
+                          dragElastic={0.16}
+                          dragMomentum
+                          whileDrag={{ scale: 1.015, cursor: "grabbing" }}
+                          onDragEnd={(_, info) => {
+                            if (!flashcardFlipped) return;
+                            const passed = Math.abs(info.offset.x) > 115 || Math.abs(info.velocity.x) > 650;
+                            if (!passed) return;
+                            rateFlashcard(info.offset.x >= 0 ? "known" : "missed");
+                          }}
+                        >
+                          <div className="sv-card-edge" aria-hidden="true" />
+                          <button
+                            type="button"
+                            className={`sv-card ${flashcardFlipped ? "is-flipped" : ""}`}
+                            onClick={() => setFlashcardFlipped(value => !value)}
+                            aria-label={flashcardFlipped ? "Hide answer" : "Reveal answer"}
+                          >
+                            <span className="sv-card-inner">
+                              <span className="sv-card-face sv-card-front">
+                                <span className="sv-card-top">
+                                  <span className="sv-card-chip"><Target size={13} /> RETRIEVAL</span>
+                                  <span className="sv-card-index">{String(flashcardIndex + 1).padStart(2, "0")}</span>
                                 </span>
-                                <strong>{flashcards[flashcardIndex].question}</strong>
-                                <span className="flashcard-card-hint">{flashcardNeed === "retention" ? "Retention is fading · retrieve before rereading" : flashcardNeed === "calibration" ? "Confidence needs a reality check · explain it" : flashcardNeed === "understanding" ? "Recall is ahead · focus on why it works" : "Reconstruct the answer before revealing"} <kbd>Space</kbd></span>
-                                <svg className="flashcard-constellation" viewBox="0 0 420 300" aria-hidden="true">
+
+                                <span className="sv-card-content">
+                                  <span className="sv-card-overline">QUESTION</span>
+                                  <strong>{flashcards[flashcardIndex].question}</strong>
+                                </span>
+
+                                <span className="sv-card-footer">
+                                  <span>{flashcardAction.label}</span>
+                                  <span>Think before you reveal</span>
+                                </span>
+
+                                <svg className="sv-card-art" viewBox="0 0 500 420" aria-hidden="true">
                                   <defs>
-                                    <linearGradient id="svFlashGradient" x1="0" y1="0" x2="1" y2="1">
-                                      <stop offset="0%" stopColor="currentColor" stopOpacity=".05" />
-                                      <stop offset="55%" stopColor="currentColor" stopOpacity=".28" />
-                                      <stop offset="100%" stopColor="currentColor" stopOpacity=".02" />
+                                    <linearGradient id="svArc" x1="0" y1="0" x2="1" y2="1">
+                                      <stop offset="0" stopColor="#8ea8ff" stopOpacity=".04" />
+                                      <stop offset=".55" stopColor="#8ea8ff" stopOpacity=".35" />
+                                      <stop offset="1" stopColor="#67e0c2" stopOpacity=".03" />
                                     </linearGradient>
-                                    <filter id="svFlashGlow">
-                                      <feGaussianBlur stdDeviation="5" result="blur" />
-                                      <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
-                                    </filter>
                                   </defs>
-                                  <path d="M390 38 C285 24 228 70 236 132 C244 194 168 214 78 270" fill="none" stroke="url(#svFlashGradient)" strokeWidth="1.2" />
-                                  <path d="M390 72 C310 58 270 91 273 139 C277 190 217 218 128 268" fill="none" stroke="currentColor" strokeOpacity=".10" />
-                                  <path d="M390 107 C331 97 309 119 311 145 C313 174 275 200 190 243" fill="none" stroke="currentColor" strokeOpacity=".08" />
-                                  <circle cx="390" cy="38" r="5" fill="currentColor" filter="url(#svFlashGlow)" />
-                                  <circle cx="236" cy="132" r="3" fill="currentColor" opacity=".65" />
-                                  <circle cx="78" cy="270" r="4" fill="currentColor" opacity=".38" />
-                                  <g transform="translate(326 215)">
-                                    <rect x="0" y="0" width="18" height="18" rx="2" transform="rotate(45 9 9)" fill="none" stroke="currentColor" strokeOpacity=".22" />
-                                    <rect x="30" y="8" width="12" height="12" rx="2" transform="rotate(45 36 14)" fill="none" stroke="currentColor" strokeOpacity=".12" />
-                                  </g>
+                                  <path d="M470 42C345 15 260 73 275 165c14 86-73 147-226 209" fill="none" stroke="url(#svArc)" strokeWidth="1.2" />
+                                  <path d="M470 92C366 70 321 111 329 169c8 63-57 122-169 167" fill="none" stroke="#8ea8ff" strokeOpacity=".10" />
+                                  <circle cx="470" cy="42" r="5" fill="#8ea8ff" fillOpacity=".65" />
+                                  <circle cx="275" cy="165" r="3" fill="#67e0c2" fillOpacity=".48" />
+                                  <circle cx="49" cy="374" r="4" fill="#8ea8ff" fillOpacity=".28" />
                                 </svg>
                               </span>
-                              <span className="flashcard-face flashcard-answer-face">
-                                <span className="flashcard-card-top">
-                                  <span className="flashcard-face-label"><Check size={13} /> VERIFIED SOURCE</span>
-                                  <span className="flashcard-card-index">{String(flashcardIndex + 1).padStart(2, "0")}</span>
+
+                              <span className="sv-card-face sv-card-back">
+                                <span className="sv-card-top">
+                                  <span className="sv-card-chip is-answer"><Check size={13} /> SOURCE VERIFIED</span>
+                                  <span className="sv-card-index">{String(flashcardIndex + 1).padStart(2, "0")}</span>
                                 </span>
-                                <strong>{flashcards[flashcardIndex].answer}</strong>
-                                <span className="flashcard-card-hint">Compare → judge your recall → rate it</span>
+                                <span className="sv-card-content">
+                                  <span className="sv-card-overline">ANSWER</span>
+                                  <strong>{flashcards[flashcardIndex].answer}</strong>
+                                </span>
+                                <span className="sv-card-footer">
+                                  <span>Compare your reconstruction</span>
+                                  <span>Then rate it</span>
+                                </span>
                               </span>
                             </span>
-                              </motion.button>
-                            </motion.div>
-                          </AnimatePresence>
+                          </button>
 
-                          <div className="flashcard-action-deck">
-                            <button
-                              type="button"
-                              className="flashcard-action again"
-                              disabled={!flashcardFlipped}
-                              onClick={() => {
-                                if (!flashcardFlipped) return;
-                                setFlashcardRatings(prev => ({ ...prev, [flashcardIndex]: "missed" }));
-                                recordLearningEvent({ conceptId: note.id + "::" + flashcardConcept, questionType: "recall", outcome: "incorrect", confidence: 30, evidenceScore: 0, at: Date.now() });
-                                setFlashcardInsight({ type: "missed", concept: flashcardConcept, label: "Gap detected", reason: "This concept is queued for another retrieval attempt." });
-                                if (flashcardIndex < flashcards.length - 1) {
-                                  setFlashcardTransition("exiting");
-                                  window.setTimeout(() => {
-                                    setFlashcardIndex(value => value + 1);
-                                    setFlashcardFlipped(false);
-                                    setFlashcardTransition("idle");
-                                  }, 360);
-                                }
-                              }}
-                            >
-                              <X size={18} /><span><b>Again</b><small>Didn’t recall</small></span>
-                            </button>
+                          <motion.div
+                            className="sv-swipe-label sv-swipe-left"
+                            initial={false}
+                            animate={{ opacity: flashcardFlipped ? 1 : 0 }}
+                          >
+                            <X size={14} /> RECOVER
+                          </motion.div>
+                          <motion.div
+                            className="sv-swipe-label sv-swipe-right"
+                            initial={false}
+                            animate={{ opacity: flashcardFlipped ? 1 : 0 }}
+                          >
+                            <Check size={14} /> RETRIEVED
+                          </motion.div>
+                        </motion.article>
+                      </AnimatePresence>
 
-                            <button
-                              type="button"
-                              className="flashcard-action reveal"
-                              onClick={() => setFlashcardFlipped(value => !value)}
-                            >
-                              <RotateCcw size={18} /><span><b>{flashcardFlipped ? "Hide answer" : "Reveal answer"}</b><small><kbd>Space</kbd> {flashcardFlipped ? "flip back" : "flip card"}</small></span>
-                            </button>
-
-                            <button
-                              type="button"
-                              className="flashcard-action got-it"
-                              disabled={!flashcardFlipped}
-                              onClick={() => {
-                                if (!flashcardFlipped) return;
-                                setFlashcardRatings(prev => ({ ...prev, [flashcardIndex]: "known" }));
-                                recordLearningEvent({ conceptId: note.id + "::" + flashcardConcept, questionType: "recall", outcome: "correct", confidence: 80, evidenceScore: 35, at: Date.now() });
-                                setFlashcardInsight({ type: "known", concept: flashcardConcept, label: "Retrieval recorded", reason: "This retrieval now contributes to the concept's learning history." });
-                                if (flashcardIndex < flashcards.length - 1) { setFlashcardIndex(value => value + 1); setFlashcardFlipped(false); }
-                              }}
-                            >
-                              <Check size={18} /><span><b>Got it</b><small>Recalled easily</small></span>
-                            </button>
-                          </div>
-                        </div>
-
-                        <aside className="flashcard-context">
-                          <span>LEARNING SIGNAL</span>
-                          <strong>{flashcardNeed === "retention" ? "RECALL AGAIN" : flashcardNeed === "calibration" ? "CHECK CONFIDENCE" : flashcardNeed === "understanding" ? "EXPLAIN WHY" : "BUILD RECALL"}</strong>
-                          <p>{flashcardAction.reason}</p>
-                          <div className="flashcard-context-metric"><b>{flashcardMasteryPercent}%</b><span>mastery</span></div>
-                          <div className="flashcard-context-meter"><span style={{ width: `${flashcardMasteryPercent}%` }} /></div>
-                          <div className="flashcard-context-rule" />
-                          <small>Adaptive action is grounded in your learning evidence.</small>
-                        </aside>
+                      <div className="sv-card-gesture-hint">
+                        {flashcardFlipped ? "SWIPE LEFT = NEEDS WORK · SWIPE RIGHT = RETRIEVED" : "SPACE OR TAP TO REVEAL"}
                       </div>
-
-                     </div>
-                    {flashcardInsight && (
-                      <div className={`flashcard-insight-toast ${flashcardInsight.type}`}>
-                        <span>{flashcardInsight.type === "known" ? "✓" : "!"}</span>
-                        <div><b>{flashcardInsight.label}</b><small>{flashcardInsight.reason}</small></div>
-                      </div>
-                    )}
-
-                    <div className="flashcard-session-footer">
-                      <div><span className="signal green">{knownCount}</span><small>retrieved</small></div>
-                      <div><span className="signal red">{missedCount}</span><small>revisit</small></div>
-                      <div><span className="signal neutral">{flashcards.length - knownCount - missedCount}</span><small>remaining</small></div>
-                      <span className="flashcard-session-tip"><Sparkles size={12} /> Retrieval first. Recognition is not mastery.</span>
                     </div>
-                  </>
-                ) : (
-                  <div className="flashcard-finish">
-                    <div className="flashcard-finish-ring"><Check size={28} /></div>
-                    <span className="flashcard-eyebrow">SESSION COMPLETE</span>
-                    <h4>{knownCount === flashcards.length ? "Clean retrieval round." : "You found the gaps."}</h4>
-                    <p><b>{knownCount}</b> retrieved · <b>{missedCount}</b> need another pass. StudyVault keeps the weak cards visible instead of hiding them.</p>
-                    <div className="flashcard-finish-actions">
-                      {missedCards.length > 0 && (
-                        <button type="button" className="flashcard-primary-action" onClick={() => { setFlashcardIndex(missedCards[0]); setFlashcardFlipped(false); }}>
-                          Revisit {missedCards.length} weak {missedCards.length === 1 ? "card" : "cards"} <RotateCcw size={15} />
-                        </button>
-                      )}
-                      <button type="button" className="flashcard-secondary-action" onClick={() => { setFlashcardRatings({}); setFlashcardIndex(0); setFlashcardFlipped(false); }}>
-                        New round
+
+                    <div className="sv-command-row">
+                      <button type="button" className="sv-command sv-command-recovery" disabled={!flashcardFlipped} onClick={() => rateFlashcard("missed")}>
+                        <span className="sv-command-icon"><X size={16} /></span>
+                        <span><b>Needs work</b><small>Review again</small></span>
+                      </button>
+
+                      <motion.button
+                        type="button"
+                        className="sv-command sv-command-reveal"
+                        onClick={() => setFlashcardFlipped(value => !value)}
+                        whileHover={{ y: -2 }}
+                        whileTap={{ scale: 0.98 }}
+                      >
+                        <span className="sv-command-icon"><RotateCcw size={16} /></span>
+                        <span><b>{flashcardFlipped ? "Hide answer" : "Reveal answer"}</b><small>{flashcardFlipped ? "Return to recall" : "Verify memory"}</small></span>
+                      </motion.button>
+
+                      <button type="button" className="sv-command sv-command-success" disabled={!flashcardFlipped} onClick={() => rateFlashcard("known")}>
+                        <span><b>Retrieved</b><small>Move forward</small></span>
+                        <span className="sv-command-icon"><Check size={16} /></span>
                       </button>
                     </div>
-                  </div>
+
+                    {flashcardInsight && (
+                      <motion.div
+                        className={`sv-learning-signal ${flashcardInsight.type}`}
+                        initial={{ opacity: 0, y: 8 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.24 }}
+                      >
+                        <span className="sv-signal-dot" />
+                        <div>
+                          <b>{flashcardInsight.label}</b>
+                          <span>{flashcardInsight.reason}</span>
+                        </div>
+                        <strong>{flashcardMasteryPercent}%</strong>
+                      </motion.div>
+                    )}
+                  </>
+                ) : (
+                  <motion.div
+                    className="sv-complete"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                  >
+                    <div className="sv-complete-orbit" aria-hidden="true" />
+                    <span className="sv-retrieval-kicker"><span className="sv-live" /> SESSION COMPLETE</span>
+                    <h4>{knownCount === flashcards.length ? "Clean retrieval." : "The gaps are now visible."}</h4>
+                    <p><b>{knownCount}</b> retrieved · <b>{missedCount}</b> marked for recovery. The next pass can target exactly what broke.</p>
+                    <div className="sv-complete-actions">
+                      {missedCards.length > 0 && (
+                        <button type="button" onClick={() => goToFlashcard(missedCards[0], 1)}>Revisit {missedCards.length} weak {missedCards.length === 1 ? "card" : "cards"} <RotateCcw size={15} /></button>
+                      )}
+                      <button type="button" className="secondary" onClick={() => { setFlashcardRatings({}); goToFlashcard(0, 1); }}>New round</button>
+                    </div>
+                  </motion.div>
                 )}
-              </div>
+
+                <footer className="sv-retrieval-footer">
+                  <span><b>{knownCount}</b> retrieved</span>
+                  <span><b>{missedCount}</b> recovery</span>
+                  <span><b>{Math.max(0, flashcards.length - knownCount - missedCount)}</b> remaining</span>
+                  <span className="sv-footer-tip"><Sparkles size={12} /> Retrieval first. Recognition is not mastery.</span>
+                </footer>
+              </section>
             )}
 
             {tool === "questions" && (
