@@ -178,7 +178,7 @@ function makeMission(note: Note): MissionChallenge[] {
 
   const firstConcept = usable[0] ? conceptName(usable[0]) : "this topic";
   const secondConcept = usable[1] ? conceptName(usable[1]) : firstConcept;
-  const combinedReference = usable.slice(0, 2).map(cleanSnippet).join(" ");
+  const combinedReference = usable.slice(0, 2).map(value => cleanSnippet(value, 420)).join(" ");
   challenges.push({
     type: "apply",
     label: "TRANSFER",
@@ -443,15 +443,15 @@ export default function StudyToolsModal({ note, onClose }: StudyToolsModalProps)
                       onClick={() => {
                         if (missionDone) {
                           setMissionStep(0);
-                          setMissionAnswer("");
-                          setMissionSubmitted(false);
-                          setMissionConfidence(0);
+                        } else if (missionScore < 40) {
+                          // Weak evidence keeps the learner on the concept instead of pretending it is mastered.
+                          setMissionStep(step => step);
                         } else {
                           setMissionStep(step => step + 1);
-                          setMissionAnswer("");
-                          setMissionSubmitted(false);
-                          setMissionConfidence(0);
                         }
+                        setMissionAnswer("");
+                        setMissionSubmitted(false);
+                        setMissionConfidence(0);
                       }}
                     >
                       {missionDone ? "Restart mission" : "Continue mission"} <ChevronRight size={14} />
