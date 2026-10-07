@@ -139,6 +139,78 @@ export function chooseNextInterval(outcome: LearningEvent["outcome"], confidence
   return days[Math.min(previousLevel, days.length - 1)] * 24 * 60 * 60 * 1000;
 }
 
+export type NextLearningAction = {
+  dimension: MasteryDimension;
+  questionType: QuestionType;
+  label: string;
+  reason: string;
+};
+
+export function getNextBestAction(value?: ConceptMastery): NextLearningAction {
+  if (!value || value.attempts === 0) {
+    return {
+      dimension: "recall",
+      questionType: "recall",
+      label: "Start with recall",
+      reason: "You have not retrieved this concept yet. Build the first memory trace by answering from memory.",
+    };
+  }
+
+  const score = (dimension: MasteryDimension) => value.dimensionScores[dimension] ?? 0;
+
+  if (score("recall") < 60) {
+    return {
+      dimension: "recall",
+      questionType: "recall",
+      label: "Strengthen recall",
+      reason: "Basic retrieval is still unstable. Retrieve the core idea before adding more difficulty.",
+    };
+  }
+
+  if (score("understanding") < 60) {
+    return {
+      dimension: "understanding",
+      questionType: "why",
+      label: "Explain why",
+      reason: "You can retrieve the idea, but the next bottleneck is understanding how or why it works.",
+    };
+  }
+
+  if (score("application") < 60) {
+    return {
+      dimension: "application",
+      questionType: "application",
+      label: "Apply it",
+      reason: "Your next gain should come from using the concept in a concrete problem or scenario.",
+    };
+  }
+
+  if (score("teaching") < 60) {
+    return {
+      dimension: "teaching",
+      questionType: "teach",
+      label: "Teach it",
+      reason: "Explaining the concept in your own words is the next test of organized understanding.",
+    };
+  }
+
+  if (score("transfer") < 60) {
+    return {
+      dimension: "transfer",
+      questionType: "reverse",
+      label: "Transfer it",
+      reason: "The concept is familiar; now test whether you can reconstruct and use it in a new context.",
+    };
+  }
+
+  return {
+    dimension: "transfer",
+    questionType: "reverse",
+    label: "Challenge yourself",
+    reason: "Core mastery is strong. A novel application is more valuable than another easy repetition.",
+  };
+}
+
 export function recordMasteryLevel(conceptId: string, level: number) {
   const mastery = getMastery();
   const current = mastery[conceptId];
