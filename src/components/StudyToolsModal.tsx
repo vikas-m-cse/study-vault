@@ -705,6 +705,7 @@ export default function StudyToolsModal({ note, onClose }: StudyToolsModalProps)
                     </div>
 
                     {flashcardFlipped && (
+                      <>
                       <div className="flashcard-adaptive-strip">
                         <div className="flashcard-adaptive-icon"><Sparkles size={14} /></div>
                         <div>
@@ -742,6 +743,7 @@ export default function StudyToolsModal({ note, onClose }: StudyToolsModalProps)
                           </button>
                         </div>
                       </div>
+                      </>
                     )}
 
                     {flashcardInsight && (
