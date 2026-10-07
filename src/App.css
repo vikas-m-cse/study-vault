@@ -7169,3 +7169,9 @@ button {
   .sv-command{transition:none}
   .sv-stage-grid{display:none}
 }
+
+.sv-signal-status{
+  color:#6f7d92;
+  font:800 7px/1 ui-monospace,SFMono-Regular,Menlo,monospace;
+  letter-spacing:.13em;
+}
