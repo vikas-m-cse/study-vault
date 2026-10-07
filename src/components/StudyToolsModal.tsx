@@ -679,6 +679,7 @@ export default function StudyToolsModal({ note, onClose }: StudyToolsModalProps)
                     <Check size={14} /> I knew it
                   </button>
                 </div>
+                )}
 
                 {flashcardRatings[flashcardIndex] === "missed" && (
                   <button
