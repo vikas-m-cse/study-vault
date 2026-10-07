@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
     Archive,
     BrainCircuit,
+    Sparkles,
     ChevronLeft,
     ChevronRight,
     Clock3,
@@ -18,6 +19,7 @@ import {
     X,
 } from "lucide-react";
 import { NoteEditor, type NoteEditorChange } from "./components/NoteEditor";
+import StudyToolsModal from "./components/StudyToolsModal";
 import type { Note, Folder as NoteFolder } from "./types/note";
 import type { Resource } from "./types/resource";
 import type { Subject } from "./Subjects";
@@ -86,6 +88,7 @@ export default function Notes({ resources, subjects, openNoteId, openFolderId, i
     const [isFolderFormOpen, setIsFolderFormOpen] = useState(false);
     const [folderName, setFolderName] = useState("");
     const [workspaceNow] = useState(() => Date.now());
+    const [studyToolsOpen, setStudyToolsOpen] = useState(false);
 
     const saveTimers = useRef<Record<string, number>>({});
     const saveVersions = useRef<Record<string, number>>({});
@@ -534,6 +537,17 @@ export default function Notes({ resources, subjects, openNoteId, openFolderId, i
                                 </div>
                                 <div className="notes-editor-header-actions">
                                     <span className={`notes-save-status ${saveState}`}>{statusLabel}</span>
+                                    {selectedNote && !selectedRecord?.legacy && (
+                                        <button
+                                            type="button"
+                                            className="notes-study-tools-button"
+                                            onClick={() => setStudyToolsOpen(true)}
+                                            title="Transform this note into study material"
+                                        >
+                                            <Sparkles size={15} />
+                                            Study tools
+                                        </button>
+                                    )}
                                     {selectedNote && !selectedRecord?.legacy && onOpenReview && (
                                         <button
                                             type="button"
