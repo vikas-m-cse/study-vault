@@ -14,7 +14,7 @@ import { getAllNotes } from "./services/noteStorage";
 import type { Note, TipTapNode } from "./types/note";
 import type { Resource } from "./types/resource";
 import type { Subject } from "./Subjects";
-import { chooseNextInterval, masteryPercent, recordLearningEvent, recordMasteryLevel, getMastery, getNextBestAction, learningPriority, retentionEstimate, calibrationGap, type QuestionType } from "./services/learningCore";
+import { chooseNextInterval, masteryPercent, recordLearningEvent, recordMasteryLevel, getMastery, getAdaptiveAction, learningPriority, retentionEstimate, calibrationGap, averageEvidence, type QuestionType } from "./services/learningCore";
 
 type ReviewProps = {
   resources: Resource[];
@@ -299,7 +299,7 @@ export default function Review({ subjects, focusNoteId }: ReviewProps) {
   };
 
   const selectedMastery = selected ? getMastery()[selected.id] : undefined;
-  const adaptiveAction = selected ? getNextBestAction(selectedMastery) : null;
+  const adaptiveAction = selected ? getAdaptiveAction(selectedMastery) : null;
   const questionType: QuestionType = mode === "questions" ? (adaptiveAction?.questionType ?? "recall") : "recall";
 
   const adaptivePrompt = selected && adaptiveAction
@@ -370,9 +370,10 @@ export default function Review({ subjects, focusNoteId }: ReviewProps) {
   const reviewedConcepts = concepts.filter((concept) => reviewState[concept.id]?.lastReviewedAt).length;
   const mastery = getMastery();
   const learnedConcepts = concepts.filter((concept) => masteryPercent(mastery[concept.id]) >= 70).length;
-  const nextAction = selected ? getNextBestAction(mastery[selected.id]) : null;
+  const nextAction = selected ? getAdaptiveAction(mastery[selected.id]) : null;
   const selectedRetention = selected ? retentionEstimate(mastery[selected.id], now) : 0;
   const selectedCalibrationGap = selected ? calibrationGap(mastery[selected.id]) : 0;
+  const selectedEvidence = selected ? averageEvidence(mastery[selected.id]) : 0;
 
   return (
     <div className="review-page">
@@ -448,6 +449,7 @@ export default function Review({ subjects, focusNoteId }: ReviewProps) {
                   {mastery[selected.id] && <span>Mastery {masteryPercent(mastery[selected.id])}%</span>}
                   {mastery[selected.id] && <span>Retention {Math.round(selectedRetention * 100)}%</span>}
                   {mastery[selected.id] && selectedCalibrationGap >= 15 && <span>Calibration gap {selectedCalibrationGap}%</span>}
+                  {mastery[selected.id] && selectedEvidence > 0 && <span>Evidence {selectedEvidence}%</span>}
                 </div>
 
                 {nextAction && (
