@@ -4916,3 +4916,239 @@ button {
   .flashcard-face strong{font-size:27px}
   .flashcard-question-face::after{font-size:72px}
 }
+
+/* =========================================================
+   SIGNATURE FLASHCARD STAGE v2
+   Less dashboard. More instrument.
+========================================================= */
+.flashcard-cockpit{max-width:1080px}
+.flashcard-cockpit-head{align-items:center;margin-bottom:16px}
+.flashcard-cockpit-head h4{font-size:24px;letter-spacing:-.05em}
+.flashcard-breadcrumb{color:#8394aa}
+.flashcard-session-score{
+  min-width:108px;
+  background:linear-gradient(145deg,rgba(255,255,255,.045),rgba(255,255,255,.015));
+  border-color:rgba(216,183,122,.18);
+}
+.flashcard-progress-track{margin-bottom:17px}
+.flashcard-progress-track>span{background:linear-gradient(90deg,#8da9ff 0%,#c7a26a 48%,#72d0b1 100%)}
+.flashcard-stage{
+  display:grid;
+  grid-template-columns:38px minmax(0,1fr) 145px;
+  gap:15px;
+  align-items:stretch;
+}
+.flashcard-side-rail{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  padding:18px 0;
+  border:1px solid rgba(160,180,207,.09);
+  border-radius:18px;
+  background:rgba(8,18,31,.55);
+}
+.flashcard-rail-label{
+  margin-bottom:15px;
+  color:#526781;
+  font-size:6px;
+  font-weight:900;
+  letter-spacing:.18em;
+  writing-mode:vertical-rl;
+}
+.flashcard-rail-dot{
+  position:relative;
+  width:7px;height:7px;
+  margin:8px 0;
+  padding:0;
+  border:0;
+  border-radius:50%;
+  background:#31445d;
+  cursor:pointer;
+  transition:.2s ease;
+}
+.flashcard-rail-dot.active{
+  width:11px;height:11px;
+  background:#d8b77a;
+  box-shadow:0 0 0 4px rgba(216,183,122,.12),0 0 16px rgba(216,183,122,.25);
+}
+.flashcard-rail-dot.known{background:#69c7a6}
+.flashcard-rail-dot.missed{background:#df7d88}
+
+.flashcard-board{
+  min-width:0;
+  display:flex;
+  flex-direction:column;
+}
+.flashcard-board-meta{display:none}
+.flashcard-surface{
+  min-height:430px;
+  height:100%;
+  border-radius:28px;
+  box-shadow:
+    0 35px 80px rgba(0,0,0,.34),
+    0 0 0 1px rgba(255,255,255,.07),
+    inset 0 1px rgba(255,255,255,.4);
+}
+.flashcard-face{
+  padding:42px 48px;
+  border-radius:28px;
+}
+.flashcard-question-face{
+  background:
+    radial-gradient(circle at 92% 12%,rgba(216,183,122,.20),transparent 24%),
+    linear-gradient(135deg,#fffdf8 0%,#f1ede4 100%);
+}
+.flashcard-question-face::before{
+  width:4px;
+  background:linear-gradient(180deg,#89a8ff,#d8b77a 45%,#6fc8ad);
+}
+.flashcard-question-face::after{
+  right:-32px;bottom:0;
+  color:rgba(23,34,52,.035);
+  font-size:125px;
+}
+.flashcard-card-top{
+  position:relative;
+  z-index:3;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  width:100%;
+}
+.flashcard-card-index{
+  display:grid;
+  place-items:center;
+  width:32px;height:32px;
+  border-radius:50%;
+  background:rgba(20,32,50,.06);
+  color:#596b82;
+  font-size:8px;
+  font-weight:900;
+}
+.flashcard-face-label{margin:0}
+.flashcard-face strong{
+  margin-top:55px;
+  max-width:700px;
+  font-size:clamp(32px,3.4vw,47px);
+  line-height:1.08;
+}
+.flashcard-card-hint{margin-top:auto;padding-top:30px}
+.flashcard-card-motif{
+  position:absolute;
+  right:32px;
+  bottom:30px;
+  display:grid;
+  grid-template-columns:repeat(2,20px);
+  gap:7px;
+  opacity:.22;
+}
+.flashcard-card-motif span{
+  display:block;
+  width:20px;height:20px;
+  border:1px solid #596b82;
+  transform:rotate(45deg);
+}
+.flashcard-card-motif span:nth-child(2){transform:rotate(45deg) translate(10px,10px);opacity:.5}
+.flashcard-card-motif span:nth-child(3){opacity:.35}
+.flashcard-card-motif span:nth-child(4){opacity:.18}
+
+.flashcard-answer-face{
+  background:
+    radial-gradient(circle at 85% 15%,rgba(107,210,176,.15),transparent 28%),
+    linear-gradient(135deg,#102c29,#0a1d24);
+}
+.flashcard-answer-face .flashcard-face-label{color:#78d0b5}
+.flashcard-answer-face strong{margin-top:48px}
+
+.flashcard-context{
+  display:flex;
+  flex-direction:column;
+  justify-content:flex-end;
+  min-height:430px;
+  padding:16px 13px;
+  border-left:1px solid rgba(160,180,207,.08);
+}
+.flashcard-context>span{
+  color:#5d7693;
+  font-size:7px;
+  font-weight:900;
+  letter-spacing:.16em;
+}
+.flashcard-context>strong{
+  margin-top:8px;
+  color:#d8e4f2;
+  font-size:10px;
+  letter-spacing:.08em;
+}
+.flashcard-context p{
+  margin:7px 0 0;
+  color:#60748d;
+  font-size:8px;
+  line-height:1.55;
+}
+.flashcard-context-metric{
+  display:flex;
+  align-items:baseline;
+  gap:6px;
+  margin-top:20px;
+}
+.flashcard-context-metric b{
+  color:#d8b77a;
+  font-size:24px;
+  letter-spacing:-.05em;
+}
+.flashcard-context-metric span{
+  color:#536981;
+  font-size:7px;
+  font-weight:800;
+}
+.flashcard-context-rule{
+  width:100%;
+  height:1px;
+  margin:13px 0;
+  background:linear-gradient(90deg,rgba(216,183,122,.3),transparent);
+}
+.flashcard-context small{
+  color:#485d75;
+  font-size:7px;
+  line-height:1.5;
+}
+.flashcard-reveal-row{
+  margin-top:10px;
+  padding-left:53px;
+}
+.flashcard-reveal-button{
+  min-height:45px;
+  padding:0 19px;
+  border-radius:13px;
+  background:linear-gradient(135deg,#f1d39a,#d9b675);
+  color:#182234;
+  border:0;
+  box-shadow:0 10px 26px rgba(216,183,122,.16);
+}
+.flashcard-key-hint{margin-left:auto}
+.flashcard-adaptive-strip,
+.flashcard-rating-panel,
+.flashcard-insight-toast,
+.flashcard-session-footer{margin-left:53px}
+.flashcard-adaptive-strip{margin-right:160px}
+.flashcard-session-footer{margin-right:160px}
+
+@media(max-width:900px){
+  .flashcard-stage{grid-template-columns:30px minmax(0,1fr)}
+  .flashcard-context{display:none}
+  .flashcard-reveal-row{padding-left:45px}
+  .flashcard-adaptive-strip,.flashcard-rating-panel,.flashcard-insight-toast,.flashcard-session-footer{
+    margin-left:45px;margin-right:0
+  }
+}
+@media(max-width:650px){
+  .flashcard-stage{grid-template-columns:1fr}
+  .flashcard-side-rail{display:none}
+  .flashcard-surface{min-height:360px}
+  .flashcard-face{padding:34px 27px}
+  .flashcard-face strong{font-size:29px;margin-top:40px}
+  .flashcard-reveal-row,.flashcard-adaptive-strip,.flashcard-rating-panel,.flashcard-insight-toast,.flashcard-session-footer{
+    margin-left:0
+  }
+}
