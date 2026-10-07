@@ -58,25 +58,35 @@ export default function Dashboard({
         <div className="dashboard">
 
             {/* Welcome section */}
-            <section className="welcome-section">
-                <div>
-                    <p className="eyebrow">YOUR LEARNING SPACE</p>
-                    <h1>Good morning, Vikas.</h1>
-                    <p className="welcome-description">
-                        Your knowledge, organised in one place.
-                    </p>
+            <section className="sv-home-hero">
+                <div className="sv-hero-copy">
+                    <div className="sv-hero-kicker"><span /> PERSONAL LEARNING OS <b>01</b></div>
+                    <h1>Build knowledge<br /><em>that stays.</em></h1>
+                    <p>Your resources are only the raw material. StudyVault turns them into retrieval, understanding and long-term capability.</p>
+                    <div className="sv-hero-actions">
+                        <button className="sv-hero-primary" onClick={onAddResource}><Plus size={16} /> Add resource <ArrowUpRight size={14} /></button>
+                        <div className="sv-hero-note"><span className="sv-hero-live" /> All data stays on this device</div>
+                    </div>
                 </div>
-
-                <button
-                    className="primary-button"
-                    onClick={onAddResource}
-                >
-                    <Plus size={18} />
-                    Add resource
-                </button>
+                <div className="sv-hero-visual" aria-hidden="true">
+                    <div className="sv-orbit orbit-a" />
+                    <div className="sv-orbit orbit-b" />
+                    <div className="sv-orbit orbit-c" />
+                    <div className="sv-core"><BookOpen size={24} /><span>KNOWLEDGE</span></div>
+                    <span className="sv-orbit-label label-a">RETRIEVE</span>
+                    <span className="sv-orbit-label label-b">UNDERSTAND</span>
+                    <span className="sv-orbit-label label-c">TRANSFER</span>
+                </div>
             </section>
 
             {/* Statistics */}
+            <section className="sv-command-strip">
+                <div><span className="sv-strip-index">01</span><b>{resources.length}</b><small>resources</small></div>
+                <div><span className="sv-strip-index">02</span><b>{subjects.length}</b><small>subjects</small></div>
+                <div><span className="sv-strip-index">03</span><b>{resources.filter(r => r.type === "Note").length}</b><small>notes</small></div>
+                <div className="sv-strip-message"><span className="sv-strip-live" /> KNOWLEDGE BASE ONLINE <span>·</span> LOCAL-FIRST</div>
+            </section>
+
             <section className="stats-grid">
 
                 <div className="stat-card">
@@ -109,6 +119,11 @@ export default function Dashboard({
             </section>
 
             {/* Main dashboard content */}
+            <section className="sv-section-heading">
+                <div><span>THE VAULT</span><h2>Continue building your edge.</h2></div>
+                <p>Everything you collect becomes a future retrieval opportunity.</p>
+            </section>
+
             <section className="dashboard-grid">
 
                 {/* Recent resources */}
