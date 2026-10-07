@@ -5641,3 +5641,136 @@ button {
   .flashcard-action{min-height:48px}
   .flashcard-adaptive-strip,.flashcard-insight-toast,.flashcard-session-footer{margin-left:0;margin-right:0}
 }
+
+/* =========================================================
+   FLASHCARD COCKPIT v5 — SVG / EDITORIAL / MATERIAL
+   CSS handles layout; SVG handles the signature artwork.
+========================================================= */
+.flashcard-cockpit{
+  --flash-a:#5d8dff;
+  --flash-b:#9a67ff;
+  --flash-c:#e8ae61;
+  --flash-d:#4ed8b4;
+}
+.flashcard-board.palette-1{--flash-a:#ff7a8f;--flash-b:#c86cff;--flash-c:#f2b66b;--flash-d:#58d6c2}
+.flashcard-board.palette-2{--flash-a:#50c8ff;--flash-b:#746fff;--flash-c:#e9bf68;--flash-d:#65e0b4}
+.flashcard-board.palette-3{--flash-a:#b286ff;--flash-b:#ef69ba;--flash-c:#ffb968;--flash-d:#68d5d0}
+.flashcard-board.palette-4{--flash-a:#55d7b4;--flash-b:#638cff;--flash-c:#efbf67;--flash-d:#a879ff}
+.flashcard-board.palette-5{--flash-a:#ff9c67;--flash-b:#e46de0;--flash-c:#ffd06d;--flash-d:#5fd4ff}
+
+.flashcard-board{
+  position:relative;
+}
+.flashcard-board-glow{
+  position:absolute;
+  inset:-70px -90px auto 12%;
+  height:310px;
+  pointer-events:none;
+  opacity:.18;
+  background:
+    radial-gradient(circle at 28% 30%,var(--flash-a),transparent 25%),
+    radial-gradient(circle at 60% 15%,var(--flash-b),transparent 26%),
+    radial-gradient(circle at 80% 35%,var(--flash-d),transparent 22%);
+  filter:blur(50px);
+  z-index:-3;
+  animation:flashGlow 9s ease-in-out infinite alternate;
+}
+@keyframes flashGlow{
+  from{transform:translate3d(-1%,0,0) scale(.98);opacity:.13}
+  to{transform:translate3d(2%,5px,0) scale(1.04);opacity:.22}
+}
+
+.flashcard-card-zone{isolation:isolate}
+.flashcard-stack-layer.stack-one{
+  background:linear-gradient(135deg,color-mix(in srgb,var(--flash-a) 25%,#0c1730),color-mix(in srgb,var(--flash-b) 18%,#171331));
+  border-color:color-mix(in srgb,var(--flash-a) 38%,transparent);
+}
+.flashcard-stack-layer.stack-two{
+  background:linear-gradient(135deg,color-mix(in srgb,var(--flash-d) 18%,#102535),color-mix(in srgb,var(--flash-b) 20%,#1b1231));
+  border-color:color-mix(in srgb,var(--flash-b) 30%,transparent);
+}
+
+.flashcard-question-face{
+  background:
+    radial-gradient(circle at 90% 8%,color-mix(in srgb,var(--flash-a) 22%,transparent),transparent 23%),
+    radial-gradient(circle at 8% 94%,color-mix(in srgb,var(--flash-d) 13%,transparent),transparent 24%),
+    linear-gradient(135deg,#121d34 0%,#0b1629 100%);
+}
+.flashcard-question-face::before{
+  background:linear-gradient(180deg,var(--flash-a),var(--flash-b),var(--flash-c),var(--flash-d));
+}
+.flashcard-question-face::after{
+  background:
+    radial-gradient(circle at 78% 22%,color-mix(in srgb,var(--flash-a) 14%,transparent),transparent 26%),
+    repeating-radial-gradient(circle at 88% 12%,transparent 0 19px,color-mix(in srgb,var(--flash-a) 11%,transparent) 20px 21px);
+}
+
+.flashcard-constellation{
+  position:absolute;
+  z-index:2;
+  right:4%;
+  bottom:0;
+  width:min(47%,420px);
+  height:auto;
+  color:var(--flash-a);
+  opacity:.72;
+  pointer-events:none;
+  mix-blend-mode:screen;
+}
+.flashcard-constellation circle:first-of-type{
+  animation:flashNode 3.5s ease-in-out infinite;
+}
+@keyframes flashNode{
+  0%,100%{opacity:.45}
+  50%{opacity:1}
+}
+
+.flashcard-face strong{
+  text-wrap:balance;
+}
+.flashcard-face-label{
+  color:var(--flash-a)!important;
+}
+.flashcard-card-index{
+  color:color-mix(in srgb,var(--flash-a) 55%,#fff);
+  background:color-mix(in srgb,var(--flash-a) 9%,transparent);
+  border-color:color-mix(in srgb,var(--flash-a) 20%,transparent);
+}
+.flashcard-card-hint{
+  max-width:68%;
+}
+.flashcard-action.reveal{
+  background:linear-gradient(120deg,
+    color-mix(in srgb,var(--flash-a) 78%,#334dff),
+    color-mix(in srgb,var(--flash-b) 72%,#4c39e9) 52%,
+    color-mix(in srgb,var(--flash-a) 55%,#7b50ff));
+  border-color:color-mix(in srgb,var(--flash-a) 70%,#fff);
+  box-shadow:0 14px 38px color-mix(in srgb,var(--flash-a) 24%,transparent);
+}
+.flashcard-context::before{
+  background:linear-gradient(90deg,var(--flash-a),var(--flash-b),var(--flash-c),var(--flash-d));
+}
+.flashcard-context-metric b{
+  color:var(--flash-c);
+}
+.flashcard-context-meter span{
+  background:linear-gradient(90deg,var(--flash-a),var(--flash-b),var(--flash-d));
+}
+.flashcard-progress-track>span{
+  background:linear-gradient(90deg,var(--flash-a),var(--flash-b),var(--flash-c),var(--flash-d));
+}
+
+/* Give the card a quiet material edge rather than a generic glow. */
+.flashcard-surface{
+  border-color:color-mix(in srgb,var(--flash-a) 26%,rgba(255,255,255,.1));
+}
+.flashcard-surface:hover{
+  box-shadow:
+    0 35px 78px rgba(0,0,0,.42),
+    0 0 0 1px color-mix(in srgb,var(--flash-a) 28%,transparent),
+    0 0 70px color-mix(in srgb,var(--flash-a) 8%,transparent);
+}
+@media(max-width:700px){
+  .flashcard-constellation{width:65%;right:-4%;opacity:.42}
+  .flashcard-card-hint{max-width:85%}
+}
