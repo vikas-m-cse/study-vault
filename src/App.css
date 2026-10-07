@@ -8763,3 +8763,144 @@ button:focus-visible,input:focus-visible,textarea:focus-visible{
   .sv-card-art{display:none}
   .sv-command-row{grid-template-columns:1fr;gap:6px}
 }
+
+
+/* ==========================================================================
+   NOTES — READABILITY + TRUE FOCUS MODE
+========================================================================== */
+
+/* Notes deserve more horizontal breathing room than generic workspaces. */
+.notes-page{max-width:1320px!important}
+.notes-page-heading{margin-bottom:18px!important}
+.notes-page-heading h1{color:#edf1f7!important;font-size:30px!important}
+.notes-page-heading .page-description{color:#788395!important}
+
+/* The editor was visually too low-contrast in the white canvas. */
+.notes-editor{
+  border-color:#dfe4ea!important;
+  background:#fff!important;
+}
+.notes-editor-toolbar{
+  background:#f7f9fb!important;
+  border-bottom-color:#e1e6eb!important;
+}
+.notes-editor-tool{
+  color:#647286!important;
+}
+.notes-editor-tool:hover:not(:disabled),
+.notes-editor-tool.active{
+  background:#e7edf3!important;
+  color:#1e3556!important;
+}
+.notes-editor-content .ProseMirror{
+  color:#26364b!important;
+  font-size:15px!important;
+  line-height:1.78!important;
+  -webkit-font-smoothing:antialiased;
+}
+.notes-editor-content .ProseMirror p,
+.notes-editor-content .ProseMirror li{
+  color:#33445a!important;
+}
+.notes-editor-content .ProseMirror h1,
+.notes-editor-content .ProseMirror h2,
+.notes-editor-content .ProseMirror h3{
+  color:#17263b!important;
+  font-weight:720!important;
+}
+.notes-editor-content .ProseMirror h1{font-size:29px!important}
+.notes-editor-content .ProseMirror h2{font-size:23px!important}
+.notes-editor-content .ProseMirror h3{font-size:19px!important}
+.notes-editor-content .ProseMirror blockquote{color:#52657d!important}
+.notes-editor-content .ProseMirror a{color:#315f9b!important}
+.notes-editor-content .ProseMirror strong{color:#17263b!important}
+
+/* Focus control lives with the editor actions, so it is discoverable. */
+.notes-fullscreen-button{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:6px;
+  min-height:32px;
+  padding:0 10px;
+  border:1px solid rgba(143,174,255,.18);
+  border-radius:8px;
+  background:rgba(143,174,255,.055);
+  color:#9eb7e7;
+  font-size:9px;
+  font-weight:800;
+  letter-spacing:.01em;
+  transition:background .18s ease,border-color .18s ease,color .18s ease,transform .18s ease;
+}
+.notes-fullscreen-button:hover{
+  background:rgba(143,174,255,.11);
+  border-color:rgba(143,174,255,.34);
+  color:#dce7ff;
+  transform:translateY(-1px);
+}
+
+/* Browser fullscreen turns the editor into a proper writing environment:
+   navigation remains available through the in-workspace controls. */
+.notes-workspace.is-fullscreen{
+  width:100vw!important;
+  height:100vh!important;
+  min-height:100vh!important;
+  max-height:100vh!important;
+  margin:0!important;
+  border:0!important;
+  border-radius:0!important;
+  box-shadow:none!important;
+  background:#0b0f15!important;
+}
+.notes-workspace.is-fullscreen .notes-panel{
+  min-height:0!important;
+}
+.notes-workspace.is-fullscreen .notes-editor-panel{
+  background:#0b0f15!important;
+}
+.notes-workspace.is-fullscreen .notes-editor-header{
+  min-height:58px;
+}
+.notes-workspace.is-fullscreen .notes-editor-scroll{
+  padding:28px clamp(24px,5vw,80px) 36px!important;
+}
+.notes-workspace.is-fullscreen .notes-editor-content .ProseMirror{
+  max-width:920px;
+  margin:0 auto;
+  padding:30px 42px 60px!important;
+  font-size:17px!important;
+  line-height:1.82!important;
+}
+.notes-workspace.is-fullscreen .notes-title-row,
+.notes-workspace.is-fullscreen .notes-metadata-grid,
+.notes-workspace.is-fullscreen .notes-tags-field{
+  max-width:920px;
+  margin-left:auto;
+  margin-right:auto;
+}
+.notes-workspace.is-fullscreen .notes-title-input{
+  font-size:38px!important;
+}
+.notes-workspace.is-fullscreen .notes-editor{
+  max-width:1000px;
+  margin:0 auto;
+}
+.notes-workspace.is-fullscreen .notes-editor-footer{
+  padding-left:24px!important;
+  padding-right:24px!important;
+}
+
+/* In focus mode the editor gets the extra width; the library/list stays
+   available so switching notes does not become a dead end. */
+.notes-workspace.is-fullscreen.right-closed{
+  grid-template-columns:244px minmax(0,1fr) 0!important;
+}
+
+@media(max-width:900px){
+  .notes-page{max-width:100%!important}
+  .notes-fullscreen-button span{display:none}
+  .notes-workspace.is-fullscreen .notes-editor-content .ProseMirror{
+    padding:22px 20px 44px!important;
+    font-size:16px!important;
+  }
+}
