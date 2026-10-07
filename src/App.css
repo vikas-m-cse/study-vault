@@ -4695,3 +4695,94 @@ button {
   .flashcard-rate{flex:1;min-width:0}
   .flashcard-session-tip{display:none}
 }
+
+/* 9+ intelligence layer */
+.flashcard-adaptive-strip{
+  display:grid;
+  grid-template-columns:34px minmax(0,1fr) auto;
+  align-items:center;
+  gap:11px;
+  margin-top:12px;
+  padding:11px 13px;
+  border:1px solid rgba(129,162,221,.14);
+  border-radius:12px;
+  background:linear-gradient(90deg,rgba(108,145,218,.055),rgba(255,255,255,.018));
+}
+.flashcard-adaptive-icon{
+  display:grid;
+  place-items:center;
+  width:34px;height:34px;
+  border-radius:10px;
+  color:#9dbbff;
+  background:rgba(125,163,240,.09);
+  border:1px solid rgba(125,163,240,.15);
+}
+.flashcard-adaptive-strip>div:nth-child(2){
+  min-width:0;
+}
+.flashcard-adaptive-strip span{
+  display:block;
+  color:#657d9a;
+  font-size:7px;
+  font-weight:900;
+  letter-spacing:.15em;
+}
+.flashcard-adaptive-strip strong{
+  display:block;
+  margin-top:3px;
+  color:#d9e5f4;
+  font-size:10px;
+}
+.flashcard-adaptive-strip small{
+  display:block;
+  margin-top:2px;
+  color:#60748d;
+  font-size:8px;
+  line-height:1.45;
+}
+.flashcard-adaptive-stats{
+  display:grid;
+  grid-template-columns:auto auto;
+  column-gap:7px;
+  align-items:baseline;
+  min-width:86px;
+}
+.flashcard-adaptive-stats b{
+  color:#bcd0ee;
+  font-size:11px;
+  text-align:right;
+}
+.flashcard-adaptive-stats small{
+  margin:0;
+  color:#50647d;
+  font-size:7px;
+}
+.flashcard-insight-toast{
+  display:flex;
+  align-items:center;
+  gap:9px;
+  margin-top:11px;
+  padding:9px 11px;
+  border-radius:10px;
+  background:rgba(255,255,255,.018);
+  border:1px solid rgba(150,175,204,.1);
+}
+.flashcard-insight-toast>span{
+  display:grid;
+  place-items:center;
+  width:23px;height:23px;
+  border-radius:7px;
+  font-size:11px;
+  font-weight:900;
+}
+.flashcard-insight-toast div{display:flex;flex-direction:column;gap:2px}
+.flashcard-insight-toast b{font-size:8px;color:#b9c8d9}
+.flashcard-insight-toast small{font-size:7px;color:#60748d}
+.flashcard-insight-toast.known{border-color:rgba(105,199,166,.14)}
+.flashcard-insight-toast.known>span{color:#72c8a8;background:rgba(105,199,166,.08)}
+.flashcard-insight-toast.missed{border-color:rgba(221,126,139,.14)}
+.flashcard-insight-toast.missed>span{color:#df8791;background:rgba(221,126,139,.08)}
+@media(max-width:700px){
+  .flashcard-adaptive-strip{grid-template-columns:34px minmax(0,1fr)}
+  .flashcard-adaptive-stats{display:none}
+}
