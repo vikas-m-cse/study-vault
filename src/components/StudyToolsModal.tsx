@@ -383,6 +383,26 @@ export default function StudyToolsModal({ note, onClose }: StudyToolsModalProps)
   const deckComplete = flashcards.length > 0 && knownCount + missedCount === flashcards.length;
   const missedCards = flashcards.map((_, index) => index).filter(index => flashcardRatings[index] === "missed");
 
+  useEffect(() => {
+    if (tool !== "flashcards") return;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.code === "Space" && document.activeElement?.tagName !== "TEXTAREA") {
+        event.preventDefault();
+        if (!deckComplete) setFlashcardFlipped(value => !value);
+      }
+      if (event.code === "ArrowRight" && !deckComplete && flashcardFlipped && flashcardIndex < flashcards.length - 1) {
+        setFlashcardIndex(value => value + 1);
+        setFlashcardFlipped(false);
+      }
+      if (event.code === "ArrowLeft" && !deckComplete && flashcardIndex > 0) {
+        setFlashcardIndex(value => value - 1);
+        setFlashcardFlipped(false);
+      }
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [tool, deckComplete, flashcardFlipped, flashcardIndex, flashcards.length]);
+
   const copyText = async (value: string) => {
     try {
       await navigator.clipboard.writeText(value);
