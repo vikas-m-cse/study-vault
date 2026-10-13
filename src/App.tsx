@@ -372,7 +372,7 @@ function App() {
                     ) : activePage === "Activity Timeline" ? (
                         <ActivityTimeline onNavigate={(page) => navigate(page)} />
                     ) : activePage === "Study Analytics" ? (
-                        <StudyAnalytics onNavigate={(page) => navigate(page)}
+                        <StudyAnalytics onNavigate={(page) => navigate(page)} />
                     ) : activePage === "File Converter" ? (
                         <DocumentConverter />
                     ) : activePage === "Timetable" ? (
