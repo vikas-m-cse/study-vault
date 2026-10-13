@@ -112,7 +112,7 @@ export default function Dashboard({
                         <p>Your recent review is saved on this device. Try recalling these key ideas before checking the source again.</p>
                         <div className="review-revision-keypoints">
                             {revisionEntries.map((entry) => (
-                                <div key={entry.conceptId}><Lightbulb size={14} /><span><strong>{entry.title}</strong><small>{entry.answer.split(/(?<=[.!?])\\s+/).slice(0, 2).join(" ").slice(0, 180)}{entry.answer.length > 180 ? "…" : ""}</small></span></div>
+                                <div key={entry.conceptId}><Lightbulb size={14} /><span><strong>{entry.title}</strong><small>{entry.answer.split(/(?<=[.!?])\s+/).slice(0, 2).join(" ").slice(0, 180)}{entry.answer.length > 180 ? "…" : ""}</small></span></div>
                             ))}
                         </div>
                     </div>
