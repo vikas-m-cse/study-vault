@@ -316,6 +316,7 @@ function App() {
                         />
                     ) : activePage === "Notes" ? (
                         <Notes
+                            key="notes"
                             resources={resources}
                             subjects={subjects}
                             openNoteId={notesTarget?.noteId}
@@ -327,6 +328,7 @@ function App() {
                         />
                     ) : activePage === "Favourites" ? (
                         <Notes
+                            key="favourites"
                             resources={resources}
                             subjects={subjects}
                             initialFilter="favourites"
