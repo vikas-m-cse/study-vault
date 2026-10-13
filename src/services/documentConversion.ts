@@ -2,7 +2,7 @@ import type { Note } from "../types/note";
 
 export type ConversionNote = Pick<Note, "id" | "title" | "plainText" | "updatedAt">;
 
-function escapeXml(value: string): string {
+export function escapeWordText(value: string): string {
   return value.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&apos;");
 }
 
@@ -75,10 +75,10 @@ function zipStore(files: { name: string; content: string }[]): Uint8Array {
 
 export function exportWord(title: string, text: string): void {
   const paragraphs = text.split(/\r?\n/).map((line) => {
-    const content = line.trim() ? `<w:r><w:t xml:space="preserve">${escapeXml(line)}</w:t></w:r>` : "<w:r><w:br/></w:r>";
+    const content = line.trim() ? `<w:r><w:t xml:space="preserve">${escapeWordText(line)}</w:t></w:r>` : "<w:r><w:br/></w:r>";
     return `<w:p>${content}</w:p>`;
   }).join("");
-  const documentXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body><w:p><w:pPr><w:pStyle w:val="Title"/></w:pPr><w:r><w:t>${escapeXml(title)}</w:t></w:r></w:p>${paragraphs}<w:sectPr><w:pgSz w:w="12240" w:h="15840"/><w:pgMar w:top="1440" w:right="1440" w:bottom="1440" w:left="1440"/></w:sectPr></w:body></w:document>`;
+  const documentXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body><w:p><w:pPr><w:pStyle w:val="Title"/></w:pPr><w:r><w:t>${escapeWordText(title)}</w:t></w:r></w:p>${paragraphs}<w:sectPr><w:pgSz w:w="12240" w:h="15840"/><w:pgMar w:top="1440" w:right="1440" w:bottom="1440" w:left="1440"/></w:sectPr></w:body></w:document>`;
   const bytes = zipStore([
     { name: "[Content_Types].xml", content: '<?xml version="1.0" encoding="UTF-8"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/><Override PartName="/word/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml"/></Types>' },
     { name: "_rels/.rels", content: '<?xml version="1.0" encoding="UTF-8"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/></Relationships>' },
@@ -139,7 +139,7 @@ function decodePdfLiteral(value: string): string {
     .replace(/\\([0-7]{1,3})/g, (_match, octal: string) => String.fromCharCode(parseInt(octal, 8)));
 }
 
-function pdfStringTokens(content: string): string[] {
+export function extractPdfTextOperators(content: string): string[] {
   const found: string[] = [];
   const tokenPattern = /\(((?:\\.|[^\\)])*)\)\s*Tj|\[((?:.|\n)*?)\]\s*TJ|<([0-9a-fA-F\s]+)>\s*Tj/g;
   let match: RegExpExecArray | null;
@@ -181,7 +181,7 @@ export async function extractTextFromPdf(file: File): Promise<string> {
       } catch { streamRegex.lastIndex = end + 9; continue; }
     }
     const stream = new TextDecoder("latin1").decode(streamBytes);
-    if (/\bBT\b/.test(stream)) streamTexts.push(...pdfStringTokens(stream));
+    if (/\bBT\b/.test(stream)) streamTexts.push(...extractPdfTextOperators(stream));
     streamRegex.lastIndex = end + 9;
   }
   const result = streamTexts.join("\n").replace(/[\x00-\x08\x0b\x0c\x0e-\x1f]/g, "").trim();
