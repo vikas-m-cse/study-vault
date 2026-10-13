@@ -1902,3 +1902,262 @@ main h1 + p, main h2 + p, main h3 + p,
     transform: none !important;
   }
 }
+
+
+/* Final pass: remove legacy blue surfaces and apply the Daily Planner's green/ivory language
+   to the real component selectors used by each page. */
+:root {
+  color-scheme: light;
+  --glass-ink: #292b26;
+  --glass-ink-soft: #4c5044;
+  --glass-muted: #7d7d71;
+  --glass-paper: #f6f4ee;
+  --glass-white: #fffefa;
+  --glass-border: #e6e1d5;
+  --glass-blue: #59664b;
+  --glass-blue-deep: #46523b;
+  --glass-champagne: #b88c4c;
+  --glass-shadow: 0 12px 32px rgba(49,48,37,.045);
+  --glass-radius: 18px;
+  --color-primary: #59664b;
+  --color-primary-hover: #46523b;
+  --color-accent: #b88c4c;
+  --color-background: #f6f4ee;
+  --color-surface: #fffefa;
+  --color-surface-muted: #edf0e6;
+  --color-text: #292b26;
+  --color-text-secondary: #7d7d71;
+  --color-text-muted: #98988b;
+  --color-border: #e6e1d5;
+}
+html, body, #root {
+  background: #f6f4ee !important;
+  color: #292b26;
+}
+body {
+  background-image: none !important;
+}
+::selection { color: #292b26 !important; background: #dfe5d4 !important; }
+button:focus-visible, a:focus-visible, input:focus-visible,
+textarea:focus-visible, select:focus-visible, [role="button"]:focus-visible {
+  outline: 2px solid rgba(89,102,75,.48) !important;
+  outline-offset: 3px !important;
+}
+.sidebar {
+  background: #fbfaf6 !important;
+  border-right: 1px solid #e6e1d5 !important;
+  box-shadow: 5px 0 22px rgba(49,48,37,.025) !important;
+  backdrop-filter: none !important;
+}
+.sidebar .nav-item.active, .sidebar .nav-item[aria-current="page"] {
+  background: #edf0e6 !important;
+  color: #46523b !important;
+  box-shadow: inset 3px 0 #59664b !important;
+}
+.brand-icon, .sidebar .brand-icon {
+  background: #59664b !important;
+  color: #fffefa !important;
+  box-shadow: none !important;
+}
+.dashboard .sv-home-hero {
+  background: linear-gradient(120deg,#33392d 0%,#292d25 100%) !important;
+  border: 1px solid rgba(184,140,76,.22) !important;
+  box-shadow: 0 18px 38px rgba(41,43,38,.08) !important;
+}
+.dashboard .sv-hero-primary { background: #b88c4c !important; color: #292b26 !important; }
+.dashboard .sv-command-strip,
+.dashboard .review-revision-checkpoint {
+  border-color: #e6e1d5 !important;
+  border-radius: 17px !important;
+  background: #fffefa !important;
+  box-shadow: 0 8px 24px rgba(49,48,37,.035) !important;
+}
+.dashboard .content-card {
+  background: #fffefa !important;
+  border: 1px solid #e6e1d5 !important;
+  border-radius: 18px !important;
+  box-shadow: 0 8px 24px rgba(49,48,37,.035) !important;
+}
+.resources-page .resources-toolbar {
+  border: 1px solid #e6e1d5 !important;
+  border-radius: 17px !important;
+  background: rgba(255,254,250,.82) !important;
+  padding: 12px !important;
+}
+.resources-page .resource-type-filters button,
+.resources-page .resources-clear-filters,
+.subjects-page .subjects-filter-button,
+.subjects-page .subjects-view-toggle button,
+.notes-page .notes-panel-toggle,
+.review-page .review-mode-switch button {
+  border: 1px solid #e6e1d5 !important;
+  border-radius: 11px !important;
+  background: #fffefa !important;
+  color: #65685b !important;
+}
+.resources-page .resource-type-filters button.active,
+.resources-page .resource-type-filters button[aria-pressed="true"],
+.subjects-page .subjects-filter-button.active,
+.subjects-page .subjects-view-toggle button.active,
+.notes-page .notes-panel-toggle.active,
+.notes-page .notes-nav-item.active,
+.review-page .review-mode-switch button.active {
+  border-color: #d8dece !important;
+  background: #edf0e6 !important;
+  color: #46523b !important;
+}
+.resources-page .resources-library-list { gap: 8px !important; }
+.resources-page .resource-row--library {
+  border: 1px solid #e6e1d5 !important;
+  border-radius: 15px !important;
+  background: #fffefa !important;
+  box-shadow: none !important;
+}
+.resources-page .resource-row--library:hover {
+  border-color: #d2c5a9 !important;
+  background: #fffdf8 !important;
+  box-shadow: 0 7px 18px rgba(49,48,37,.045) !important;
+  transform: translateY(-1px);
+}
+.resources-page .resource-row--library .resource-icon {
+  border: 1px solid #e0e5d7 !important;
+  border-radius: 12px !important;
+  background: #edf0e6 !important;
+  color: #59664b !important;
+}
+.resources-page .resource-subject-trigger,
+.resources-page .resource-subject-menu {
+  border-color: #e6e1d5 !important;
+  background: #fffefa !important;
+  color: #292b26 !important;
+  box-shadow: 0 14px 34px rgba(49,48,37,.09) !important;
+}
+.resources-page .resource-subject-option:hover,
+.resources-page .resource-subject-option[aria-selected="true"] {
+  background: #edf0e6 !important;
+}
+.notes-page .notes-panel {
+  border: 1px solid #e6e1d5 !important;
+  border-radius: 17px !important;
+  background: #fffefa !important;
+  box-shadow: 0 8px 24px rgba(49,48,37,.03) !important;
+}
+.notes-page .notes-nav-item {
+  border-radius: 10px !important;
+  color: #65685b !important;
+}
+.notes-page .notes-nav-item:hover { background: #f4f3ed !important; }
+.notes-page .notes-nav-item.active {
+  background: #edf0e6 !important;
+  color: #46523b !important;
+  box-shadow: inset 2px 0 #59664b !important;
+}
+.notes-page .notes-list-item {
+  border-color: #e6e1d5 !important;
+  border-radius: 13px !important;
+  background: #fffefa !important;
+}
+.notes-page .notes-list-item[aria-selected="true"],
+.notes-page .notes-list-item.active {
+  border-color: #d8dece !important;
+  background: #f2f4ec !important;
+}
+.notes-page .notes-title-input {
+  font-family: Georgia, "Times New Roman", serif !important;
+  font-weight: 600 !important;
+  letter-spacing: -.025em !important;
+  color: #292b26 !important;
+}
+.notes-page .notes-editor-scroll, .notes-page .notes-editor-panel {
+  background: #fffefa !important;
+}
+.subjects-page .subject-card-v2 {
+  border: 1px solid #e6e1d5 !important;
+  border-radius: 18px !important;
+  background: #fffefa !important;
+  box-shadow: 0 9px 26px rgba(49,48,37,.04) !important;
+}
+.subjects-page .subject-card-v2:hover {
+  border-color: #d2c5a9 !important;
+  box-shadow: 0 13px 30px rgba(49,48,37,.07) !important;
+}
+.subjects-page .subject-card-art {
+  background: linear-gradient(145deg,#f3f4ed,#e9ede1) !important;
+}
+.subjects-page .subject-card-v2 .subject-open-button {
+  background: #59664b !important;
+  color: #fffefa !important;
+  border-color: #59664b !important;
+}
+.subjects-page .subject-card-v2 .subject-action-button {
+  background: #fffefa !important;
+  border-color: #e6e1d5 !important;
+  color: #65685b !important;
+}
+.subjects-page .subject-detail-summary,
+.subjects-page .subject-material-section,
+.subjects-page .subject-material-card {
+  border-color: #e6e1d5 !important;
+  background: #fffefa !important;
+}
+.review-page .review-selection,
+.review-page .review-v2-main,
+.review-page .review-v2-side-card,
+.review-page .review-v2-concept,
+.review-page .review-v2-question,
+.review-page .review-v2-next-action {
+  border-color: #e6e1d5 !important;
+  border-radius: 17px !important;
+  background: #fffefa !important;
+  box-shadow: 0 8px 24px rgba(49,48,37,.035) !important;
+}
+.review-page .review-v2-kicker,
+.review-page .review-v2-source-label,
+.review-page .review-v2-meta { color: #7d7d71 !important; }
+.review-page .review-v2-rating-buttons button.good,
+.review-page .review-v2-rating-buttons button[aria-pressed="true"],
+.review-page .review-v2-next {
+  border-color: #d8dece !important;
+  background: #edf0e6 !important;
+  color: #46523b !important;
+}
+.review-page .review-v2-recall textarea {
+  border-color: #e6e1d5 !important;
+  border-radius: 13px !important;
+  background: #fbfaf6 !important;
+}
+.progress-page .progress-overview {
+  border: 1px solid #e6e1d5 !important;
+  border-radius: 22px !important;
+  background: linear-gradient(120deg,#fffefa 0%,#f4f2e8 100%) !important;
+  box-shadow: 0 10px 28px rgba(49,48,37,.035) !important;
+}
+.progress-page .progress-card {
+  border: 1px solid #dce2d2 !important;
+  border-radius: 18px !important;
+  background: #fffefa !important;
+  box-shadow: 0 9px 24px rgba(49,48,37,.035) !important;
+}
+.progress-page .progress-metric-icon {
+  border: 1px solid #e0e5d7 !important;
+  background: #edf0e6 !important;
+  color: #59664b !important;
+}
+.progress-page .progress-ring {
+  border-color: #e6e1d5 !important;
+}
+.progress-page .progress-ring-inner {
+  background: #fffefa !important;
+  color: #292b26 !important;
+}
+.resources-page .resource-subject-filter { z-index: 80 !important; }
+.resources-page .resource-subject-menu { z-index: 81 !important; }
+@media (max-width: 760px) {
+  .resources-page .resources-toolbar { padding: 9px !important; }
+  .resources-page .resources-library-list { gap: 7px !important; }
+  .resources-page .resource-row--library { padding: 12px !important; }
+  .notes-page .notes-page-heading,
+  .subjects-page .subjects-heading,
+  .review-page .review-v2-header,
+  .progress-page .progress-header { gap: 12px !important; }
+}
