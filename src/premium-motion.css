@@ -2083,3 +2083,262 @@ button, input, textarea, select { accent-color: var(--sv-olive); }
 .notes-editor.read-only .ProseMirror li{margin:.35em 0}
 .notes-editor.read-only .ProseMirror :focus{outline:none}
 @media(max-width:760px){.notes-reading-mode-button{min-height:32px;padding-inline:9px}.notes-editor.read-only .ProseMirror{font-size:16px;line-height:1.8}}
+
+ 
+/* Micro-polish pass: tactile controls, calmer surfaces, and consistent focus. */
+:root {
+  --sv-polish-ink: #292b26;
+  --sv-polish-muted: #858579;
+  --sv-polish-line: #e8e6dc;
+  --sv-polish-paper: #fffefa;
+  --sv-polish-sage: #59664b;
+  --sv-polish-sage-soft: #f0f3eb;
+  --sv-polish-ease: cubic-bezier(.2,.7,.25,1);
+}
+
+::selection {
+  color: #292b26;
+  background: #dfe7d4;
+}
+
+:where(button, a, input, textarea, select, [tabindex]):focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--sv-polish-sage) 36%, transparent);
+  outline-offset: 3px;
+}
+
+:where(button, input, textarea, select) {
+  -webkit-tap-highlight-color: transparent;
+}
+
+:where(input, textarea, select) {
+  accent-color: var(--sv-polish-sage);
+}
+
+:where(.notes-page, .tt2-page, .review-page, .study-tools-modal) :where(button, input, textarea, select) {
+  transition:
+    background-color .16s var(--sv-polish-ease),
+    border-color .16s var(--sv-polish-ease),
+    box-shadow .16s var(--sv-polish-ease),
+    color .16s var(--sv-polish-ease),
+    transform .16s var(--sv-polish-ease);
+}
+
+:where(.notes-page, .tt2-page, .review-page, .study-tools-modal) button:disabled {
+  cursor: not-allowed;
+  opacity: .48;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+/* Notes: a clearer active item and less visual noise around the writing area. */
+.notes-page .notes-list-item {
+  position: relative;
+  isolation: isolate;
+  border-color: transparent;
+  transition: background-color .18s var(--sv-polish-ease), border-color .18s var(--sv-polish-ease), transform .18s var(--sv-polish-ease), box-shadow .18s var(--sv-polish-ease);
+}
+
+.notes-page .notes-list-item::before {
+  position: absolute;
+  top: 13px;
+  bottom: 13px;
+  left: 0;
+  width: 3px;
+  border-radius: 0 4px 4px 0;
+  background: var(--sv-polish-sage);
+  content: "";
+  opacity: 0;
+  transform: scaleY(.55);
+  transition: opacity .18s var(--sv-polish-ease), transform .18s var(--sv-polish-ease);
+}
+
+.notes-page .notes-list-item:hover {
+  border-color: #e8e9df;
+  background: #fafbf7;
+}
+
+.notes-page .notes-list-item.selected {
+  border-color: #dce2d3;
+  background: linear-gradient(110deg, #f1f4eb, #fafbf7 86%);
+  box-shadow: inset 0 1px 0 #ffffffb8;
+}
+
+.notes-page .notes-list-item.selected::before {
+  opacity: 1;
+  transform: scaleY(1);
+}
+
+.notes-page .notes-editor-panel {
+  min-width: 0;
+}
+
+.notes-page .notes-editor-header {
+  gap: 12px;
+}
+
+.notes-page .notes-save-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.notes-page .notes-save-status::before {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  content: "";
+  opacity: .78;
+}
+
+.notes-page .notes-save-status.saving::before {
+  animation: sv-status-pulse 1.15s ease-in-out infinite;
+}
+
+.notes-page .notes-title-input {
+  transition: color .16s ease, background-color .16s ease;
+}
+
+.notes-page .notes-title-input:focus-visible {
+  border-radius: 8px;
+  background: #f8f9f4;
+}
+
+.notes-page .notes-editor.read-only .ProseMirror {
+  max-width: 72ch;
+  margin-inline: auto;
+  text-wrap: pretty;
+  overflow-wrap: anywhere;
+}
+
+.notes-page .notes-editor.read-only .ProseMirror blockquote {
+  margin: 1.35em 0;
+  padding: .65em 1.1em;
+  border-left: 3px solid #b7c3a8;
+  border-radius: 0 10px 10px 0;
+  background: #f6f7f1;
+  color: #62685a;
+}
+
+.notes-page .notes-editor.read-only .ProseMirror pre {
+  overflow-x: auto;
+  padding: 15px 17px;
+  border: 1px solid #e6e7df;
+  border-radius: 12px;
+  background: #f5f6f2;
+  font-size: .88em;
+}
+
+.notes-page .notes-details-toggle:focus-visible,
+.notes-page .notes-reading-mode-button:focus-visible {
+  outline-offset: 2px;
+}
+
+/* Review: distinguish the learning task from secondary explanation. */
+.review-page .review-v2-recall {
+  min-height: 130px;
+  border-color: #e2e4da;
+  background: linear-gradient(180deg, #fffefa, #fcfcf8);
+  line-height: 1.7;
+  resize: vertical;
+}
+
+.review-page .review-v2-recall:focus {
+  border-color: #aeb99f;
+  box-shadow: 0 0 0 4px #59664b12;
+}
+
+.review-page .review-v2-panel {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.review-page .review-v2-panel.your-memory {
+  border-color: #e8e6dc;
+  background: #fbfaf6;
+}
+
+.review-page .review-v2-panel.reference {
+  border-color: #dce3d2;
+  background: linear-gradient(145deg, #f3f6ed, #fbfcf8);
+}
+
+.review-page .review-v2-rating-buttons button {
+  min-height: 48px;
+  transition: transform .16s var(--sv-polish-ease), border-color .16s ease, background-color .16s ease, box-shadow .16s ease;
+}
+
+.review-page .review-v2-rating-buttons button:not(:disabled):hover {
+  transform: translateY(-2px);
+  border-color: #bdc8b0;
+  box-shadow: 0 7px 18px #2933210c;
+}
+
+.review-page .review-v2-rating-buttons button:not(:disabled):active {
+  transform: translateY(0) scale(.985);
+}
+
+.review-page .review-v2-rating-buttons button.good:not(:disabled) {
+  border-color: #bdc9af;
+  background: #f0f4e9;
+  color: #47543c;
+}
+
+.review-page .review-v2-rule {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+
+/* Study tools: restrained depth, readable content, and polished modal edges. */
+.study-tools-modal {
+  isolation: isolate;
+}
+
+.study-tools-modal .sv-card-shell {
+  box-shadow: 0 18px 44px #151b2530, inset 0 1px 0 #ffffff9c;
+}
+
+.study-tools-modal .sv-card-content strong {
+  text-wrap: balance;
+  overflow-wrap: anywhere;
+}
+
+.study-tools-modal .sv-command:not(:disabled):hover {
+  transform: translateY(-1px);
+}
+
+.study-tools-modal .sv-command:not(:disabled):active {
+  transform: translateY(0) scale(.99);
+}
+
+@keyframes sv-status-pulse {
+  0%, 100% { opacity: .45; transform: scale(.82); }
+  50% { opacity: 1; transform: scale(1.12); }
+}
+
+@media (max-width: 760px) {
+  .notes-page .notes-editor-header {
+    align-items: flex-start;
+  }
+
+  .notes-page .notes-editor.read-only .ProseMirror {
+    max-width: 100%;
+    text-wrap: pretty;
+  }
+
+  .review-page .review-v2-recall {
+    min-height: 112px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :where(.notes-page, .tt2-page, .review-page, .study-tools-modal) *,
+  .notes-page .notes-list-item::before {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: .01ms !important;
+  }
+}
