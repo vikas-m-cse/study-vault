@@ -14,6 +14,7 @@ import Review from "./Review";
 import Progress from "./Progress";
 import DailyTimetable from "./DailyTimetable";
 import DailyPlanner from "./DailyPlanner";
+import DailyPlanner from "./DailyPlanner";
 import {
     isStorageAvailable,
     loadResources,
@@ -333,7 +334,9 @@ function App() {
                         />
                      ) : activePage === "Progress" ? (
                         <Progress subjects={subjects} onOpenReview={() => navigate("Review")} />
-                    ) : activePage === "Daily Planner" ? (\n                        <DailyPlanner subjects={subjects} />\n                    ) : activePage === "Timetable" ? (
+                    ) : activePage === "Daily Planner" ? (
+                        <DailyPlanner subjects={subjects} />
+                    ) : activePage === "Timetable" ? (
                         <DailyTimetable />
                     ) : activePage === "Review" ? (
                         <Review
