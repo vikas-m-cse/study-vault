@@ -9,6 +9,7 @@ import {
     TrendingUp,
     CalendarDays,
     Timer,
+    NotebookPen,
     Settings,
     Library,
 } from "lucide-react";
@@ -50,6 +51,10 @@ const navigationItems = [
     {
         label: "Daily Planner",
         icon: Timer,
+    },
+    {
+        label: "Weekly Reflection",
+        icon: NotebookPen,
     },
     {
         label: "Timetable",
