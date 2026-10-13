@@ -51,7 +51,6 @@ export default function Subjects({
     useEffect(() => {
         if (openedSubjectId === null) return;
         let cancelled = false;
-        setNotesLoading(true);
         getAllNotes().then((allNotes) => {
             if (!cancelled) setSubjectNotes(allNotes.filter((note) => note.status === "active" && note.subjectId === openedSubjectId));
         }).catch(() => { if (!cancelled) setSubjectNotes([]); }).finally(() => { if (!cancelled) setNotesLoading(false); });
@@ -226,7 +225,7 @@ export default function Subjects({
                             <span><FolderOpen size={12} /> {subjectStats.get(subject.id)?.resources ?? 0} resources</span>
                         </div>
                         <div className="subject-card-footer subject-card-footer-v2">
-                            <button type="button" onClick={() => setOpenedSubjectId(subject.id)}><FileText size={13} /> Notes</button>
+                            <button type="button" onClick={() => { setSubjectNotes([]); setNotesLoading(true); setOpenedSubjectId(subject.id); }}><FileText size={13} /> Notes</button>
                             <button type="button" onClick={() => setOpenedSubjectId(subject.id)}><FolderOpen size={13} /> Resources</button>
                             <button type="button" onClick={() => setOpenedSubjectId(subject.id)}><span className="mini-stack" /> All work</button>
                             <button className="subject-open-button" type="button" aria-label={`Open ${subject.name}`} onClick={() => setOpenedSubjectId(subject.id)}><ArrowRight size={15} /></button>
