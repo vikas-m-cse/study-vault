@@ -86,7 +86,7 @@ function WeeklyReflectionForm({ weekKey }: { weekKey: string }) {
   );
 }
 
-export default function WeeklyReflection({ subjects, onOpenPlanner }: { subjects: { id: number; name: string }[]; onOpenPlanner: () => void }) {
+export default function WeeklyReflection({ subjects, onOpenPlanner, onOpenConcept }: { subjects: { id: number; name: string }[]; onOpenPlanner: () => void; onOpenConcept: (noteId: string, conceptId: string) => void }) {
   const [anchor, setAnchor] = useState(() => Date.now());
   const [currentTime] = useState(() => Date.now());
   const [history, setHistory] = useState(() => readPlannerHistory());
@@ -193,6 +193,7 @@ export default function WeeklyReflection({ subjects, onOpenPlanner }: { subjects
                   <strong>{item.label}</strong>
                   <p>{item.reason}</p>
                   <div className="weekly-recommendation-stats"><span>Recorded mastery: {item.mastery}%</span><span>Estimated retention: {item.retention}%</span></div>
+                  <button className="weekly-recommendation-open" type="button" onClick={() => onOpenConcept(item.noteId, item.conceptId)}>Review this concept <ArrowRight size={14} /></button>
                 </div>
               </article>
             ))}
