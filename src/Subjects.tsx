@@ -33,6 +33,8 @@ export default function Subjects({
     setSubjects,
     resources,
     focusSubjectId = null,
+    onOpenResource,
+    onOpenNote,
 }: SubjectsProps) {
     const [search, setSearch] = useState("");
     const [showForm, setShowForm] = useState(false);
