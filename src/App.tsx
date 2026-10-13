@@ -12,6 +12,7 @@ import type { SearchResult } from "./services/search";
 import Subjects, { type Subject } from "./Subjects";
 import Review from "./Review";
 import Progress from "./Progress";
+import DailyTimetable from "./DailyTimetable";
 import {
     isStorageAvailable,
     loadResources,
@@ -331,7 +332,7 @@ function App() {
                         />
                      ) : activePage === "Progress" ? (
                         <Progress subjects={subjects} onOpenReview={() => navigate("Review")} />
-                    ) : activePage === "Review" ? (
+                    ) : activePage === "Timetable" ? (\n                        <DailyTimetable />\n                    ) : activePage === "Review" ? (
                         <Review
                             resources={resources}
                             subjects={subjects}
