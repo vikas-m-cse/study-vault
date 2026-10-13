@@ -5,6 +5,9 @@ import {
     ArrowUpRight,
     Plus,
     ExternalLink,
+    RefreshCw,
+    Lightbulb,
+    ChevronRight,
 } from "lucide-react";
 
 import { useState } from "react";
@@ -16,16 +19,38 @@ type DashboardProps = {
     resources: Resource[];
     subjects: Subject[];
     onAddResource: () => void;
+    onOpenReview: () => void;
 };
+
+type RevisionEntry = {
+    conceptId: string;
+    title: string;
+    answer: string;
+    reviewedAt: number;
+};
+
+function getRecentRevisionEntries(): RevisionEntry[] {
+    try {
+        const raw = localStorage.getItem("studyvault-revision-recap-v1");
+        if (!raw) return [];
+        const cutoff = Date.now() - 24 * 60 * 60 * 1000;
+        const entries = JSON.parse(raw) as RevisionEntry[];
+        return entries.filter((entry) => entry.reviewedAt >= cutoff).slice(-3).reverse();
+    } catch {
+        return [];
+    }
+}
 
 export default function Dashboard({
     resources,
     subjects,
     onAddResource,
+    onOpenReview,
 }: DashboardProps) {
 
     const recentResources = resources.slice(0, 5);
     const [viewingNote, setViewingNote] = useState<Resource | null>(null);
+    const [revisionEntries] = useState<RevisionEntry[]>(getRecentRevisionEntries);
 
     const openResource = (resource: Resource) => {
         if (resource.type === "Note") {
@@ -77,6 +102,23 @@ export default function Dashboard({
                     <span className="sv-orbit-label label-c">TRANSFER</span>
                 </div>
             </section>
+
+            {revisionEntries.length > 0 && (
+                <section className="review-revision-checkpoint dashboard-revision-checkpoint" aria-label="Today's revision reminder">
+                    <div className="review-revision-icon"><RefreshCw size={19} /></div>
+                    <div className="review-revision-copy">
+                        <span className="review-revision-kicker">PICK UP WHERE YOU LEFT OFF</span>
+                        <h2>Revisit what you studied recently.</h2>
+                        <p>Your recent review is saved on this device. Try recalling these key ideas before checking the source again.</p>
+                        <div className="review-revision-keypoints">
+                            {revisionEntries.map((entry) => (
+                                <div key={entry.conceptId}><Lightbulb size={14} /><span><strong>{entry.title}</strong><small>{entry.answer.split(/(?<=[.!?])\\s+/).slice(0, 2).join(" ").slice(0, 180)}{entry.answer.length > 180 ? "…" : ""}</small></span></div>
+                            ))}
+                        </div>
+                    </div>
+                    <button type="button" className="review-revision-start" onClick={onOpenReview}>Start revision <ChevronRight size={15} /></button>
+                </section>
+            )}
 
             <section className="sv-command-strip sv-command-strip-premium">
                 <div><span className="sv-strip-index">01</span><b>{resources.length}</b><small>resources</small></div>
