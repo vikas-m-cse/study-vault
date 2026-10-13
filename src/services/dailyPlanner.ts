@@ -46,6 +46,28 @@ export function normalizeAvailableMinutes(value: number): number {
   return Math.max(5, Math.min(120, Math.round(value / 5) * 5));
 }
 
+/**
+ * Returns every known review concept for a note, plus a first-review fallback
+ * when no concept-level mastery has been recorded yet.
+ */
+export function conceptIdsForNote(
+  noteId: string,
+  mastery: Record<string, { attempts?: number }>,
+  schedules: Record<string, unknown> = {},
+): string[] {
+  const prefix = `${noteId}::`;
+  const known = new Set([
+    ...Object.keys(mastery).filter((id) => id.startsWith(prefix)),
+    ...Object.keys(schedules).filter((id) => id.startsWith(prefix)),
+  ]);
+  if (known.size === 0) known.add(`${noteId}::0`);
+  return [...known].sort((a, b) => {
+    const aIndex = Number(a.slice(prefix.length));
+    const bIndex = Number(b.slice(prefix.length));
+    return Number.isFinite(aIndex) && Number.isFinite(bIndex) ? aIndex - bIndex : a.localeCompare(b);
+  });
+}
+
 export function rankRevisionCandidates(candidates: RevisionCandidate[]): RevisionCandidate[] {
   return candidates
     .filter((candidate) => candidate.excerpt.trim().length > 0)
