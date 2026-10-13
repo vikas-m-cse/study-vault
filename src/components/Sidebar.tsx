@@ -12,7 +12,7 @@ import {
     NotebookPen,
     Inbox,
     History,
-    ChartNoAxesCombined,
+    ChartNoAxesCombined,\n    Target,
     ArrowRightLeft,
     Settings,
     Library,
