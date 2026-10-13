@@ -537,7 +537,7 @@ export default function Review({ subjects, focusNoteId }: ReviewProps) {
                   <strong>{selected.noteTitle}</strong>
                 </div>
                 <div className="review-v2-progress">
-                  Session {availableConcepts.findIndex((concept) => concept.id === selected.id) + 1} of {availableConcepts.length} · {selected.index}/{selected.totalInNote} in note
+                  Reviewed {sessionReviewedIds.length} this session · {availableConcepts.length} queued · {selected.index}/{selected.totalInNote} in note
                 </div>
               </div>
 
