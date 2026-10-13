@@ -34,6 +34,7 @@ function readList<T>(key: string): T[] {
 function writeList<T>(key: string, value: T[]): boolean {
   try {
     localStorage.setItem(key, JSON.stringify(value));
+    if (typeof window !== "undefined") window.dispatchEvent(new CustomEvent("studyvault:inbox-updated"));
     return true;
   } catch {
     return false;
