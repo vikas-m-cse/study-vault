@@ -11,6 +11,8 @@ import {
   Sparkles,
   Target,
   SlidersHorizontal,
+  RefreshCw,
+  Lightbulb,
 } from "lucide-react";
 import { getAllNotes } from "./services/noteStorage";
 import type { Note, TipTapNode } from "./types/note";
@@ -53,6 +55,14 @@ type ReviewConcept = {
 };
 
 const STORAGE_KEY = "studyvault-review-v2";
+const REVISION_KEY = "studyvault-revision-recap-v1";
+type RevisionEntry = { conceptId: string; noteId: string; noteTitle: string; title: string; subjectName?: string; prompt: string; answer: string; reviewedAt: number; rating: Rating };
+function readRevisionEntries(): RevisionEntry[] {
+  try { const raw = localStorage.getItem(REVISION_KEY); return raw ? JSON.parse(raw) as RevisionEntry[] : []; } catch { return []; }
+}
+function writeRevisionEntries(entries: RevisionEntry[]) {
+  try { localStorage.setItem(REVISION_KEY, JSON.stringify(entries.slice(-100))); } catch { /* recap is supplemental; preserve core review data */ }
+}
 const INTERVALS_MS = [
   10 * 60 * 1000,
   24 * 60 * 60 * 1000,
@@ -234,6 +244,8 @@ export default function Review({ subjects, focusNoteId }: ReviewProps) {
   const [conceptFilter, setConceptFilter] = useState<"weak" | "all" | "new">("weak");
   const [sessionSize, setSessionSize] = useState("10");
   const [sessionReviewedIds, setSessionReviewedIds] = useState<string[]>([]);
+  const [revisionEntries, setRevisionEntries] = useState<RevisionEntry[]>(() => readRevisionEntries());
+  const [revisionActive, setRevisionActive] = useState(false);
   const [now, setNow] = useState(() => Date.now());
 
   useEffect(() => {
@@ -291,7 +303,8 @@ export default function Review({ subjects, focusNoteId }: ReviewProps) {
 
   const availableConcepts = useMemo(() => {
     const masteryById = getMastery();
-    const source = reviewMode === "custom" ? concepts : dueConcepts;
+    const revisionIds = new Set(revisionEntries.filter((entry) => now - entry.reviewedAt < 24 * 60 * 60 * 1000).map((entry) => entry.conceptId));
+    const source = revisionActive ? concepts.filter((concept) => revisionIds.has(concept.id)) : reviewMode === "custom" ? concepts : dueConcepts;
     return source
       .filter((concept) => !sessionReviewedIds.includes(concept.id))
       .filter((concept) => !focusNoteId || concept.noteId === focusNoteId)
@@ -311,7 +324,7 @@ export default function Review({ subjects, focusNoteId }: ReviewProps) {
         return a.noteTitle.localeCompare(b.noteTitle) || a.index - b.index;
       })
       .slice(0, sessionSize === "all" ? undefined : Number(sessionSize));
-  }, [concepts, dueConcepts, focusNoteId, subjectFilter, conceptFilter, reviewMode, reviewState, now, sessionSize, sessionReviewedIds]);
+  }, [concepts, dueConcepts, focusNoteId, subjectFilter, conceptFilter, reviewMode, reviewState, now, sessionSize, sessionReviewedIds, revisionEntries, revisionActive]);
 
   const selected = availableConcepts.find((concept) => concept.id === selectedId) ?? availableConcepts[0] ?? null;
   const currentState = selected ? reviewState[selected.id] : undefined;
@@ -372,6 +385,14 @@ export default function Review({ subjects, focusNoteId }: ReviewProps) {
 
     setReviewState(next);
     writeReviewState(next);
+    const recapEntry: RevisionEntry = {
+      conceptId: selected.id, noteId: selected.noteId, noteTitle: selected.noteTitle,
+      title: selected.title, subjectName: selected.subjectName, prompt: selected.prompt,
+      answer: selected.answer, reviewedAt: timestamp, rating,
+    };
+    const updatedRevisionEntries = [...readRevisionEntries().filter((entry) => entry.conceptId !== selected.id), recapEntry];
+    writeRevisionEntries(updatedRevisionEntries);
+    setRevisionEntries(updatedRevisionEntries);
     recordLearningEvent({
       conceptId: selected.id,
       questionType,
@@ -453,23 +474,23 @@ export default function Review({ subjects, focusNoteId }: ReviewProps) {
         </div>
         <div className="review-selection-controls">
           <label><span>Review mode</span>
-            <select value={reviewMode} onChange={(event) => { setReviewMode(event.target.value as "custom" | "due" | "smart"); setSelectedId(null); setRecall(""); setRevealed(false); setSessionReviewedIds([]); }}>
+            <select value={reviewMode} onChange={(event) => { setRevisionActive(false); setReviewMode(event.target.value as "custom" | "due" | "smart"); setSelectedId(null); setRecall(""); setRevealed(false); setSessionReviewedIds([]); }}>
               <option value="custom">My topics</option><option value="due">Due for review</option><option value="smart">Smart review</option>
             </select>
           </label>
           <label><span>Subject</span>
-            <select value={subjectFilter} onChange={(event) => { setSubjectFilter(event.target.value); setSelectedId(null); setRecall(""); setRevealed(false); setSessionReviewedIds([]); }}>
+            <select value={subjectFilter} onChange={(event) => { setRevisionActive(false); setSubjectFilter(event.target.value); setSelectedId(null); setRecall(""); setRevealed(false); setSessionReviewedIds([]); }}>
               <option value="all">All subjects</option>
               {subjects.map((subject) => <option key={subject.id} value={subject.name}>{subject.name}</option>)}
             </select>
           </label>
           <label><span>Concepts</span>
-            <select value={conceptFilter} onChange={(event) => { setConceptFilter(event.target.value as "weak" | "all" | "new"); setSelectedId(null); setRecall(""); setRevealed(false); setSessionReviewedIds([]); }}>
+            <select value={conceptFilter} onChange={(event) => { setRevisionActive(false); setConceptFilter(event.target.value as "weak" | "all" | "new"); setSelectedId(null); setRecall(""); setRevealed(false); setSessionReviewedIds([]); }}>
               <option value="weak">Weak / missed</option><option value="all">All concepts</option><option value="new">Not reviewed yet</option>
             </select>
           </label>
           <label><span>Session size</span>
-            <select value={sessionSize} onChange={(event) => { setSessionSize(event.target.value); setSelectedId(null); setRecall(""); setRevealed(false); setSessionReviewedIds([]); }}>
+            <select value={sessionSize} onChange={(event) => { setRevisionActive(false); setSessionSize(event.target.value); setSelectedId(null); setRecall(""); setRevealed(false); setSessionReviewedIds([]); }}>
               <option value="5">5 concepts</option><option value="10">10 concepts</option><option value="20">20 concepts</option><option value="all">All matching</option>
             </select>
           </label>
@@ -477,6 +498,25 @@ export default function Review({ subjects, focusNoteId }: ReviewProps) {
         {availableConcepts.length === 0 && <p className="review-selection-empty">No concepts match these filters. Try “All concepts” or choose another subject.</p>}
       </section>
 
+      {revisionEntries.some((entry) => now - entry.reviewedAt < 24 * 60 * 60 * 1000) && (
+        <section className="review-revision-checkpoint" aria-label="Revision checkpoint">
+          <div className="review-revision-icon"><RefreshCw size={19} /></div>
+          <div className="review-revision-copy">
+            <span className="review-revision-kicker">REVISION CHECKPOINT</span>
+            <h2>Before you move on, revisit what you studied.</h2>
+            <p>Your recent session is saved on this device. Refresh the important ideas, then try recalling them without looking.</p>
+            <div className="review-revision-keypoints">
+              {revisionEntries.filter((entry) => now - entry.reviewedAt < 24 * 60 * 60 * 1000).slice(-3).reverse().map((entry) => (
+                <div key={entry.conceptId}><Lightbulb size={14} /><span><strong>{entry.title}</strong><small>{entry.answer.split(/(?<=[.!?])\\s+/).slice(0, 2).join(" ").slice(0, 180)}{entry.answer.length > 180 ? "…" : ""}</small></span></div>
+              ))}
+            </div>
+          </div>
+          <button type="button" className="review-revision-start" onClick={() => {
+            setRevisionActive(true); setReviewMode("custom"); setSubjectFilter("all"); setConceptFilter("all"); setSessionSize("all");
+            setSessionReviewedIds([]); setSelectedId(null); setRecall(""); setRevealed(false);
+          }}>Start revision <ChevronRight size={15} /></button>
+        </section>
+      )}
       <div className="review-v2-layout">
         <section className="review-v2-main">
           {!selected ? (
