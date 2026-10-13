@@ -507,7 +507,7 @@ export default function Review({ subjects, focusNoteId }: ReviewProps) {
             <p>Your recent session is saved on this device. Refresh the important ideas, then try recalling them without looking.</p>
             <div className="review-revision-keypoints">
               {revisionEntries.filter((entry) => now - entry.reviewedAt < 24 * 60 * 60 * 1000).slice(-3).reverse().map((entry) => (
-                <div key={entry.conceptId}><Lightbulb size={14} /><span><strong>{entry.title}</strong><small>{entry.answer.split(/(?<=[.!?])\\s+/).slice(0, 2).join(" ").slice(0, 180)}{entry.answer.length > 180 ? "…" : ""}</small></span></div>
+                <div key={entry.conceptId}><Lightbulb size={14} /><span><strong>{entry.title}</strong><small>{entry.answer.split(/(?<=[.!?])\s+/).slice(0, 2).join(" ").slice(0, 180)}{entry.answer.length > 180 ? "…" : ""}</small></span></div>
               ))}
             </div>
           </div>
@@ -631,17 +631,17 @@ export default function Review({ subjects, focusNoteId }: ReviewProps) {
                   <span>Rate your memory, not your writing quality.</span>
                 </div>
                 <div className="review-v2-rating-buttons">
-                  <button type="button" disabled={!revealed} onClick={() => rate("again")}>
-                    <span>Again</span><small>10 min</small>
+                  <button type="button" disabled={!revealed} onClick={() => rate("again")} aria-label="Again: I could not recall the idea; review it again soon">
+                    <span>Again</span><small>Forgot it · 10 min</small>
                   </button>
-                  <button type="button" disabled={!revealed} onClick={() => rate("hard")}>
-                    <span>Hard</span><small>{formatInterval(Math.max(INTERVALS_MS[0], 24 * 60 * 60 * 1000 * Math.max(1, currentState?.level ?? 0)))}</small>
+                  <button type="button" disabled={!revealed} onClick={() => rate("hard")} aria-label="Hard: I recalled only part of the idea or needed significant effort">
+                    <span>Hard</span><small>Struggled · repeat sooner</small>
                   </button>
-                  <button type="button" className="good" disabled={!revealed} onClick={() => rate("good")}>
-                    <span>Good</span><small>next interval</small>
+                  <button type="button" className="good" disabled={!revealed} onClick={() => rate("good")} aria-label="Good: I recalled the main idea correctly">
+                    <span>Good</span><small>Recalled it · normal interval</small>
                   </button>
-                  <button type="button" disabled={!revealed} onClick={() => rate("easy")}>
-                    <span>Easy</span><small>skip ahead</small>
+                  <button type="button" disabled={!revealed} onClick={() => rate("easy")} aria-label="Easy: I recalled it clearly and confidently">
+                    <span>Easy</span><small>Clear recall · longer interval</small>
                   </button>
                 </div>
               </div>
