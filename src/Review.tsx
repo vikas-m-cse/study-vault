@@ -482,10 +482,10 @@ export default function Review({ subjects, focusNoteId }: ReviewProps) {
           {!selected ? (
             <div className="review-v2-empty">
               <div className="review-v2-empty-icon"><CheckCircle2 size={26} /></div>
-              <h2>{concepts.length ? "You're caught up 🎉" : "Your review system is ready"}</h2>
+              <h2>{concepts.length ? "No concepts in this session" : "Your review system is ready"}</h2>
               <p>
                 {concepts.length
-                  ? "Nothing is due right now. Spacing deliberately gives your memory time to work between retrieval sessions."
+                  ? "No concepts match the current selection. Try “All concepts” or choose another subject in Session Setup above."
                   : "Create an active note first. StudyVault will automatically turn its sections into reviewable concepts."}
               </p>
             </div>
