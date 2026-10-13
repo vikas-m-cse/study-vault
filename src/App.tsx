@@ -335,7 +335,7 @@ function App() {
                      ) : activePage === "Progress" ? (
                         <Progress subjects={subjects} onOpenReview={() => navigate("Review")} />
                     ) : activePage === "Weekly Reflection" ? (
-                        <WeeklyReflection />
+                        <WeeklyReflection subjects={subjects} onOpenPlanner={() => navigate("Daily Planner")} />
                     ) : activePage === "Daily Planner" ? (
                         <DailyPlanner subjects={subjects} />
                     ) : activePage === "Timetable" ? (
