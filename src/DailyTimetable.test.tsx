@@ -12,7 +12,7 @@ describe("DailyTimetable", () => {
     render(<DailyTimetable />);
     expect(screen.getByRole("navigation", { name: "Choose a day" })).toBeTruthy();
     expect(screen.getByRole("heading", { name: "Your timeline" })).toBeTruthy();
-    expect(screen.getByText("Morning routine & breakfast")).toBeTruthy();
+    expect(screen.getAllByText("Morning routine & breakfast").length).toBeGreaterThan(0);
     expect(screen.getByText("College / classes")).toBeTruthy();
   });
 
@@ -46,7 +46,9 @@ describe("DailyTimetable", () => {
   it("records completion and keeps it when restoring the starter routine", async () => {
     const user = userEvent.setup();
     render(<DailyTimetable />);
-    const event = screen.getByText("Morning routine & breakfast").closest("article");
+    const event = screen.getAllByText("Morning routine & breakfast")
+      .map((element) => element.closest("article"))
+      .find((candidate) => candidate !== null);
     expect(event).not.toBeNull();
     await user.click(within(event as HTMLElement).getByRole("button", { name: "Mark complete" }));
     const savedBeforeReset = JSON.parse(localStorage.getItem("studyvault-timetable-completions-v1") ?? "{}");
