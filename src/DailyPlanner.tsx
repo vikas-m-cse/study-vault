@@ -30,6 +30,8 @@ type SavedSession = {
   createdAt: number;
   updatedAt: number;
   startedAt?: number;
+  resumedAt?: number;
+  elapsedBeforePauseMs: number;
   completedAt?: number;
   plannedMinutes: number;
   energy: PlannerEnergy;
@@ -104,6 +106,7 @@ function createSession(plan: RevisionPlan, minutes: number, energy: PlannerEnerg
     energy,
     goal,
     planVersion: 1,
+    elapsedBeforePauseMs: 0,
     fallbackUsed: plan.fallbackUsed,
     tasks: plan.tasks.map((task, index) => ({
       ...task,
@@ -214,11 +217,16 @@ export default function DailyPlanner({ subjects }: { subjects: { id: number; nam
   }, [session, persist]);
 
   const pause = useCallback(() => {
-    if (session?.status === "active") persist({ ...session, status: "paused" });
+    if (session?.status !== "active") return;
+    const stamp = Date.now();
+    const segmentStart = session.resumedAt ?? session.startedAt ?? stamp;
+    persist({ ...session, status: "paused", elapsedBeforePauseMs: (session.elapsedBeforePauseMs ?? 0) + Math.max(0, stamp - segmentStart), resumedAt: undefined });
   }, [session, persist]);
 
   const resume = useCallback(() => {
-    if (session?.status === "paused") persist({ ...session, status: "active", startedAt: session.startedAt ?? Date.now() });
+    if (session?.status !== "paused" && session?.status !== "planned") return;
+    const stamp = Date.now();
+    persist({ ...session, status: "active", startedAt: session.startedAt ?? stamp, resumedAt: stamp });
   }, [session, persist]);
 
   const saveForLater = useCallback(() => {
@@ -241,10 +249,9 @@ export default function DailyPlanner({ subjects }: { subjects: { id: number; nam
 
   const activeTask = session?.tasks.find((task) => task.status === "active");
   const completedCount = session?.tasks.filter((task) => task.status === "completed").length ?? 0;
-  const elapsedMinutes = session?.startedAt && session.status === "active"
-    ? Math.max(0, Math.floor((now - session.startedAt) / 60000))
+  const elapsedMinutes = session
+    ? Math.max(0, Math.floor(((session.elapsedBeforePauseMs ?? 0) + (session.status === "active" ? now - (session.resumedAt ?? session.startedAt ?? now) : 0)) / 60000))
     : 0;
-  const isRunning = session?.status === "active";
 
   return (
     <div className="daily-planner-page">
@@ -320,7 +327,7 @@ export default function DailyPlanner({ subjects }: { subjects: { id: number; nam
       ) : (
         <section className="planner-runner planner-surface">
           <div className="planner-runner-top">
-            <div><span className="planner-step">{session.status === "paused" ? "SESSION PAUSED" : "SESSION IN PROGRESS"}</span><h2>{activeTask?.title ?? "Your session"}</h2><p>{session.plannedMinutes} minutes planned · {completedCount} of {session.tasks.length} tasks completed</p></div>
+            <div><span className="planner-step">{session.status === "paused" ? "SESSION PAUSED" : session.status === "planned" ? "READY TO RESUME" : "SESSION IN PROGRESS"}</span><h2>{activeTask?.title ?? "Your session"}</h2><p>{session.plannedMinutes} minutes planned · {completedCount} of {session.tasks.length} tasks completed</p></div>
             <div className="planner-runner-time"><Clock3 size={17} /><strong>{Math.min(session.plannedMinutes, elapsedMinutes)}m</strong><span>elapsed</span></div>
           </div>
           <div className="planner-progress-track"><span style={{ width: `${session.tasks.length ? completedCount / session.tasks.length * 100 : 0}%` }} /></div>
@@ -363,7 +370,7 @@ export default function DailyPlanner({ subjects }: { subjects: { id: number; nam
                 </div>
               ))}
               <div className="planner-session-actions">
-                {session.status === "active" ? <button className="planner-secondary" onClick={pause}><Pause size={14} /> Pause</button> : <button className="planner-primary" onClick={resume}><Play size={14} /> Resume</button>}
+                {session.status === "active" ? <button className="planner-secondary" onClick={pause}><Pause size={14} /> Pause</button> : <button className="planner-primary" onClick={resume}><Play size={14} /> {session.status === "planned" ? "Continue session" : "Resume"}</button>}
                 <button className="planner-text-button" onClick={saveForLater}>Save for later</button>
                 <button className="planner-text-button" onClick={() => persist({ ...session, status: "cancelled" })}>Cancel session</button>
               </div>
