@@ -14,6 +14,7 @@ import {
   type RevisionCandidate, type RevisionPlan,
 } from "./services/dailyPlanner";
 import "./daily-planner.css";
+import { recordCompletedPlannerSession } from "./services/plannerHistory";
 
 const SESSION_KEY = "studyvault-adaptive-revision-session-v1";
 const REVIEW_KEY = "studyvault-review-v2";
@@ -192,6 +193,28 @@ export default function DailyPlanner({ subjects }: { subjects: { id: number; nam
       status: allDone ? "completed" : session.status,
       completedAt: allDone ? Date.now() : session.completedAt,
     });
+    if (saved && allDone && saved.completedAt) {
+      try {
+        recordCompletedPlannerSession({
+          id: saved.id,
+          status: "completed",
+          createdAt: saved.createdAt,
+          completedAt: saved.completedAt,
+          plannedMinutes: saved.plannedMinutes,
+          energy: saved.energy,
+          goal: saved.goal,
+          tasks: saved.tasks.map((task) => ({
+            id: task.id,
+            title: task.title,
+            minutes: task.minutes,
+            status: task.status,
+            outcome: task.outcome,
+          })),
+        });
+      } catch {
+        setStorageError("The session is complete, but its weekly history could not be saved.");
+      }
+    }
     if (saved && patch.status === "completed" && patch.outcome && taskId === "warmup" && session.tasks[0]?.candidateId) {
       const conceptId = session.tasks[0].candidateId;
       const eventKey = `studyvault-planner-event-${session.id}-${taskId}`;
