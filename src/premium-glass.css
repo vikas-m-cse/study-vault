@@ -326,29 +326,23 @@ button[title="Close"] svg,
 }
 
 
-/* Premium editorial cursor — warm ivory, botanical olive and antique brass.
-   Restrained silhouette, crisp hotspot, native text and disabled cursors preserved. */
-:root {
-  --sv-cursor-olive: #58664b;
-  --sv-cursor-brass: #b38a4e;
-}
+/* Quiet luxury cursor: precise charcoal arrow with one antique-brass glint.
+   No novelty hand artwork; preserve familiar pointer affordances and text selection. */
 @media (hover: hover) and (pointer: fine) {
   html, body, .app-layout, .main-content, .page-content {
-    cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='26' height='30' viewBox='0 0 26 30'%3E%3Cpath d='M4 2.5 4.4 23l5.1-5 3.8 8.3 3.1-1.5-3.8-8.2 7.1-.2Z' fill='%23fffdf7' stroke='%2358664b' stroke-width='1.65' stroke-linejoin='round'/%3E%3Cpath d='m4.7 4.4 13.1 11.1' fill='none' stroke='%23b38a4e' stroke-width='1.1' stroke-linecap='round'/%3E%3C/svg%3E") 4 2, auto;
+    cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='28' viewBox='0 0 24 28'%3E%3Cpath d='M3 2 3.4 22l5.1-4.7 3.3 7.1 3-1.4-3.3-7.1 7.1-.2Z' fill='%232b2b27' stroke='%23fffdf7' stroke-width='1.6' stroke-linejoin='round'/%3E%3Cpath d='m4.1 4.1 12.1 10.2' fill='none' stroke='%23b38a4e' stroke-width='1' stroke-linecap='round'/%3E%3C/svg%3E") 3 2, auto;
   }
   button, a, [role="button"], summary, label[for], .nav-item, .resource-row,
   .subject-card-v2, .subject-action-button, .icon-button, .primary-button,
-  .sv-hero-primary, .close-button, .modal-close, .close-icon-button {
-    cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='30' viewBox='0 0 28 30'%3E%3Cpath d='M8 4.5a2 2 0 0 1 4 0v6-2a2 2 0 0 1 4 0v2-1a2 2 0 0 1 4 0v7.2c0 5.1-3 8.1-7.2 8.1h-1c-2.4 0-4.2-1.1-5.5-3.1l-2.4-3.5a1.9 1.9 0 0 1 3-2.3l1.1 1.3Z' fill='%23fffdf7' stroke='%2358664b' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3Cpath d='M8.9 17.3 12 20.4' fill='none' stroke='%23b38a4e' stroke-width='1.35' stroke-linecap='round'/%3E%3Ccircle cx='21.3' cy='5.3' r='2' fill='%23b38a4e' stroke='%23fffdf7' stroke-width='.8'/%3E%3C/svg%3E") 10 4, pointer;
+  .sv-hero-primary, .close-button, .modal-close, .close-icon-button,
+  input[type="range"], input[type="checkbox"], input[type="radio"], select {
+    cursor: pointer;
   }
   input, textarea, [contenteditable="true"], .ProseMirror {
     cursor: text;
   }
   button:disabled, [aria-disabled="true"] {
     cursor: not-allowed;
-  }
-  input[type="range"], input[type="checkbox"], input[type="radio"], select {
-    cursor: pointer;
   }
 }
 @media (hover: none), (pointer: coarse) {
