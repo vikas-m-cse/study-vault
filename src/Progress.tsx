@@ -216,8 +216,8 @@ export default function Progress({ subjects, onOpenReview }: ProgressProps) {
     <div className="progress-page">
       <header className="progress-header">
         <div>
-          <span className="progress-eyebrow">YOUR LEARNING JOURNEY</span>
-          <h1>Progress <em>& feedback</em></h1>
+          <span className="progress-eyebrow">STUDYVAULT / PROGRESS</span>
+          <h1>See how far <em>you've come.</em></h1>
           <p>A clear view of what you've studied, what you've reviewed, and what needs attention next.</p>
         </div>
         <div className="progress-live"><span /> Based on your saved activity</div>
