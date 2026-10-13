@@ -6,6 +6,7 @@ import {
     FileText,
     Star,
     BrainCircuit,
+    TrendingUp,
     Settings,
     Library,
 } from "lucide-react";
