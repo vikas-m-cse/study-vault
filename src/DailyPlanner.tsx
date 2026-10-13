@@ -6,7 +6,7 @@ import {
 import { getAllNotes } from "./services/noteStorage";
 import type { Note } from "./types/note";
 import {
-  getMastery, getLearningEvents, learningPriority, recordLearningEvent,
+  getMastery, learningPriority, recordLearningEvent,
 } from "./services/learningCore";
 import {
   buildRevisionPlan, normalizeAvailableMinutes,
@@ -116,7 +116,7 @@ function formatTime(value: number): string {
   return new Date(value).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
 }
 
-export default function DailyPlanner() {
+export default function DailyPlanner({ subjects }: { subjects: { id: number; name: string }[] }) {
   const [notes, setNotes] = useState<Note[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -147,8 +147,8 @@ export default function DailyPlanner() {
   }, []);
 
   const candidates = useMemo(
-    () => makeCandidates(notes, [], now),
-    [notes, now],
+    () => makeCandidates(notes, subjects, Date.now()),
+    [notes, subjects],
   );
   const plan = useMemo(() => buildRevisionPlan({
     availableMinutes: normalizeAvailableMinutes(availableMinutes),
@@ -241,12 +241,10 @@ export default function DailyPlanner() {
 
   const activeTask = session?.tasks.find((task) => task.status === "active");
   const completedCount = session?.tasks.filter((task) => task.status === "completed").length ?? 0;
-  const totalMinutes = session?.tasks.reduce((sum, task) => sum + task.minutes, 0) ?? 0;
   const elapsedMinutes = session?.startedAt && session.status === "active"
     ? Math.max(0, Math.floor((now - session.startedAt) / 60000))
     : 0;
   const isRunning = session?.status === "active";
-  const selectedNote = activeTask?.noteId ? notes.find((note) => note.id === activeTask.noteId) : undefined;
 
   return (
     <div className="daily-planner-page">
