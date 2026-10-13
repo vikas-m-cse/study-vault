@@ -41,6 +41,10 @@ const navigationItems = [
         label: "Review",
         icon: BrainCircuit,
     },
+    {
+        label: "Progress",
+        icon: TrendingUp,
+    },
 ];
 
 export function Sidebar({
