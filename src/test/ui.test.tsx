@@ -230,7 +230,7 @@ describe("Notes and application regression", () => {
     it("renders the existing application shell and Notes navigation", async () => {
         const user = userEvent.setup();
         render(<App />);
-        expect(await screen.findByText("Good morning, Vikas.")).toBeTruthy();
+        expect(await screen.findByRole("heading", { name: /Build knowledge.*that stays\./i })).toBeTruthy();
         await user.click(screen.getByRole("button", { name: "Notes" }));
         expect(await screen.findByRole("heading", { name: "Notes" })).toBeTruthy();
         fireEvent.keyDown(window, { key: "k", ctrlKey: true });
