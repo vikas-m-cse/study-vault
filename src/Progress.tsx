@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type CSSProperties } from "react";
 import {
   Activity, ArrowRight, BookOpen, CheckCircle2, Clock3, Flame,
   Gauge, NotebookPen, RefreshCw, Sparkles, Target, TrendingUp,
@@ -86,7 +86,7 @@ function percent(value: number, total: number): number {
 function ProgressRing({ value }: { value: number }) {
   const safe = Math.max(0, Math.min(100, value));
   return (
-    <div className="progress-ring" style={{ "--progress-value": safe } as React.CSSProperties} role="img" aria-label={`${safe}% of notes reviewed`}>
+    <div className="progress-ring" style={{ "--progress-value": safe } as CSSProperties} role="img" aria-label={`${safe}% of notes reviewed`}>
       <div className="progress-ring-inner">
         <strong>{safe}%</strong>
         <span>reviewed</span>
@@ -135,7 +135,7 @@ export default function Progress({ subjects, onOpenReview }: ProgressProps) {
   const totalAttempts = Object.values(reviewState).reduce((sum, item) => sum + (item.attempts ?? 0), 0);
   const studiedNotes = new Set(concepts.filter(({ id }) => reviewState[id]?.lastReviewedAt).map(({ note }) => note.id));
   const notesWithContent = notes.filter((note) => plainText(note).length > 0).length;
-  const masteredConcepts = concepts.filter(({ id }) => masteryPercent(getMastery()[id]) >= 70).length;
+  const mastery = getMastery();\n  const masteredConcepts = concepts.filter(({ id }) => masteryPercent(mastery[id]) >= 70).length;
   const outcomeTotals = events.reduce((totals, event) => {
     totals[event.outcome] += 1;
     return totals;
