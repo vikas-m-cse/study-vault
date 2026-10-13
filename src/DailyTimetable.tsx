@@ -113,7 +113,23 @@ export default function DailyTimetable() {
   const todayKey = dateKey(new Date());
   const isToday = selectedDate === todayKey;
   const dateLabel = isToday ? "TODAY'S PLAN" : activeDate.toLocaleDateString([], { weekday: "long", month: "long", day: "numeric" }).toUpperCase();
-  const nextBlock = isToday ? visibleBlocks.find((block) => !doneIds.includes(block.id) && timeToMinutes(block.end) > new Date().getHours() * 60 + new Date().getMinutes()) : undefined;
+  const nowMinutes = new Date().getHours() * 60 + new Date().getMinutes();
+  const nextBlock = isToday ? visibleBlocks.find((block) => !doneIds.includes(block.id) && timeToMinutes(block.end) > nowMinutes) : undefined;
+  const studyMinutes = visibleBlocks.filter((block) => block.category === "study").reduce((sum, block) => sum + timeToMinutes(block.end) - timeToMinutes(block.start), 0);
+  const weekDays = useMemo(() => {
+    const monday = new Date(activeDate);
+    monday.setDate(monday.getDate() - ((monday.getDay() + 6) % 7));
+    return Array.from({ length: 7 }, (_, index) => {
+      const day = new Date(monday);
+      day.setDate(monday.getDate() + index);
+      return day;
+    });
+  }, [activeDate]);
+  const shiftDate = (amount: number) => {
+    const date = new Date(activeDate);
+    date.setDate(date.getDate() + amount);
+    setSelectedDate(dateKey(date));
+  };
 
   const openNew = () => {
     setEditingId(null);
@@ -164,6 +180,22 @@ export default function DailyTimetable() {
         <button className="timetable-primary" onClick={openNew}><Plus size={17} /> Add time block</button>
       </header>
 
+      <section className="timetable-weekbar" aria-label="Choose a day">
+        <button className="timetable-week-arrow" onClick={() => shiftDate(-7)} aria-label="Previous week"><ChevronLeft size={18} /></button>
+        <div className="timetable-week-days">
+          {weekDays.map((day) => {
+            const key = dateKey(day);
+            const selected = key === selectedDate;
+            const isDayToday = key === todayKey;
+            const count = blocks.filter((block) => block.days === "everyday" || (block.days === "weekdays" && day.getDay() >= 1 && day.getDay() <= 5) || (block.days === "weekend" && (day.getDay() === 0 || day.getDay() === 6))).length;
+            return <button key={key} className={"timetable-week-day" + (selected ? " selected" : "") + (isDayToday ? " today" : "")} onClick={() => setSelectedDate(key)} aria-pressed={selected}>
+              <span>{day.toLocaleDateString([], { weekday: "short" })}</span><strong>{day.getDate()}</strong><i>{count ? count + " planned" : "Open day"}</i>
+            </button>;
+          })}
+        </div>
+        <button className="timetable-week-arrow" onClick={() => shiftDate(7)} aria-label="Next week"><ChevronRight size={18} /></button>
+      </section>
+
       <section className="timetable-hero">
         <div className="timetable-hero-copy">
           <span className="timetable-eyebrow">{dateLabel}</span>
@@ -177,6 +209,12 @@ export default function DailyTimetable() {
           <input id="timetable-date" type="date" value={selectedDate} onChange={(event) => setSelectedDate(event.target.value)} />
           <button type="button" onClick={() => setSelectedDate(todayKey)} disabled={isToday}>Back to today</button>
         </div>
+      </section>
+
+      <section className="timetable-insight-grid">
+        <article className="timetable-insight-card"><span className="timetable-insight-icon study"><BookOpen size={17} /></span><div><span>FOCUSED STUDY</span><strong>{Math.floor(studyMinutes / 60)}h {studyMinutes % 60}m</strong><small>Protected learning time</small></div></article>
+        <article className="timetable-insight-card"><span className="timetable-insight-icon"><Target size={17} /></span><div><span>FOLLOW-THROUGH</span><strong>{completedCount}/{visibleBlocks.length}</strong><small>Blocks checked off</small></div></article>
+        <article className="timetable-insight-card"><span className="timetable-insight-icon rest"><Sun size={17} /></span><div><span>DAY AT A GLANCE</span><strong>{visibleBlocks.length} blocks</strong><small>{Math.floor(plannedMinutes / 60)}h {plannedMinutes % 60}m scheduled</small></div></article>
       </section>
 
       {isToday && nextBlock && (
