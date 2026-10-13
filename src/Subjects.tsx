@@ -3,9 +3,9 @@ import { useEffect, useMemo, useState } from "react";
 import {
     BookOpen, Plus, Search, Pencil, Trash2, X,
     SlidersHorizontal, ArrowUpDown, LayoutGrid, List,
-    FileText, FolderOpen, ArrowRight, MoreHorizontal,
+    FileText, FolderOpen, ArrowRight, MoreHorizontal, ArrowLeft, ExternalLink, Search as SearchIcon,\n
 } from "lucide-react";
-import type { Resource } from "./types/resource";
+import type { Resource } from "./types/resource";\nimport type { Note } from "./types/note";\nimport { getAllNotes } from "./services/noteStorage";
 
 export type Subject = {
     id: number;
@@ -18,7 +18,7 @@ type SubjectsProps = {
     subjects: Subject[];
     setSubjects: React.Dispatch<React.SetStateAction<Subject[]>>;
     resources: Resource[];
-    focusSubjectId?: number | null;
+    focusSubjectId?: number | null;\n    onOpenResource?: (resourceId: string) => void;\n    onOpenNote?: (noteId: string) => void;
 };
 
 const subjectColors = ["blue", "violet", "green", "orange"];
@@ -35,9 +35,9 @@ export default function Subjects({
     const [name, setName] = useState("");
     const [description, setDescription] = useState("");
     const [viewMode, setViewMode] = useState<"cards" | "list">("cards");
-    const [sortMode, setSortMode] = useState<"recent" | "name">("recent");
+    const [sortMode, setSortMode] = useState<"recent" | "name">("recent");\n    const [openedSubjectId, setOpenedSubjectId] = useState<number | null>(null);\n    const [subjectNotes, setSubjectNotes] = useState<Note[]>([]);\n    const [notesLoading, setNotesLoading] = useState(false);\n    const [documentSearch, setDocumentSearch] = useState("");
 
-    const subjectStats = useMemo(() => {
+    useEffect(() => {\n        if (openedSubjectId === null) return;\n        let cancelled = false;\n        setNotesLoading(true);\n        getAllNotes().then((allNotes) => {\n            if (!cancelled) setSubjectNotes(allNotes.filter((note) => note.status === "active" && note.subjectId === openedSubjectId));\n        }).catch(() => { if (!cancelled) setSubjectNotes([]); }).finally(() => { if (!cancelled) setNotesLoading(false); });\n        return () => { cancelled = true; };\n    }, [openedSubjectId]);\n\n    const openedSubject = subjects.find((subject) => subject.id === openedSubjectId) ?? null;\n    const relatedResources = resources.filter((resource) => resource.subjectId === openedSubjectId);\n    const visibleNotes = subjectNotes.filter((note) => note.title.toLowerCase().includes(documentSearch.toLowerCase()));\n    const visibleResources = relatedResources.filter((resource) => resource.title.toLowerCase().includes(documentSearch.toLowerCase()));\n\n    const subjectStats = useMemo(() => {
         const map = new Map<number, { notes: number; resources: number }>();
         for (const subject of subjects) map.set(subject.id, { notes: 0, resources: 0 });
         for (const resource of resources) {
@@ -183,10 +183,10 @@ export default function Subjects({
                             <span><FolderOpen size={12} /> {subjectStats.get(subject.id)?.resources ?? 0} resources</span>
                         </div>
                         <div className="subject-card-footer subject-card-footer-v2">
-                            <button type="button"><FileText size={13} /> Notes</button>
-                            <button type="button"><FolderOpen size={13} /> Resources</button>
-                            <button type="button"><span className="mini-stack" /> Flashcards</button>
-                            <button className="subject-open-button" type="button" aria-label={`Open ${subject.name}`}><ArrowRight size={15} /></button>
+                            <button type="button" onClick={() => setOpenedSubjectId(subject.id)}><FileText size={13} /> Notes</button>
+                            <button type="button" onClick={() => setOpenedSubjectId(subject.id)}><FolderOpen size={13} /> Resources</button>
+                            <button type="button" onClick={() => setOpenedSubjectId(subject.id)}><span className="mini-stack" /> All work</button>
+                            <button className="subject-open-button" type="button" aria-label={`Open ${subject.name}`} onClick={() => setOpenedSubjectId(subject.id)}><ArrowRight size={15} /></button>
                         </div>
                     </article>
                 ))}
