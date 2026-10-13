@@ -3,9 +3,12 @@ import { useEffect, useMemo, useState } from "react";
 import {
     BookOpen, Plus, Search, Pencil, Trash2, X,
     SlidersHorizontal, ArrowUpDown, LayoutGrid, List,
-    FileText, FolderOpen, ArrowRight, MoreHorizontal, ArrowLeft, ExternalLink, Search as SearchIcon,\n
+    FileText, FolderOpen, ArrowRight, MoreHorizontal, ArrowLeft, ExternalLink, Search as SearchIcon,
+
 } from "lucide-react";
-import type { Resource } from "./types/resource";\nimport type { Note } from "./types/note";\nimport { getAllNotes } from "./services/noteStorage";
+import type { Resource } from "./types/resource";
+import type { Note } from "./types/note";
+import { getAllNotes } from "./services/noteStorage";
 
 export type Subject = {
     id: number;
@@ -18,7 +21,9 @@ type SubjectsProps = {
     subjects: Subject[];
     setSubjects: React.Dispatch<React.SetStateAction<Subject[]>>;
     resources: Resource[];
-    focusSubjectId?: number | null;\n    onOpenResource?: (resourceId: string) => void;\n    onOpenNote?: (noteId: string) => void;
+    focusSubjectId?: number | null;
+    onOpenResource?: (resourceId: string) => void;
+    onOpenNote?: (noteId: string) => void;
 };
 
 const subjectColors = ["blue", "violet", "green", "orange"];
@@ -35,9 +40,28 @@ export default function Subjects({
     const [name, setName] = useState("");
     const [description, setDescription] = useState("");
     const [viewMode, setViewMode] = useState<"cards" | "list">("cards");
-    const [sortMode, setSortMode] = useState<"recent" | "name">("recent");\n    const [openedSubjectId, setOpenedSubjectId] = useState<number | null>(null);\n    const [subjectNotes, setSubjectNotes] = useState<Note[]>([]);\n    const [notesLoading, setNotesLoading] = useState(false);\n    const [documentSearch, setDocumentSearch] = useState("");
+    const [sortMode, setSortMode] = useState<"recent" | "name">("recent");
+    const [openedSubjectId, setOpenedSubjectId] = useState<number | null>(null);
+    const [subjectNotes, setSubjectNotes] = useState<Note[]>([]);
+    const [notesLoading, setNotesLoading] = useState(false);
+    const [documentSearch, setDocumentSearch] = useState("");
 
-    useEffect(() => {\n        if (openedSubjectId === null) return;\n        let cancelled = false;\n        setNotesLoading(true);\n        getAllNotes().then((allNotes) => {\n            if (!cancelled) setSubjectNotes(allNotes.filter((note) => note.status === "active" && note.subjectId === openedSubjectId));\n        }).catch(() => { if (!cancelled) setSubjectNotes([]); }).finally(() => { if (!cancelled) setNotesLoading(false); });\n        return () => { cancelled = true; };\n    }, [openedSubjectId]);\n\n    const openedSubject = subjects.find((subject) => subject.id === openedSubjectId) ?? null;\n    const relatedResources = resources.filter((resource) => resource.subjectId === openedSubjectId);\n    const visibleNotes = subjectNotes.filter((note) => note.title.toLowerCase().includes(documentSearch.toLowerCase()));\n    const visibleResources = relatedResources.filter((resource) => resource.title.toLowerCase().includes(documentSearch.toLowerCase()));\n\n    const subjectStats = useMemo(() => {
+    useEffect(() => {
+        if (openedSubjectId === null) return;
+        let cancelled = false;
+        setNotesLoading(true);
+        getAllNotes().then((allNotes) => {
+            if (!cancelled) setSubjectNotes(allNotes.filter((note) => note.status === "active" && note.subjectId === openedSubjectId));
+        }).catch(() => { if (!cancelled) setSubjectNotes([]); }).finally(() => { if (!cancelled) setNotesLoading(false); });
+        return () => { cancelled = true; };
+    }, [openedSubjectId]);
+
+    const openedSubject = subjects.find((subject) => subject.id === openedSubjectId) ?? null;
+    const relatedResources = resources.filter((resource) => resource.subjectId === openedSubjectId);
+    const visibleNotes = subjectNotes.filter((note) => note.title.toLowerCase().includes(documentSearch.toLowerCase()));
+    const visibleResources = relatedResources.filter((resource) => resource.title.toLowerCase().includes(documentSearch.toLowerCase()));
+
+    const subjectStats = useMemo(() => {
         const map = new Map<number, { notes: number; resources: number }>();
         for (const subject of subjects) map.set(subject.id, { notes: 0, resources: 0 });
         for (const resource of resources) {
