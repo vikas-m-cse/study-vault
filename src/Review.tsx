@@ -20,6 +20,7 @@ type ReviewProps = {
   resources: Resource[];
   subjects: Subject[];
   focusNoteId?: string | null;
+  focusConceptId?: string | null;
 };
 
 type Rating = "again" | "hard" | "good" | "easy";
@@ -219,10 +220,10 @@ function buildConcepts(note: Note, subjectName?: string): ReviewConcept[] {
   return concepts.map((concept, index) => ({ ...concept, index: index + 1, totalInNote: total }));
 }
 
-export default function Review({ subjects, focusNoteId }: ReviewProps) {
+export default function Review({ subjects, focusNoteId, focusConceptId }: ReviewProps) {
   const [notes, setNotes] = useState<Note[]>([]);
   const [reviewState, setReviewState] = useState<Record<string, ReviewState>>(() => readReviewState());
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(focusConceptId ?? null);
   const [recall, setRecall] = useState("");
   const [revealed, setRevealed] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -265,6 +266,7 @@ export default function Review({ subjects, focusNoteId }: ReviewProps) {
   const dueConcepts = useMemo(
     () => concepts
       .filter((concept) => {
+        if (focusConceptId) return concept.id === focusConceptId;
         if (focusNoteId && concept.noteId !== focusNoteId) return false;
         if (focusNoteId) return true;
         const state = reviewState[concept.id];
@@ -279,10 +281,13 @@ export default function Review({ subjects, focusNoteId }: ReviewProps) {
         const bPriority = learningPriority(getMastery()[b.id], now);
         return bPriority - aPriority || aDue - bDue;
       }),
-    [concepts, reviewState, now, focusNoteId],
+    [concepts, reviewState, now, focusNoteId, focusConceptId],
   );
 
-  const selected = dueConcepts.find((concept) => concept.id === selectedId) ?? dueConcepts[0] ?? null;
+  const selected = (focusConceptId ? dueConcepts.find((concept) => concept.id === focusConceptId) : undefined)
+    ?? dueConcepts.find((concept) => concept.id === selectedId)
+    ?? dueConcepts[0]
+    ?? null;
   const currentState = selected ? reviewState[selected.id] : undefined;
 
   const reveal = () => {
@@ -348,7 +353,7 @@ export default function Review({ subjects, focusNoteId }: ReviewProps) {
       confidence: confidenceScore,
       at: timestamp,
     });
-    recordMasteryLevel(selected.id, level);
+    recordMasteryLevel(selected.id, level, timestamp + interval, timestamp);
     setRecall("");
     setRevealed(false);
     setSelectedId(null);

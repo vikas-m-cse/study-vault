@@ -13,6 +13,16 @@ import Subjects, { type Subject } from "./Subjects";
 import Review from "./Review";
 import Progress from "./Progress";
 import DailyTimetable from "./DailyTimetable";
+import DailyPlanner from "./DailyPlanner";
+import WeeklyReflection from "./WeeklyReflection";
+import Inbox from "./Inbox";
+import ActivityTimeline from "./ActivityTimeline";
+import StudyAnalytics from "./StudyAnalytics";
+import DocumentConverter from "./DocumentConverter";
+import LearningGaps from "./LearningGaps";
+import { getLearningEvents } from "./services/learningCore";
+import { readPlannerHistory } from "./services/plannerHistory";
+import { syncStudyNotifications, unreadInboxCount } from "./services/inboxStore";
 import {
     isStorageAvailable,
     loadResources,
@@ -61,6 +71,7 @@ const DEFAULT_SUBJECTS: Subject[] = [
 
 function App() {
     const [activePage, setActivePage] = useState("Dashboard");
+    const [unreadCount, setUnreadCount] = useState(() => unreadInboxCount());
 
     const navigate = useCallback((page: string) => {
         if (page === activePage) return;
@@ -72,10 +83,30 @@ function App() {
             update();
         }
     }, [activePage]);
+    useEffect(() => {
+        const refreshInboxCount = () => {
+            syncStudyNotifications(readPlannerHistory(), getLearningEvents());
+            setUnreadCount(unreadInboxCount());
+        };
+        refreshInboxCount();
+        window.addEventListener("focus", refreshInboxCount);
+        window.addEventListener("storage", refreshInboxCount);
+        const refreshUnreadOnly = () => setUnreadCount(unreadInboxCount());
+        window.addEventListener("studyvault:learning-updated", refreshInboxCount);
+        window.addEventListener("studyvault:inbox-updated", refreshUnreadOnly);
+        return () => {
+            window.removeEventListener("focus", refreshInboxCount);
+            window.removeEventListener("storage", refreshInboxCount);
+            window.removeEventListener("studyvault:learning-updated", refreshInboxCount);
+            window.removeEventListener("studyvault:inbox-updated", refreshUnreadOnly);
+        };
+    }, []);
+
     const [isSearchOpen, setIsSearchOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
     const [notesTarget, setNotesTarget] = useState<{ noteId?: string; folderId?: string } | null>(null);
     const [reviewNoteId, setReviewNoteId] = useState<string | null>(null);
+    const [reviewConceptId, setReviewConceptId] = useState<string | null>(null);
     const [resourceTargetId, setResourceTargetId] = useState<string | null>(null);
     const [subjectTargetId, setSubjectTargetId] = useState<number | null>(null);
     const storageAvailable = isStorageAvailable();
@@ -280,6 +311,8 @@ function App() {
                     onOpenSearch={() => setIsSearchOpen(true)}
                     searchQuery={searchQuery}
                     onSearchQueryChange={setSearchQuery}
+                    onOpenInbox={() => { syncStudyNotifications(readPlannerHistory(), getLearningEvents()); setUnreadCount(unreadInboxCount()); navigate("Inbox"); }}
+                    unreadCount={unreadCount}
                 />
 
                 {storageError && (
@@ -332,6 +365,20 @@ function App() {
                         />
                      ) : activePage === "Progress" ? (
                         <Progress subjects={subjects} onOpenReview={() => navigate("Review")} />
+                    ) : activePage === "Weekly Reflection" ? (
+                        <WeeklyReflection subjects={subjects} onOpenPlanner={() => navigate("Daily Planner")} onOpenConcept={(noteId, conceptId) => { setReviewNoteId(noteId); setReviewConceptId(conceptId); navigate("Review"); }} />
+                    ) : activePage === "Daily Planner" ? (
+                        <DailyPlanner subjects={subjects} />
+                    ) : activePage === "Inbox" ? (
+                        <Inbox onNavigate={(page) => { navigate(page); setUnreadCount(unreadInboxCount()); }} />
+                    ) : activePage === "Activity Timeline" ? (
+                        <ActivityTimeline onNavigate={(page) => navigate(page)} />
+                    ) : activePage === "Study Analytics" ? (
+                        <StudyAnalytics onNavigate={(page) => navigate(page)} />
+                    ) : activePage === "Learning Gaps" ? (
+                        <LearningGaps onNavigate={(page) => navigate(page)} onOpenConcept={(conceptId) => { setReviewNoteId(conceptId.split("::")[0]); setReviewConceptId(conceptId); navigate("Review"); }} />
+                    ) : activePage === "File Converter" ? (
+                        <DocumentConverter />
                     ) : activePage === "Timetable" ? (
                         <DailyTimetable />
                     ) : activePage === "Review" ? (
@@ -339,6 +386,7 @@ function App() {
                             resources={resources}
                             subjects={subjects}
                             focusNoteId={reviewNoteId}
+                            focusConceptId={reviewConceptId}
                         />
                     ) : (
                         <div className="page-heading">

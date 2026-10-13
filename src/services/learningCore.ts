@@ -256,12 +256,24 @@ export function getNextBestAction(value?: ConceptMastery): NextLearningAction {
   };
 }
 
-export function recordMasteryLevel(conceptId: string, level: number) {
+export function recordMasteryLevel(
+  conceptId: string,
+  level: number,
+  nextReviewAt?: number,
+  lastReviewedAt?: number,
+) {
   const mastery = getMastery();
   const current = mastery[conceptId];
   if (!current) return;
   current.bestLevel = Math.max(current.bestLevel, level);
+  if (typeof nextReviewAt === "number" && Number.isFinite(nextReviewAt)) {
+    current.nextReviewAt = nextReviewAt;
+  }
+  if (typeof lastReviewedAt === "number" && Number.isFinite(lastReviewedAt)) {
+    current.lastReviewedAt = lastReviewedAt;
+  }
   write(STORAGE_KEY, mastery);
+  notifyLearningUpdated();
 }
 
 

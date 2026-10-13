@@ -8,6 +8,13 @@ import {
     BrainCircuit,
     TrendingUp,
     CalendarDays,
+    Timer,
+    NotebookPen,
+    Inbox,
+    History,
+    ChartNoAxesCombined,
+    Target,
+    ArrowRightLeft,
     Settings,
     Library,
 } from "lucide-react";
@@ -45,6 +52,34 @@ const navigationItems = [
     {
         label: "Progress",
         icon: TrendingUp,
+    },
+    {
+        label: "Daily Planner",
+        icon: Timer,
+    },
+    {
+        label: "Weekly Reflection",
+        icon: NotebookPen,
+    },
+    {
+        label: "Inbox",
+        icon: Inbox,
+    },
+    {
+        label: "Activity Timeline",
+        icon: History,
+    },
+    {
+        label: "Study Analytics",
+        icon: ChartNoAxesCombined,
+    },
+    {
+        label: "Learning Gaps",
+        icon: Target,
+    },
+    {
+        label: "File Converter",
+        icon: ArrowRightLeft,
     },
     {
         label: "Timetable",
