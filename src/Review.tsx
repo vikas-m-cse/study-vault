@@ -532,7 +532,7 @@ export default function Review({ subjects, focusNoteId }: ReviewProps) {
                     <span>Again</span><small>10 min</small>
                   </button>
                   <button type="button" disabled={!revealed} onClick={() => rate("hard")}>
-                    <span>Hard</span><small>{formatInterval(INTERVALS_MS[Math.min(currentState?.level ?? 0, INTERVALS_MS.length - 1)])}</small>
+                    <span>Hard</span><small>{formatInterval(Math.max(INTERVALS_MS[0], 24 * 60 * 60 * 1000 * Math.max(1, currentState?.level ?? 0)))}</small>
                   </button>
                   <button type="button" className="good" disabled={!revealed} onClick={() => rate("good")}>
                     <span>Good</span><small>next interval</small>
