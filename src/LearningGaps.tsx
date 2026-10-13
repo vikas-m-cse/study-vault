@@ -17,7 +17,7 @@ function statusLabel(gap: LearningGap): string {
   return "Building";
 }
 
-export default function LearningGaps({ onNavigate }: { onNavigate: (page: string) => void }) {
+export default function LearningGaps({ onNavigate, onOpenConcept }: { onNavigate: (page: string) => void; onOpenConcept: (conceptId: string) => void }) {
   const [now, setNow] = useState(() => Date.now());
   const [labels, setLabels] = useState<Record<string, string>>({});
   const [loadError, setLoadError] = useState(false);
@@ -110,7 +110,7 @@ export default function LearningGaps({ onNavigate }: { onNavigate: (page: string
                 </div>
                 <div className="learning-gap-next"><span>Suggested next action</span><strong>{gap.nextAction.label}</strong><p>{gap.nextAction.reason}</p></div>
               </div>
-              <button className="learning-gap-open" onClick={() => onNavigate("Review")} aria-label={`Review ${gap.label}`} title="Open Review"><ArrowRight size={17} /></button>
+              <button className="learning-gap-open" onClick={() => onOpenConcept(gap.conceptId)} aria-label={`Review ${gap.label}`} title="Open this concept in Review"><ArrowRight size={17} /></button>
             </article>
           ))}
         </section>
