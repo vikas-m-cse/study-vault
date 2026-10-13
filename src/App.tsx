@@ -16,6 +16,7 @@ import DailyTimetable from "./DailyTimetable";
 import DailyPlanner from "./DailyPlanner";
 import WeeklyReflection from "./WeeklyReflection";
 import Inbox from "./Inbox";
+import ActivityTimeline from "./ActivityTimeline";
 import { getLearningEvents } from "./services/learningCore";
 import { readPlannerHistory } from "./services/plannerHistory";
 import { syncStudyNotifications, unreadInboxCount } from "./services/inboxStore";
