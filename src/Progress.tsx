@@ -151,9 +151,11 @@ export default function Progress({ subjects, onOpenReview }: ProgressProps) {
     };
     window.addEventListener("focus", refresh);
     window.addEventListener("storage", refresh);
+    window.addEventListener("studyvault:learning-updated", refresh);
     return () => {
       window.removeEventListener("focus", refresh);
       window.removeEventListener("storage", refresh);
+      window.removeEventListener("studyvault:learning-updated", refresh);
     };
   }, []);
 
