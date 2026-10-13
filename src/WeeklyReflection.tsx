@@ -170,6 +170,32 @@ export default function WeeklyReflection() {
         </article>
       </section>
 
+      <section className="weekly-recommendations-card">
+        <div className="weekly-recommendations-heading">
+          <div className="weekly-section-title"><span className="weekly-section-icon"><Target size={18} /></span><div><p className="weekly-eyebrow">NEXT WEEK · EVIDENCE-BASED</p><h2>Your next best moves</h2></div></div>
+          <button className="weekly-plan-button" onClick={onOpenPlanner}>Build a study session <ArrowRight size={15} /></button>
+        </div>
+        {recommendations.length === 0 ? (
+          <div className="weekly-empty-state"><NotebookPen size={24} /><h3>Add a few active notes to get started.</h3><p>Recommendations use saved note content and recorded learning evidence. Until there is enough data, StudyVault will not invent weak topics or claim progress that has not been recorded.</p></div>
+        ) : (
+          <div className="weekly-recommendations-list">
+            {recommendations.map((item, index) => (
+              <article className="weekly-recommendation-item" key={item.conceptId}>
+                <span className="weekly-recommendation-rank">{String(index + 1).padStart(2, "0")}</span>
+                <div className="weekly-recommendation-copy">
+                  <div className="weekly-recommendation-meta">{item.subjectName || "Your notes"} · {item.minutes} min suggested</div>
+                  <h3>{item.title}</h3>
+                  <strong>{item.label}</strong>
+                  <p>{item.reason}</p>
+                  <div className="weekly-recommendation-stats"><span>Recorded mastery: {item.mastery}%</span><span>Estimated retention: {item.retention}%</span></div>
+                </div>
+              </article>
+            ))}
+          </div>
+        )}
+        <p className="weekly-evidence-note">Suggestions rank saved active notes by recorded review priority, mastery and retention estimates. Estimates are learning-model signals, not measured exam scores.</p>
+      </section>
+
       <div className="weekly-reflection-layout">
         <section className="weekly-evidence-card">
           <div className="weekly-section-title"><span className="weekly-section-icon"><CheckCircle2 size={18} /></span><div><p className="weekly-eyebrow">YOUR EVIDENCE</p><h2>What the data says</h2></div></div>
