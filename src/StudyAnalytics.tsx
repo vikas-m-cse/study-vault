@@ -23,10 +23,8 @@ function formatMinutes(minutes: number): string {
 
 export default function StudyAnalytics({ onNavigate }: { onNavigate: (page: string) => void }) {
   const [now, setNow] = useState(() => Date.now());
-  const [refreshKey, setRefreshKey] = useState(0);
   const refresh = useCallback(() => {
     setNow(Date.now());
-    setRefreshKey((value) => value + 1);
   }, []);
   useEffect(() => {
     window.addEventListener("focus", refresh);
@@ -41,7 +39,7 @@ export default function StudyAnalytics({ onNavigate }: { onNavigate: (page: stri
     };
   }, [refresh]);
 
-  const analytics = useMemo(() => buildStudyAnalytics(readPlannerHistory(), getLearningEvents(), readSchedules(), now), [now, refreshKey]);
+  const analytics = useMemo(() => buildStudyAnalytics(readPlannerHistory(), getLearningEvents(), readSchedules(), now), [now]);
   const maxMinutes = Math.max(1, ...analytics.weeks.map((week) => week.minutes));
   const hasEvidence = analytics.totalSessions > 0 || analytics.totalAttempts > 0 || analytics.conceptsTracked > 0;
 
