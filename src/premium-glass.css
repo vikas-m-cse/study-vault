@@ -1585,3 +1585,79 @@ button:focus-visible, [role="button"]:focus-visible, a:focus-visible,
   .resource-row--library .resource-info h3 { font-size: 13px !important; }
   .resource-row--library .resource-info p { font-size: 11px !important; }
 }
+
+
+/* Global title system — consistent hierarchy across every StudyVault screen. */
+:root {
+  --sv-title-ink: #292923;
+  --sv-title-muted: #5f5a50;
+  --sv-title-accent: #99703a;
+}
+body {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+main h1, .main-content h1, .page-content h1, .page-heading h1,
+.page-title, .subjects-heading h1, .welcome-section h1 {
+  color: var(--sv-title-ink) !important;
+  font-size: clamp(28px, 2.35vw, 36px) !important;
+  font-weight: 730 !important;
+  line-height: 1.12 !important;
+  letter-spacing: -.045em !important;
+  text-wrap: balance;
+}
+main h2, .main-content h2, .page-content h2,
+.section-heading h2, .section-title, .content-section-title,
+.subject-card h2, .subject-card-v2 .subject-card-copy h2,
+.resource-modal-heading h2, .subject-modal-heading h2,
+.review-selection-heading h2, .review-revision-copy h2 {
+  color: var(--sv-title-ink) !important;
+  font-size: clamp(18px, 1.5vw, 22px) !important;
+  font-weight: 690 !important;
+  line-height: 1.28 !important;
+  letter-spacing: -.028em !important;
+  text-wrap: balance;
+}
+main h3, .main-content h3, .page-content h3,
+.resource-info h3, .subject-info h3, .subject-card-copy h3,
+.resource-row--library .resource-info h3,
+.empty-resources h3, .global-search-state h3 {
+  color: var(--sv-title-ink) !important;
+  font-size: 15px !important;
+  font-weight: 680 !important;
+  line-height: 1.4 !important;
+  letter-spacing: -.018em !important;
+  text-wrap: pretty;
+}
+main h4, .main-content h4, .page-content h4 {
+  color: var(--sv-title-ink) !important;
+  font-size: 13px !important;
+  font-weight: 680 !important;
+  line-height: 1.45 !important;
+  letter-spacing: -.01em !important;
+}
+main h1 + p, main h2 + p, main h3 + p,
+.page-heading .page-description, .welcome-section > p,
+.section-heading p {
+  line-height: 1.6;
+}
+.brand-text h2, .brand-text h3,
+.sidebar h1, .sidebar h2, .sidebar h3,
+.topbar h1, .topbar h2, .topbar h3 {
+  text-wrap: initial;
+}
+@media (max-width: 640px) {
+  main h1, .main-content h1, .page-content h1, .page-heading h1,
+  .page-title, .subjects-heading h1, .welcome-section h1 {
+    font-size: clamp(26px, 7vw, 31px) !important;
+  }
+  main h2, .main-content h2, .page-content h2,
+  .section-heading h2, .section-title, .content-section-title {
+    font-size: 19px !important;
+  }
+  main h3, .main-content h3, .page-content h3,
+  .resource-info h3, .subject-info h3, .subject-card-copy h3 {
+    font-size: 14px !important;
+  }
+}
