@@ -8,7 +8,7 @@ import { readPlannerHistory } from "./services/plannerHistory";
 import {
   deleteMessage, dismissNotification, markAllMessagesRead, markAllNotificationsRead,
   markMessageRead, markNotificationRead, readMessages,
-  savePersonalMessage, syncStudyNotifications, type InboxMessage, type InboxNotification,
+  readInboxPreferences, saveInboxPreferences, savePersonalMessage, syncStudyNotifications,\n  type InboxMessage, type InboxNotification, type InboxPreferences,
 } from "./services/inboxStore";
 import "./inbox.css";
 
@@ -35,7 +35,7 @@ export default function Inbox({ onNavigate }: { onNavigate: (page: string) => vo
   const [showComposer, setShowComposer] = useState(false);
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
-  const [saveError, setSaveError] = useState("");
+  const [saveError, setSaveError] = useState("");\n  const [showPreferences, setShowPreferences] = useState(false);\n  const [preferences, setPreferences] = useState<InboxPreferences>(() => readInboxPreferences());
 
   const refresh = useCallback(() => {
     const history = readPlannerHistory();
@@ -97,11 +97,11 @@ export default function Inbox({ onNavigate }: { onNavigate: (page: string) => vo
           <button className="inbox-secondary-button" onClick={() => {
             markAllNotificationsRead(); markAllMessagesRead(); refresh();
           }}><CheckCheck size={16} /> Mark all read</button>
-          <button className="inbox-primary-button" onClick={() => { setShowComposer(true); setSaveError(""); }}><Plus size={16} /> New message</button>
+          <button className="inbox-secondary-button" onClick={() => setShowPreferences((visible) => !visible)} aria-expanded={showPreferences}><Bell size={16} /> Preferences</button>\n          <button className="inbox-primary-button" onClick={() => { setShowComposer(true); setSaveError(""); }}><Plus size={16} /> New message</button>
         </div>
       </header>
 
-      <div className="inbox-workspace">
+      {showPreferences && (\n        <section className="inbox-preferences" aria-labelledby="inbox-preferences-title">\n          <div><p className="inbox-eyebrow">YOUR CONTROL</p><h2 id="inbox-preferences-title">Notification preferences</h2><p>Choose which study updates appear in this inbox. Changes are saved on this device.</p></div>\n          <div className="inbox-preference-options">\n            <label><input type="checkbox" checked={preferences.review} onChange={(event) => { const next = { ...preferences, review: event.target.checked }; setPreferences(next); saveInboxPreferences(next); refresh(); }} /><span><strong>Review reminders</strong><small>Topics whose saved review time has arrived</small></span></label>\n            <label><input type="checkbox" checked={preferences.learning} onChange={(event) => { const next = { ...preferences, learning: event.target.checked }; setPreferences(next); saveInboxPreferences(next); refresh(); }} /><span><strong>Learning signals</strong><small>Recent incorrect recall attempts</small></span></label>\n            <label><input type="checkbox" checked={preferences.planner} onChange={(event) => { const next = { ...preferences, planner: event.target.checked }; setPreferences(next); saveInboxPreferences(next); refresh(); }} /><span><strong>Planner updates</strong><small>Completed study sessions</small></span></label>\n          </div>\n        </section>\n      )}\n\n      <div className="inbox-workspace">
         <aside className="inbox-rail" aria-label="Inbox folders">
           <button className={tab === "notifications" ? "active" : ""} onClick={() => setTab("notifications")} aria-pressed={tab === "notifications"}>
             <Bell size={18} /><span>Notifications</span>{unreadNotifications > 0 && <b>{unreadNotifications}</b>}
