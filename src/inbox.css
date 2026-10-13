@@ -60,3 +60,15 @@
 .inbox-composer-footer>span{color:var(--inbox-muted);font-size:9px}
 @media(max-width:1050px){.inbox-workspace{grid-template-columns:160px minmax(0,1fr)}.inbox-context-panel{grid-column:2;display:grid;grid-template-columns:40px minmax(0,1fr);column-gap:12px;align-items:start}.inbox-context-icon{grid-row:1/3}.inbox-context-panel .inbox-eyebrow{align-self:end}.inbox-context-panel h3{grid-column:2}.inbox-context-panel>p:not(.inbox-eyebrow):not(.inbox-privacy),.inbox-context-stat,.inbox-privacy{grid-column:2}}
 @media(max-width:700px){.inbox-header{flex-direction:column}.inbox-header-actions{width:100%;flex-wrap:wrap}.inbox-workspace{grid-template-columns:minmax(0,1fr)}.inbox-rail{flex-direction:row}.inbox-rail>button{flex:1;justify-content:center;padding:0 7px}.inbox-rail-note{display:none}.inbox-context-panel{grid-column:1;display:block}.inbox-context-icon{margin-bottom:12px}.inbox-item{gap:9px;padding:14px 10px}.inbox-item-icon{flex-basis:32px;width:32px;height:32px}.inbox-item-actions{flex-direction:column}.inbox-unread-dot{top:12px;right:11px}.inbox-list-heading{padding:16px}.inbox-composer{padding:19px}}
+
+.inbox-preferences{display:grid;grid-template-columns:minmax(220px,.8fr) minmax(0,1.2fr);gap:22px;align-items:center;margin:-8px 0 18px;padding:20px;border:1px solid var(--inbox-line);border-radius:16px;background:#fffefa;box-shadow:0 12px 30px #2a2d2107}
+.inbox-preferences h2{margin:7px 0 5px;font-family:Georgia,"Times New Roman",serif;font-size:22px;font-weight:500;letter-spacing:-.025em}
+.inbox-preferences>div:first-child>p:last-child{margin:0;color:var(--inbox-muted);font-size:11px;line-height:1.6}
+.inbox-preference-options{display:grid;gap:8px}
+.inbox-preference-options label{display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid #eeede5;border-radius:11px;cursor:pointer}
+.inbox-preference-options input{width:16px;height:16px;accent-color:#59664b;flex-shrink:0}
+.inbox-preference-options span{display:grid;gap:3px}
+.inbox-preference-options strong{font-size:11px;font-weight:750}
+.inbox-preference-options small{color:var(--inbox-muted);font-size:10px;line-height:1.4}
+@media(max-width:900px){.inbox-preferences{grid-template-columns:1fr;gap:14px}}
+@media(max-width:620px){.inbox-preferences{padding:15px}.inbox-header-actions{flex-wrap:wrap;justify-content:flex-start}}
