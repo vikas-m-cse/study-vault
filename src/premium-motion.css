@@ -1132,3 +1132,322 @@ button, input, textarea, select { accent-color: var(--sv-olive); }
 .notes-editor-content .ProseMirror ::selection {
   background: rgba(196,154,90,.24) !important;
 }
+
+
+/* ==========================================================================
+   MOBILE-FIRST PASS — WARM EDITORIAL
+   Phone layout: bottom navigation, compact sticky search, stacked Notes panels,
+   touch-sized controls and no horizontal page overflow.
+========================================================================== */
+@media (max-width: 760px) {
+  html, body, #root {
+    width: 100%;
+    min-width: 0;
+    min-height: 100%;
+    overflow-x: clip !important;
+  }
+  .app-layout {
+    display: block !important;
+    width: 100% !important;
+    min-height: 100dvh !important;
+    padding-bottom: calc(76px + env(safe-area-inset-bottom, 0px)) !important;
+    overflow-x: clip !important;
+  }
+  .main-content {
+    width: 100% !important;
+    min-width: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+  .page-content {
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 20px 14px 28px !important;
+    margin: 0 !important;
+  }
+
+  /* Replace the desktop rail with a familiar, thumb-friendly bottom nav. */
+  .sidebar {
+    position: fixed !important;
+    z-index: 100 !important;
+    left: 0 !important;
+    right: 0 !important;
+    top: auto !important;
+    bottom: 0 !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: none !important;
+    min-height: 0 !important;
+    height: calc(64px + env(safe-area-inset-bottom, 0px)) !important;
+    padding: 5px 5px calc(5px + env(safe-area-inset-bottom, 0px)) !important;
+    overflow: visible !important;
+    background: rgba(255,254,250,.97) !important;
+    border: 0 !important;
+    border-top: 1px solid #E7E2D7 !important;
+    box-shadow: 0 -6px 22px rgba(41,43,38,.075) !important;
+    backdrop-filter: blur(18px) !important;
+    -webkit-backdrop-filter: blur(18px) !important;
+  }
+  .sidebar::after, .sidebar-orb, .sidebar-brand, .sidebar-quick,
+  .sidebar-label, .sidebar-footer {
+    display: none !important;
+  }
+  .sidebar-section {
+    display: block !important;
+    width: 100% !important;
+    height: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+  .sidebar-navigation {
+    display: flex !important;
+    align-items: stretch !important;
+    justify-content: space-around !important;
+    gap: 2px !important;
+    width: 100% !important;
+    height: 100% !important;
+    overflow-x: auto !important;
+    overscroll-behavior-x: contain;
+    scrollbar-width: none;
+  }
+  .sidebar-navigation::-webkit-scrollbar { display: none !important; }
+  .nav-item {
+    display: flex !important;
+    flex: 1 0 52px !important;
+    min-width: 0 !important;
+    min-height: 52px !important;
+    height: 100% !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 4px !important;
+    padding: 6px 2px !important;
+    border: 0 !important;
+    border-radius: 10px !important;
+    background: transparent !important;
+    color: #77786F !important;
+    font-size: 10px !important;
+    font-weight: 550 !important;
+    line-height: 1.1 !important;
+    white-space: nowrap !important;
+    box-shadow: none !important;
+  }
+  .nav-item svg { width: 19px !important; height: 19px !important; flex: 0 0 auto !important; }
+  .nav-item.active {
+    color: #46523A !important;
+    background: #EEF0E7 !important;
+    box-shadow: inset 0 2px 0 #C49A5A !important;
+  }
+  .nav-item.active::before { display: none !important; }
+
+  /* Compact header: keep search and Add Resource accessible on phones. */
+  .topbar {
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 50 !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    width: 100% !important;
+    height: 62px !important;
+    min-height: 62px !important;
+    padding: 8px 12px !important;
+    background: rgba(255,254,250,.96) !important;
+    border-bottom: 1px solid #E7E2D7 !important;
+    box-shadow: 0 3px 12px rgba(41,43,38,.025) !important;
+    backdrop-filter: blur(16px) !important;
+    -webkit-backdrop-filter: blur(16px) !important;
+  }
+  .topbar-ambient { display: none !important; }
+  .topbar-search {
+    flex: 1 1 auto !important;
+    width: auto !important;
+    min-width: 0 !important;
+    height: 42px !important;
+    padding: 0 11px !important;
+    background: #F8F6F0 !important;
+    border: 1px solid #E7E2D7 !important;
+    border-radius: 12px !important;
+    box-shadow: none !important;
+  }
+  .topbar-search > svg { color: #77786F !important; flex: 0 0 auto; }
+  .topbar-search input {
+    width: 100% !important;
+    min-width: 0 !important;
+    color: #292B26 !important;
+    font-size: 14px !important;
+  }
+  .topbar-search input::placeholder { color: #96958A !important; }
+  .search-shortcut, .search-prompt, .topbar-system,
+  .topbar-actions .icon-button { display: none !important; }
+  .topbar-actions {
+    display: flex !important;
+    flex: 0 0 auto !important;
+    gap: 6px !important;
+    margin: 0 !important;
+  }
+  .add-resource-button {
+    min-height: 42px !important;
+    min-width: 42px !important;
+    width: 42px !important;
+    padding: 0 !important;
+    justify-content: center !important;
+    gap: 0 !important;
+    border-radius: 12px !important;
+    background: #59664B !important;
+    color: #FFFEFA !important;
+    border: 1px solid #59664B !important;
+    box-shadow: none !important;
+    font-size: 0 !important;
+  }
+  .add-resource-button svg { width: 20px !important; height: 20px !important; }
+  .add-resource-button span, .add-resource-button kbd { display: none !important; }
+
+  /* Page headers: readable type and actions that wrap instead of overflow. */
+  .welcome-section, .notes-page-heading, .subjects-heading,
+  .review-v2-header, .resources-header {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 12px !important;
+    margin-bottom: 18px !important;
+  }
+  .welcome-section h1, .notes-page-heading h1,
+  .subjects-heading h1, .review-v2-header h1 {
+    font-size: clamp(26px, 7vw, 32px) !important;
+    line-height: 1.12 !important;
+    letter-spacing: -.045em !important;
+  }
+  .welcome-description, .notes-page-heading p,
+  .subjects-heading .page-description, .review-v2-subtitle {
+    font-size: 13px !important;
+    line-height: 1.55 !important;
+  }
+  .notes-heading-actions { display: flex !important; flex-wrap: wrap !important; gap: 8px !important; }
+  .notes-heading-actions > button { min-height: 42px !important; }
+  .content-card, .stat-card, .subject-card, .resource-card,
+  .review-card, .review-side-card {
+    min-width: 0 !important;
+    border-radius: 14px !important;
+  }
+
+  /* Dashboard: single-column reading flow; never squeeze desktop hero columns. */
+  .sv-home-hero {
+    min-height: 0 !important;
+    grid-template-columns: minmax(0,1fr) !important;
+    gap: 18px !important;
+    padding: 25px 18px !important;
+    border-radius: 20px !important;
+  }
+  .sv-hero-copy { padding: 0 !important; }
+  .sv-hero-copy h1 { font-size: clamp(30px, 8vw, 42px) !important; line-height: 1.06 !important; }
+  .sv-hero-copy > p { font-size: 14px !important; line-height: 1.6 !important; }
+  .sv-hero-visual { width: 100% !important; max-width: 320px !important; margin: 0 auto !important; }
+  .dashboard-grid, .stats-grid, .dashboard-stats {
+    grid-template-columns: minmax(0,1fr) !important;
+    gap: 12px !important;
+  }
+  .welcome-section { align-items: flex-start !important; }
+  .welcome-section > button { align-self: flex-start !important; }
+
+  /* Notes: the desktop three-column workspace becomes a usable vertical studio. */
+  .notes-page { width: 100% !important; max-width: 100% !important; min-width: 0 !important; }
+  .notes-workspace, .notes-workspace.left-closed, .notes-workspace.right-closed,
+  .notes-workspace.left-closed.right-closed {
+    display: grid !important;
+    grid-template-columns: minmax(0,1fr) !important;
+    grid-template-rows: auto auto minmax(420px, auto) !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    min-height: 0 !important;
+    height: auto !important;
+    overflow: visible !important;
+    border-radius: 14px !important;
+  }
+  .notes-left-panel, .notes-list-panel, .notes-editor-panel {
+    display: flex !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    min-height: 0 !important;
+    height: auto !important;
+    overflow: hidden !important;
+    border-right: 0 !important;
+    border-bottom: 1px solid #E7E2D7 !important;
+    border-radius: 0 !important;
+  }
+  .notes-left-panel { max-height: 210px !important; overflow-y: auto !important; }
+  .notes-list-panel { max-height: 310px !important; }
+  .notes-list-scroll { min-height: 0 !important; max-height: 245px !important; overflow-y: auto !important; }
+  .notes-editor-panel { min-height: 480px !important; overflow: visible !important; }
+  .notes-editor-header {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 8px !important;
+    padding: 10px !important;
+  }
+  .notes-editor-header-actions { display: flex !important; flex-wrap: wrap !important; gap: 6px !important; }
+  .notes-editor-header-actions button {
+    min-width: 40px !important;
+    min-height: 40px !important;
+    padding: 8px !important;
+  }
+  .notes-editor-breadcrumb { min-width: 0 !important; flex: 1 1 100% !important; font-size: 10px !important; }
+  .notes-editor-scroll { padding: 14px !important; min-width: 0 !important; overflow-wrap: anywhere !important; }
+  .notes-title-row { gap: 8px !important; align-items: flex-start !important; }
+  .notes-title-input { width: 100% !important; min-width: 0 !important; font-size: 25px !important; line-height: 1.2 !important; }
+  .notes-metadata-grid { grid-template-columns: minmax(0,1fr) !important; gap: 10px !important; }
+  .notes-metadata-grid > *, .notes-tags-field, .notes-tags-field input,
+  .notes-search-field, .notes-search-field input { min-width: 0 !important; max-width: 100% !important; }
+  .notes-editor-content .ProseMirror {
+    min-height: 320px !important;
+    padding: 18px 14px 32px !important;
+    font-size: 16px !important;
+    line-height: 1.75 !important;
+    overflow-wrap: anywhere !important;
+  }
+  .notes-editor-content .ProseMirror :where(img,table,pre) { max-width: 100% !important; }
+  .notes-editor-content .ProseMirror table { display: block !important; overflow-x: auto !important; }
+  .notes-editor-footer { flex-wrap: wrap !important; gap: 8px !important; }
+
+  /* Subjects, resources and review: one column and comfortable touch targets. */
+  .subjects-grid-v2, .subjects-grid-v2.list-view {
+    grid-template-columns: minmax(0,1fr) !important;
+    gap: 12px !important;
+  }
+  .subject-card-v2 { min-height: 245px !important; }
+  .subjects-toolbar-v2 {
+    grid-template-columns: minmax(0,1fr) minmax(0,auto) !important;
+    gap: 8px !important;
+    padding: 10px !important;
+  }
+  .subjects-search-v2 { grid-column: 1 / -1 !important; min-width: 0 !important; }
+  .subjects-view-toggle { grid-column: 1 / -1 !important; }
+  .subjects-filter-button, .subjects-view-toggle button { min-height: 40px !important; }
+  .review-v2-stats { display: grid !important; grid-template-columns: repeat(2,minmax(0,1fr)) !important; gap: 8px !important; }
+  .review-v2-layout { grid-template-columns: minmax(0,1fr) !important; gap: 12px !important; }
+  .review-v2-main, .review-v2-sidebar { width: 100% !important; min-width: 0 !important; }
+  .resource-row { gap: 10px !important; flex-wrap: wrap !important; }
+  .resource-row :where(p,span,strong) { overflow-wrap: anywhere; }
+  button, .primary-button, .secondary-button, .notes-review-button {
+    touch-action: manipulation;
+  }
+}
+
+@media (max-width: 420px) {
+  .page-content { padding: 16px 10px 22px !important; }
+  .topbar { padding-inline: 9px !important; gap: 6px !important; }
+  .topbar-search { padding-inline: 9px !important; }
+  .topbar-search input { font-size: 13px !important; }
+  .nav-item { flex-basis: 48px !important; font-size: 9px !important; }
+  .sv-home-hero { padding: 22px 15px !important; }
+  .notes-workspace { border-radius: 11px !important; }
+  .notes-editor-header-actions button { min-height: 38px !important; }
+  .review-v2-stats { grid-template-columns: minmax(0,1fr) !important; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sidebar, .nav-item, .topbar, .content-card, .subject-card-v2 {
+    transition: none !important;
+  }
+}
