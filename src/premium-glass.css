@@ -1699,3 +1699,206 @@ main h1 + p, main h2 + p, main h3 + p,
     max-height: calc(100vh - 100px) !important;
   }
 }
+
+
+/* Shared editorial system: bring the rest of StudyVault up to the Daily Planner standard.
+   Scoped to the other page families so the planner's carefully composed layout stays intact. */
+:root {
+  --sv-paper: #f6f4ee;
+  --sv-porcelain: #fffefa;
+  --sv-ink: #292b26;
+  --sv-muted: #7d7d71;
+  --sv-olive: #59664b;
+  --sv-olive-dark: #46523b;
+  --sv-olive-wash: #edf0e6;
+  --sv-brass: #b88c4c;
+  --sv-line: #e6e1d5;
+  --sv-soft-shadow: 0 12px 32px rgba(49, 48, 37, .045);
+}
+.dashboard, .resources-page, .notes-page, .subjects-page,
+.review-page, .progress-page {
+  color: var(--sv-ink);
+}
+.resources-page, .notes-page, .subjects-page, .review-page, .progress-page {
+  --page-gutter: clamp(18px, 2.2vw, 32px);
+}
+.resources-page .page-heading h1,
+.notes-page .notes-page-heading h1,
+.subjects-page .subjects-heading h1,
+.subjects-page .subject-detail-heading h1,
+.review-page .review-v2-header h1,
+.progress-page .progress-header h1 {
+  color: var(--sv-ink) !important;
+  font-family: Georgia, "Times New Roman", serif !important;
+  font-size: clamp(30px, 2.7vw, 42px) !important;
+  font-weight: 600 !important;
+  letter-spacing: -.045em !important;
+  line-height: 1.12 !important;
+}
+.resources-page .eyebrow,
+.notes-page .eyebrow,
+.subjects-page .eyebrow,
+.review-page .eyebrow,
+.progress-page .progress-eyebrow {
+  color: #7b806e !important;
+  font-size: 10px !important;
+  font-weight: 800 !important;
+  letter-spacing: .16em !important;
+  text-transform: uppercase;
+}
+.resources-page .page-description,
+.notes-page .page-description,
+.subjects-page .page-description,
+.review-page .review-v2-subtitle,
+.progress-page .progress-header > div > p {
+  color: var(--sv-muted) !important;
+  font-size: 14px !important;
+  line-height: 1.65 !important;
+}
+.resources-page .content-card,
+.dashboard .content-card,
+.notes-page .notes-panel,
+.subjects-page .subject-card-v2,
+.subjects-page .subject-modal,
+.review-page .content-card,
+.review-page .review-selection,
+.review-page .review-v2-main,
+.review-page .review-v2-side-card,
+.progress-page .progress-card,
+.progress-page .progress-overview {
+  border: 1px solid var(--sv-line) !important;
+  border-radius: 20px !important;
+  background: var(--sv-porcelain) !important;
+  box-shadow: var(--sv-soft-shadow) !important;
+}
+.resources-page .content-card,
+.dashboard .content-card,
+.review-page .content-card,
+.review-page .review-selection,
+.progress-page .progress-card {
+  color: var(--sv-ink);
+}
+.resources-page .primary-button,
+.notes-page .primary-button,
+.subjects-page .primary-button,
+.dashboard .primary-button,
+.review-page .primary-button,
+.progress-page .progress-cta {
+  min-height: 44px;
+  border: 1px solid var(--sv-olive) !important;
+  border-radius: 13px !important;
+  background: var(--sv-olive) !important;
+  color: #fffefa !important;
+  box-shadow: none !important;
+  font-weight: 700 !important;
+  transition: background .18s ease, transform .18s ease, box-shadow .18s ease;
+}
+.resources-page .primary-button:hover,
+.notes-page .primary-button:hover,
+.subjects-page .primary-button:hover,
+.dashboard .primary-button:hover,
+.review-page .primary-button:hover,
+.progress-page .progress-cta:hover {
+  background: var(--sv-olive-dark) !important;
+  box-shadow: 0 5px 14px rgba(58, 70, 46, .12) !important;
+  transform: translateY(-1px);
+}
+.resources-page input,
+.resources-page select,
+.notes-page input,
+.notes-page textarea,
+.notes-page select,
+.subjects-page input,
+.subjects-page select,
+.review-page input,
+.review-page textarea,
+.review-page select {
+  border-color: var(--sv-line) !important;
+  border-radius: 12px !important;
+  background-color: #fffefa !important;
+  color: var(--sv-ink) !important;
+  box-shadow: none !important;
+}
+.resources-page input:focus,
+.resources-page select:focus,
+.notes-page input:focus,
+.notes-page textarea:focus,
+.notes-page select:focus,
+.subjects-page input:focus,
+.subjects-page select:focus,
+.review-page input:focus,
+.review-page textarea:focus,
+.review-page select:focus {
+  border-color: #b8c0a8 !important;
+  box-shadow: 0 0 0 3px rgba(89, 102, 75, .09) !important;
+  outline: none !important;
+}
+.resources-page .resource-row,
+.dashboard .resource-row,
+.notes-page .notes-list-item,
+.subjects-page .subject-material-card,
+.progress-page .progress-subject {
+  border-color: var(--sv-line) !important;
+  border-radius: 15px !important;
+  background: #fffefa !important;
+  transition: border-color .18s ease, background .18s ease, transform .18s ease, box-shadow .18s ease;
+}
+.resources-page .resource-row:hover,
+.dashboard .resource-row:hover,
+.notes-page .notes-list-item:hover,
+.subjects-page .subject-material-card:hover,
+.progress-page .progress-subject:hover {
+  border-color: #d2c5a9 !important;
+  background: #fffdf8 !important;
+  box-shadow: 0 6px 18px rgba(49, 48, 37, .045) !important;
+  transform: translateY(-1px);
+}
+.resources-page .resource-type,
+.notes-page .notes-list-item-meta,
+.subjects-page .subject-card-stats,
+.progress-page .progress-section-note,
+.progress-page .progress-subject-top p,
+.progress-page .progress-subject-foot {
+  color: var(--sv-muted) !important;
+}
+.resources-page .resource-icon,
+.subjects-page .subject-material-icon,
+.progress-page .progress-metric-icon {
+  border-radius: 12px !important;
+  background: var(--sv-olive-wash) !important;
+  color: var(--sv-olive) !important;
+}
+.resources-page .resource-type-chip-count,
+.resources-page .resource-type-filters button[aria-pressed="true"],
+.notes-page .notes-panel-toggle[aria-pressed="true"],
+.subjects-page .subjects-filter-button[aria-pressed="true"],
+.review-page .review-mode-switch button.active {
+  border-color: #d8dece !important;
+  background: var(--sv-olive-wash) !important;
+  color: var(--sv-olive-dark) !important;
+}
+.progress-page .progress-track {
+  overflow: hidden;
+  border-radius: 99px !important;
+  background: #ebe8de !important;
+}
+.progress-page .progress-track > span {
+  border-radius: inherit;
+  background: var(--sv-olive) !important;
+}
+.progress-page .progress-subject-top > strong,
+.progress-page .progress-next-stat,
+.progress-page .progress-feedback-score strong {
+  color: var(--sv-olive) !important;
+}
+@media (prefers-reduced-motion: reduce) {
+  .resources-page .primary-button, .notes-page .primary-button,
+  .subjects-page .primary-button, .dashboard .primary-button,
+  .review-page .primary-button, .progress-page .progress-cta,
+  .resources-page .resource-row, .dashboard .resource-row,
+  .notes-page .notes-list-item, .subjects-page .subject-material-card,
+  .progress-page .progress-subject {
+    transition: none !important;
+    transform: none !important;
+  }
+}
