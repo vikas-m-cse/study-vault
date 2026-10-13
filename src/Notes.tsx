@@ -713,6 +713,8 @@ export default function Notes({ resources, subjects, openNoteId, openFolderId, i
                                     />
                                 </label>
 
+                                </>
+                                )}
                                 {selectedRecord?.legacy && !readingMode && (
                                     <div className="notes-legacy-banner">
                                         <div>
@@ -721,9 +723,6 @@ export default function Notes({ resources, subjects, openNoteId, openFolderId, i
                                         </div>
                                         <button type="button" className="secondary-button" onClick={convertLegacyNote}>Make editable</button>
                                     </div>
-                                )}
-
-                                </>
                                 )}
                                 {selectedRecord?.legacy && readingMode && <p className="notes-reading-hint">Read-only resource note</p>}
                                 <NoteEditor
