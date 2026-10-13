@@ -83,6 +83,14 @@ export default function Notes({ resources, subjects, openNoteId, openFolderId, i
     const [selectedId, setSelectedId] = useState<string | null>(() => openNoteId ?? null);
     const [filter, setFilter] = useState<NotesFilter>(initialFilter);
     const [search, setSearch] = useState("");
+
+    // App reuses this component for both Notes and Favourites. Keep the
+    // selected filter in sync when navigation changes the initialFilter prop.
+    useEffect(() => {
+        setFilter(initialFilter);
+        setSearch("");
+        setSelectedId(null);
+    }, [initialFilter]);
     const [loadError, setLoadError] = useState<string | null>(null);
     const [saveStates, setSaveStates] = useState<Record<string, SaveState>>({});
     const [saveErrors, setSaveErrors] = useState<Record<string, string>>({});
@@ -387,9 +395,9 @@ export default function Notes({ resources, subjects, openNoteId, openFolderId, i
         <div className="notes-page">
             <div className="notes-page-heading">
                 <div>
-                    <p className="eyebrow">YOUR KNOWLEDGE STUDIO</p>
-                    <h1>Notes</h1>
-                    <p className="page-description">Think clearly, connect ideas, and keep your best work close.</p>
+                    <p className="eyebrow">{filter === "favourites" ? "YOUR SAVED HIGHLIGHTS" : "YOUR KNOWLEDGE STUDIO"}</p>
+                    <h1>{filter === "favourites" ? "Favourites" : "Notes"}</h1>
+                    <p className="page-description">{filter === "favourites" ? "Your favourite notes, collected in one place." : "Think clearly, connect ideas, and keep your best work close."}</p>
                 </div>
                 <div className="notes-heading-actions">
                     <button
