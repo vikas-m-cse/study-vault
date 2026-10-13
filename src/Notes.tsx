@@ -95,6 +95,11 @@ export default function Notes({ resources, subjects, openNoteId, openFolderId, i
     const [studyToolsOpen, setStudyToolsOpen] = useState(false);
     const [readingMode, setReadingMode] = useState(false);
     const [detailsOpen, setDetailsOpen] = useState(false);
+
+    useEffect(() => {
+        setReadingMode(false);
+        setDetailsOpen(false);
+    }, [selectedId]);
     const [isNotesFullscreen, setIsNotesFullscreen] = useState(false);
     const workspaceRef = useRef<HTMLDivElement | null>(null);
 
