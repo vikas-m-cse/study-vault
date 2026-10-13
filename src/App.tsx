@@ -375,7 +375,7 @@ function App() {
                     ) : activePage === "Study Analytics" ? (
                         <StudyAnalytics onNavigate={(page) => navigate(page)} />
                     ) : activePage === "Learning Gaps" ? (
-                        <LearningGaps onNavigate={(page) => navigate(page)} />
+                        <LearningGaps onNavigate={(page) => navigate(page)} onOpenConcept={(conceptId) => { setReviewNoteId(conceptId.split("::")[0]); navigate("Review"); }} />
                     ) : activePage === "File Converter" ? (
                         <DocumentConverter />
                     ) : activePage === "Timetable" ? (
