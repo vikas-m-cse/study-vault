@@ -167,9 +167,9 @@ export default function Progress({ subjects, onOpenReview }: ProgressProps) {
     return !state?.lastReviewedAt || (state.nextReviewAt ?? 0) <= Date.now();
   }).length;
   const totalAttempts = Object.values(reviewState).reduce((sum, item) => sum + (item.attempts ?? 0), 0);
-  const studiedNotes = new Set(concepts.filter(({ id }) => reviewState[id]?.lastReviewedAt).map(({ note }) => note.id));
   const notesWithContent = notes.filter((note) => plainText(note).length > 0).length;
-  const mastery = getMastery();\n  const masteredConcepts = concepts.filter(({ id }) => masteryPercent(mastery[id]) >= 70).length;
+  const mastery = getMastery();
+  const masteredConcepts = concepts.filter(({ id }) => masteryPercent(mastery[id]) >= 70).length;
   const outcomeTotals = events.reduce((totals, event) => {
     totals[event.outcome] += 1;
     return totals;
