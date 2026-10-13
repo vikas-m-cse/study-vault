@@ -19,6 +19,7 @@ import Inbox from "./Inbox";
 import ActivityTimeline from "./ActivityTimeline";
 import StudyAnalytics from "./StudyAnalytics";
 import DocumentConverter from "./DocumentConverter";
+import LearningGaps from "./LearningGaps";
 import { getLearningEvents } from "./services/learningCore";
 import { readPlannerHistory } from "./services/plannerHistory";
 import { syncStudyNotifications, unreadInboxCount } from "./services/inboxStore";
