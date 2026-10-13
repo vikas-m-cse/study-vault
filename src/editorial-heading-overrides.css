@@ -107,3 +107,106 @@ body { background-image: none !important; }
     font-size: clamp(32px, 8vw, 40px) !important;
   }
 }
+
+
+/* Contrast and palette correction: calm light hero + cohesive subject cards.
+   Keeps the editorial layout while removing the heavy navy/orange treatment. */
+.dashboard .sv-home-hero {
+  background: linear-gradient(125deg, #ffffff 0%, #f1f4f8 100%) !important;
+  border: 1px solid #e3e8ef !important;
+  box-shadow: 0 18px 42px rgba(38, 50, 71, .055) !important;
+}
+.dashboard .sv-home-hero .sv-hero-kicker {
+  color: #77849a !important;
+}
+.dashboard .sv-home-hero .sv-hero-kicker > span,
+.dashboard .sv-home-hero .sv-hero-live {
+  background: #8295ad !important;
+}
+.dashboard .sv-home-hero h1 {
+  color: #252d3a !important;
+}
+.dashboard .sv-home-hero h1 em {
+  color: #526b8c !important;
+}
+.dashboard .sv-home-hero p {
+  color: #687589 !important;
+}
+.dashboard .sv-home-hero .sv-hero-note {
+  color: #738096 !important;
+}
+.dashboard .sv-home-hero .sv-hero-primary {
+  background: #263a5b !important;
+  color: #ffffff !important;
+  border: 1px solid #263a5b !important;
+  box-shadow: 0 5px 14px rgba(38,58,91,.12) !important;
+}
+.dashboard .sv-home-hero .sv-hero-primary:hover {
+  background: #1d2d49 !important;
+}
+.dashboard .sv-home-hero .sv-hero-visual,
+.dashboard .sv-home-hero .sv-core {
+  color: #526b8c !important;
+}
+.dashboard .sv-home-hero .sv-core {
+  background: rgba(255,255,255,.78) !important;
+  border-color: rgba(82,107,140,.2) !important;
+}
+.dashboard .sv-home-hero .sv-orbit {
+  border-color: rgba(82,107,140,.18) !important;
+}
+.dashboard .sv-home-hero .sv-orbit-label {
+  color: #74849a !important;
+}
+.dashboard .sv-dashboard-intro h2 em {
+  color: #526b8c !important;
+}
+
+/* Subjects: neutral porcelain cards and one restrained blue accent, regardless
+   of each subject's legacy blue/violet/green/orange category class. */
+.subjects-page .subject-card-v2 {
+  background: #fff !important;
+  border-color: #e3e8ef !important;
+  box-shadow: 0 10px 28px rgba(38,50,71,.045) !important;
+}
+.subjects-page .subject-card-v2:hover {
+  border-color: #cbd6e4 !important;
+  box-shadow: 0 14px 32px rgba(38,50,71,.075) !important;
+}
+.subjects-page .subject-card-art {
+  background: linear-gradient(135deg, #f4f6f9 0%, #e9eef5 100%) !important;
+}
+.subjects-page .subject-card-art .art-core {
+  background: #dbe4ef !important;
+  box-shadow: 0 0 0 8px rgba(82,107,140,.07) !important;
+}
+.subjects-page .subject-card-art .art-orbit {
+  border-color: rgba(82,107,140,.22) !important;
+}
+.subjects-page .subject-large-icon,
+.subjects-page .subject-large-icon.blue,
+.subjects-page .subject-large-icon.violet,
+.subjects-page .subject-large-icon.green,
+.subjects-page .subject-large-icon.orange {
+  color: #526b8c !important;
+  background: #edf2f8 !important;
+  border-color: #dfe7f0 !important;
+}
+.subjects-page .subject-card-v2 .subject-open-button {
+  color: #fff !important;
+  background: #263a5b !important;
+  border-color: #263a5b !important;
+}
+.subjects-page .subject-card-footer-v2 > button:not(.subject-open-button) {
+  color: #65748a !important;
+  background: #f7f9fb !important;
+  border-color: #e5eaf0 !important;
+}
+.subjects-page .subject-card-footer-v2 > button:not(.subject-open-button):hover {
+  background: #eef2f7 !important;
+  color: #263a5b !important;
+}
+.subjects-page .subject-card-stats,
+.subjects-page .subject-card-copy > p {
+  color: #788598 !important;
+}
