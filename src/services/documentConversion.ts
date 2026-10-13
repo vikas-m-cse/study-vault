@@ -6,10 +6,6 @@ export function escapeWordText(value: string): string {
   return value.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&apos;");
 }
 
-function xmlText(value: string): string {
-  return escapeXml(value).replace(/\r?\n/g, "</w:t><w:br/><w:t xml:space=\"preserve\">");
-}
-
 function safeFilename(value: string): string {
   return (value.trim() || "StudyVault document").replace(/[\\/:*?"<>|\u0000-\u001f]/g, "-").slice(0, 100);
 }
