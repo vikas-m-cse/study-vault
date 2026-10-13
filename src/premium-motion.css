@@ -315,3 +315,91 @@ input:focus, textarea:focus, select:focus {
     animation-duration: .25s;
   }
 }
+
+
+/* Signature learning-orbit: a quiet, living visual rather than a heavy 3D scene. */
+.sv-home-hero {
+  isolation: isolate;
+  box-shadow: 0 18px 55px rgba(16, 25, 43, .12);
+}
+
+.sv-home-hero::before {
+  opacity: .8;
+  animation: sv-ambient-breathe 10s ease-in-out infinite alternate;
+}
+
+.sv-hero-visual {
+  transform-origin: center;
+  animation: sv-visual-arrive .9s var(--sv-ease) both;
+}
+
+.sv-orbit {
+  transform-origin: center;
+  will-change: transform;
+}
+
+.sv-orbit.orbit-a { animation: sv-orbit-turn 34s linear infinite; }
+.sv-orbit.orbit-b { animation: sv-orbit-turn-reverse 43s linear infinite; }
+.sv-orbit.orbit-c { animation: sv-orbit-turn 55s linear infinite; }
+
+.sv-core {
+  animation: sv-core-float 5.5s ease-in-out infinite;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.sv-orbit-label {
+  transition: color .25s ease, opacity .25s ease, letter-spacing .25s ease;
+}
+
+.sv-home-hero:hover .sv-orbit-label {
+  color: #d7dfef !important;
+  letter-spacing: .16em;
+}
+
+.sv-home-hero:hover .sv-core {
+  box-shadow: 0 0 55px rgba(115,145,218,.14) !important;
+}
+
+@keyframes sv-ambient-breathe {
+  from { opacity: .42; transform: translate3d(-1%, 0, 0); }
+  to { opacity: .9; transform: translate3d(1%, 1%, 0); }
+}
+
+@keyframes sv-visual-arrive {
+  from { opacity: 0; transform: translate3d(0, 12px, 0) scale(.97); }
+  to { opacity: .54; transform: translate3d(0, 0, 0) scale(1); }
+}
+
+@keyframes sv-orbit-turn {
+  from { rotate: 0deg; }
+  to { rotate: 360deg; }
+}
+
+@keyframes sv-orbit-turn-reverse {
+  from { rotate: 360deg; }
+  to { rotate: 0deg; }
+}
+
+@keyframes sv-core-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+
+@media (max-width: 900px) {
+  .sv-hero-visual { animation: none; }
+  .sv-orbit.orbit-a, .sv-orbit.orbit-b, .sv-orbit.orbit-c,
+  .sv-core { animation-duration: 1ms; animation-iteration-count: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sv-home-hero::before,
+  .sv-hero-visual,
+  .sv-orbit.orbit-a,
+  .sv-orbit.orbit-b,
+  .sv-orbit.orbit-c,
+  .sv-core {
+    animation: none !important;
+    will-change: auto;
+  }
+}
