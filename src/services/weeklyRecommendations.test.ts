@@ -41,6 +41,20 @@ describe("next-week learning recommendations", () => {
     expect(result[0].reason).toContain("next-review time has passed");
   });
 
+  it("considers every tracked concept and ranks the overdue concept, not just concept zero", () => {
+    const now = 50_000;
+    const note = makeNote("multi", "Processes");
+    const records = {
+      "multi::0": mastery({ attempts: 3, correct: 3, incorrect: 0, confidenceSum: 240, confidenceCount: 3, nextReviewAt: now + 100_000, dimensionScores: { recall: 90 } }),
+      "multi::1": mastery({ attempts: 2, correct: 0, partial: 0, incorrect: 2, confidenceSum: 40, confidenceCount: 2, nextReviewAt: now - 1000, dimensionScores: { recall: 10 } }),
+    };
+    const result = buildNextWeekRecommendations([note], [{ id: 1, name: "OS" }], now, records);
+    expect(result.map((item) => item.conceptId)).toContain("multi::1");
+    expect(result[0].conceptId).toBe("multi::1");
+    expect(result[0].conceptLabel).toBe("Concept 2");
+    expect(result[0].due).toBe(true);
+  });
+
   it("returns no recommendations when no active notes have content", () => {
     expect(buildNextWeekRecommendations([], [], Date.now(), {})).toEqual([]);
   });
