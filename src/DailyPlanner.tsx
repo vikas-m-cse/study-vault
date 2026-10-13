@@ -6,7 +6,7 @@ import {
 import { getAllNotes } from "./services/noteStorage";
 import type { Note } from "./types/note";
 import {
-  getMastery, learningPriority, recordLearningEvent,
+  chooseNextInterval, getMastery, learningPriority, recordLearningEvent, recordMasteryLevel,
 } from "./services/learningCore";
 import {
   buildRevisionPlan, conceptIdsForNote, normalizeAvailableMinutes,
@@ -221,13 +221,18 @@ export default function DailyPlanner({ subjects }: { subjects: { id: number; nam
       try {
         if (localStorage.getItem(eventKey) === "1") return;
         const outcome = patch.outcome;
+        const timestamp = Date.now();
+        const confidence = outcome === "correct" ? 80 : outcome === "partial" ? 55 : 30;
+        const currentMastery = getMastery()[conceptId];
+        const nextReviewAt = timestamp + chooseNextInterval(outcome, confidence, currentMastery?.bestLevel ?? 0);
         recordLearningEvent({
           conceptId,
           questionType: "recall",
           outcome,
-          confidence: outcome === "correct" ? 80 : outcome === "partial" ? 55 : 30,
-          at: Date.now(),
+          confidence,
+          at: timestamp,
         });
+        recordMasteryLevel(conceptId, outcome === "correct" ? Math.min(5, (currentMastery?.bestLevel ?? 0) + 1) : 0, nextReviewAt, timestamp);
         localStorage.setItem(eventKey, "1");
       } catch {
         setStorageError("The task was saved, but the learning outcome could not be recorded.");
