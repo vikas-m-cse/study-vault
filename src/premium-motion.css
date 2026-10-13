@@ -1451,3 +1451,38 @@ button, input, textarea, select { accent-color: var(--sv-olive); }
     transition: none !important;
   }
 }
+
+
+/* Focus/fullscreen modes must obey the same single-column phone layout. */
+@media (max-width: 760px) {
+  .notes-workspace.is-fullscreen,
+  .notes-workspace.is-fullscreen.left-closed,
+  .notes-workspace.is-fullscreen.right-closed,
+  .notes-workspace.is-fullscreen.left-closed.right-closed {
+    position: relative !important;
+    inset: auto !important;
+    width: 100% !important;
+    height: auto !important;
+    max-height: none !important;
+    grid-template-columns: minmax(0,1fr) !important;
+    grid-template-rows: auto auto minmax(420px,auto) !important;
+    overflow: visible !important;
+  }
+  .notes-workspace.is-fullscreen .notes-left-panel,
+  .notes-workspace.is-fullscreen .notes-list-panel,
+  .notes-workspace.is-fullscreen .notes-editor-panel {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+  }
+  .notes-workspace.is-fullscreen .notes-editor-content .ProseMirror {
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 18px 14px 32px !important;
+    font-size: 16px !important;
+  }
+  .notes-workspace.is-fullscreen .notes-title-input {
+    max-width: 100% !important;
+    font-size: 25px !important;
+  }
+}
