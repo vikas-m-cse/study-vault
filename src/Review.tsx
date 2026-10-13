@@ -233,6 +233,7 @@ export default function Review({ subjects, focusNoteId }: ReviewProps) {
   const [subjectFilter, setSubjectFilter] = useState("all");
   const [conceptFilter, setConceptFilter] = useState<"weak" | "all" | "new">("weak");
   const [sessionSize, setSessionSize] = useState("10");
+  const [sessionReviewedIds, setSessionReviewedIds] = useState<string[]>([]);
   const [now, setNow] = useState(() => Date.now());
 
   useEffect(() => {
@@ -292,6 +293,7 @@ export default function Review({ subjects, focusNoteId }: ReviewProps) {
     const masteryById = getMastery();
     const source = reviewMode === "custom" ? concepts : dueConcepts;
     return source
+      .filter((concept) => !sessionReviewedIds.includes(concept.id))
       .filter((concept) => !focusNoteId || concept.noteId === focusNoteId)
       .filter((concept) => subjectFilter === "all" || concept.subjectName === subjectFilter)
       .filter((concept) => {
@@ -309,7 +311,7 @@ export default function Review({ subjects, focusNoteId }: ReviewProps) {
         return a.noteTitle.localeCompare(b.noteTitle) || a.index - b.index;
       })
       .slice(0, sessionSize === "all" ? undefined : Number(sessionSize));
-  }, [concepts, dueConcepts, focusNoteId, subjectFilter, conceptFilter, reviewMode, reviewState, now, sessionSize]);
+  }, [concepts, dueConcepts, focusNoteId, subjectFilter, conceptFilter, reviewMode, reviewState, now, sessionSize, sessionReviewedIds]);
 
   const selected = availableConcepts.find((concept) => concept.id === selectedId) ?? availableConcepts[0] ?? null;
   const currentState = selected ? reviewState[selected.id] : undefined;
@@ -380,6 +382,7 @@ export default function Review({ subjects, focusNoteId }: ReviewProps) {
     recordMasteryLevel(selected.id, level);
     setRecall("");
     setRevealed(false);
+    setSessionReviewedIds((previousIds) => [...previousIds, selected.id]);
     setSelectedId(null);
   };
 
@@ -450,23 +453,23 @@ export default function Review({ subjects, focusNoteId }: ReviewProps) {
         </div>
         <div className="review-selection-controls">
           <label><span>Review mode</span>
-            <select value={reviewMode} onChange={(event) => { setReviewMode(event.target.value as "custom" | "due" | "smart"); setSelectedId(null); setRecall(""); setRevealed(false); }}>
+            <select value={reviewMode} onChange={(event) => { setReviewMode(event.target.value as "custom" | "due" | "smart"); setSelectedId(null); setRecall(""); setRevealed(false); setSessionReviewedIds([]); }}>
               <option value="custom">My topics</option><option value="due">Due for review</option><option value="smart">Smart review</option>
             </select>
           </label>
           <label><span>Subject</span>
-            <select value={subjectFilter} onChange={(event) => { setSubjectFilter(event.target.value); setSelectedId(null); setRecall(""); setRevealed(false); }}>
+            <select value={subjectFilter} onChange={(event) => { setSubjectFilter(event.target.value); setSelectedId(null); setRecall(""); setRevealed(false); setSessionReviewedIds([]); }}>
               <option value="all">All subjects</option>
               {subjects.map((subject) => <option key={subject.id} value={subject.name}>{subject.name}</option>)}
             </select>
           </label>
           <label><span>Concepts</span>
-            <select value={conceptFilter} onChange={(event) => { setConceptFilter(event.target.value as "weak" | "all" | "new"); setSelectedId(null); setRecall(""); setRevealed(false); }}>
+            <select value={conceptFilter} onChange={(event) => { setConceptFilter(event.target.value as "weak" | "all" | "new"); setSelectedId(null); setRecall(""); setRevealed(false); setSessionReviewedIds([]); }}>
               <option value="weak">Weak / missed</option><option value="all">All concepts</option><option value="new">Not reviewed yet</option>
             </select>
           </label>
           <label><span>Session size</span>
-            <select value={sessionSize} onChange={(event) => { setSessionSize(event.target.value); setSelectedId(null); setRecall(""); setRevealed(false); }}>
+            <select value={sessionSize} onChange={(event) => { setSessionSize(event.target.value); setSelectedId(null); setRecall(""); setRevealed(false); setSessionReviewedIds([]); }}>
               <option value="5">5 concepts</option><option value="10">10 concepts</option><option value="20">20 concepts</option><option value="all">All matching</option>
             </select>
           </label>
