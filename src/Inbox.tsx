@@ -7,7 +7,7 @@ import { getLearningEvents } from "./services/learningCore";
 import { readPlannerHistory } from "./services/plannerHistory";
 import {
   deleteMessage, dismissNotification, markAllMessagesRead, markAllNotificationsRead,
-  markMessageRead, markNotificationRead, readMessages, readNotifications,
+  markMessageRead, markNotificationRead, readMessages,
   savePersonalMessage, syncStudyNotifications, type InboxMessage, type InboxNotification,
 } from "./services/inboxStore";
 import "./inbox.css";
