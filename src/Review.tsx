@@ -227,6 +227,12 @@ export default function Review({ subjects, focusNoteId }: ReviewProps) {
   const [revealed, setRevealed] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [mode, setMode] = useState<"recall" | "questions">("recall");
+  const [now, setNow] = useState(() => Date.now());
+
+  useEffect(() => {
+    const timer = window.setInterval(() => setNow(Date.now()), 30_000);
+    return () => window.clearInterval(timer);
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -256,8 +262,6 @@ export default function Review({ subjects, focusNoteId }: ReviewProps) {
     [notes, subjects],
   );
 
-  const now = Date.now();
-
   const dueConcepts = useMemo(
     () => concepts
       .filter((concept) => {
@@ -275,18 +279,10 @@ export default function Review({ subjects, focusNoteId }: ReviewProps) {
         const bPriority = learningPriority(getMastery()[b.id], now);
         return bPriority - aPriority || aDue - bDue;
       }),
-    [concepts, reviewState, now],
+    [concepts, reviewState, now, focusNoteId],
   );
 
-  useEffect(() => {
-    if (!selectedId || !dueConcepts.some((concept) => concept.id === selectedId)) {
-      setSelectedId(dueConcepts[0]?.id ?? null);
-      setRecall("");
-      setRevealed(false);
-    }
-  }, [dueConcepts, selectedId]);
-
-  const selected = dueConcepts.find((concept) => concept.id === selectedId) ?? null;
+  const selected = dueConcepts.find((concept) => concept.id === selectedId) ?? dueConcepts[0] ?? null;
   const currentState = selected ? reviewState[selected.id] : undefined;
 
   const reveal = () => {
@@ -321,7 +317,7 @@ export default function Review({ subjects, focusNoteId }: ReviewProps) {
     const confidenceScore = rating === "again" ? 30 : rating === "hard" ? 55 : rating === "good" ? 80 : 95;
     const previous = reviewState[selected.id];
     const previousLevel = previous?.level ?? 0;
-    const timestamp = Date.now();
+    const timestamp = now;
     const interval = rating === "again"
       ? INTERVALS_MS[0]
       : chooseNextInterval(outcome, confidenceScore, previousLevel);
