@@ -149,6 +149,23 @@ export default function Subjects({
         }
     };
 
+    if (openedSubject) {
+        return (
+            <div className="subjects-page subject-detail-page">
+                <button type="button" className="subject-back-button" onClick={() => { setOpenedSubjectId(null); setDocumentSearch(""); }}><ArrowLeft size={16} /> All subjects</button>
+                <header className="subject-detail-header"><div className={`subject-large-icon ${openedSubject.color}`}><BookOpen size={24} /></div><div className="subject-detail-heading"><p className="eyebrow">SUBJECT WORKSPACE</p><h1>{openedSubject.name}</h1><p className="page-description">{openedSubject.description || "All learning material connected to this subject."}</p></div></header>
+                <div className="subject-detail-summary"><div><strong>{subjectNotes.length}</strong><span>Notes</span></div><div><strong>{relatedResources.length}</strong><span>Documents & resources</span></div><div><strong>{subjectNotes.length + relatedResources.length}</strong><span>Total items</span></div></div>
+                <div className="subject-detail-toolbar"><div className="subjects-search subjects-search-v2"><SearchIcon size={17} /><input type="search" placeholder="Find a note or document..." value={documentSearch} onChange={(event) => setDocumentSearch(event.target.value)} /></div></div>
+                <section className="subject-material-section"><div className="subject-material-heading"><div><p className="eyebrow">YOUR MATERIAL</p><h2>Notes</h2></div><span>{visibleNotes.length} items</span></div>
+                    {notesLoading ? <div className="subject-material-empty">Loading subject notes…</div> : visibleNotes.length === 0 ? <div className="subject-material-empty"><FileText size={21} /><p>No saved notes are assigned to this subject yet.</p></div> : <div className="subject-material-grid">{visibleNotes.map((note) => <button type="button" className="subject-material-card" key={note.id} onClick={() => onOpenNote?.(note.id)}><span className="subject-material-icon"><FileText size={18} /></span><span className="subject-material-copy"><strong>{note.title}</strong><small>{note.plainText?.trim().slice(0,100) || "Saved note"}</small><em>Open note <ArrowRight size={13} /></em></span></button>)}</div>}
+                </section>
+                <section className="subject-material-section"><div className="subject-material-heading"><div><p className="eyebrow">FILES & LINKS</p><h2>Documents and resources</h2></div><span>{visibleResources.length} items</span></div>
+                    {visibleResources.length === 0 ? <div className="subject-material-empty"><FolderOpen size={21} /><p>No documents or resources are assigned to this subject yet.</p></div> : <div className="subject-material-grid">{visibleResources.map((resource) => <button type="button" className="subject-material-card" key={resource.id} onClick={() => onOpenResource?.(resource.id)}><span className="subject-material-icon"><FolderOpen size={18} /></span><span className="subject-material-copy"><strong>{resource.title}</strong><small>{resource.type}{resource.description ? " · " + resource.description : ""}</small><em>Open resource <ExternalLink size={13} /></em></span></button>)}</div>}
+                </section>
+            </div>
+        );
+    }
+
     return (
         <div className="subjects-page">
             <div className="subjects-heading">
