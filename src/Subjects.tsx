@@ -171,10 +171,10 @@ export default function Subjects({
         <div className="subjects-page">
             <div className="subjects-heading">
                 <div>
-                    <p className="eyebrow">YOUR LEARNING CATEGORIES</p>
-                    <h1>My Subjects</h1>
+                    <p className="eyebrow">STUDYVAULT / SUBJECTS</p>
+                    <h1>Build your <em>learning world.</em></h1>
                     <p className="page-description">
-                        Organise your learning by subject.
+                        Give every subject a space of its own.
                     </p>
                 </div>
 
