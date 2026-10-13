@@ -5,7 +5,6 @@ import {
 } from "lucide-react";
 import {
   readPlannerHistory, summarizePlannerWeek, weekBounds,
-  type WeeklyPlannerSummary,
 } from "./services/plannerHistory";
 import { getLearningEvents } from "./services/learningCore";
 import "./weekly-reflection.css";
