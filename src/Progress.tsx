@@ -134,6 +134,12 @@ export default function Progress({ subjects, onOpenReview }: ProgressProps) {
   const [reviewState, setReviewState] = useState<Record<string, ReviewEntry>>(() => readReviewState());
   const [events, setEvents] = useState<LearningEvent[]>(() => getLearningEvents());
   const [isLoading, setIsLoading] = useState(true);
+  const [now, setNow] = useState(() => Date.now());
+
+  useEffect(() => {
+    const timer = window.setInterval(() => setNow(Date.now()), 30_000);
+    return () => window.clearInterval(timer);
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -166,7 +172,7 @@ export default function Progress({ subjects, onOpenReview }: ProgressProps) {
   const reviewPercent = percent(reviewedCount, totalConcepts);
   const dueCount = concepts.filter(({ id }) => {
     const state = reviewState[id];
-    return !state?.lastReviewedAt || (state.nextReviewAt ?? 0) <= Date.now();
+    return !state?.lastReviewedAt || (state.nextReviewAt ?? 0) <= now;
   }).length;
   const totalAttempts = Object.values(reviewState).reduce((sum, item) => sum + (item.attempts ?? 0), 0);
   const notesWithContent = notes.filter((note) => plainText(note).length > 0).length;
@@ -178,7 +184,7 @@ export default function Progress({ subjects, onOpenReview }: ProgressProps) {
   }, { correct: 0, partial: 0, incorrect: 0 });
   const scoredEvents = outcomeTotals.correct + outcomeTotals.partial + outcomeTotals.incorrect;
   const performance = scoredEvents ? Math.round(((outcomeTotals.correct + outcomeTotals.partial * 0.5) / scoredEvents) * 100) : null;
-  const recentEvents = events.filter((event) => event.at >= Date.now() - 7 * 24 * 60 * 60 * 1000).length;
+  const recentEvents = events.filter((event) => event.at >= now - 7 * 24 * 60 * 60 * 1000).length;
 
   const subjectProgress = subjects.map((subject) => {
     const subjectNotes = notes.filter((note) => note.subjectId === subject.id);
