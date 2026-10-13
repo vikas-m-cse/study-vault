@@ -1086,3 +1086,49 @@ button, input, textarea, select { accent-color: var(--sv-olive); }
 .sv-hero-primary:hover { background: #D2AE78 !important; }
 .sv-orbit { border-color: rgba(196,154,90,.2) !important; }
 .sv-core { background: rgba(196,154,90,.07) !important; border-color: rgba(196,154,90,.22) !important; }
+
+
+/* Notes toolbar controls: neutral surfaces, olive active state, no lavender/blue cast. */
+.notes-heading-actions .secondary-button,
+.notes-panel-close,
+.notes-fullscreen-button,
+.notes-study-tools-button,
+.notes-review-button,
+.notes-editor-header-actions button,
+.notes-note-actions button,
+.notes-status-actions button {
+  background: #FFFEFA !important;
+  color: #59664B !important;
+  border: 1px solid #E7E2D7 !important;
+  box-shadow: none !important;
+}
+.notes-heading-actions .secondary-button:hover,
+.notes-panel-close:hover,
+.notes-fullscreen-button:hover,
+.notes-study-tools-button:hover,
+.notes-editor-header-actions button:hover,
+.notes-note-actions button:hover,
+.notes-status-actions button:hover {
+  background: #EEF0E7 !important;
+  border-color: #D6DDCA !important;
+  color: #46523A !important;
+}
+.notes-editor-header-actions .notes-review-button,
+.notes-heading-actions .primary-button {
+  background: #59664B !important;
+  color: #FFFEFA !important;
+  border-color: #59664B !important;
+}
+.notes-editor-header-actions .notes-review-button:hover,
+.notes-heading-actions .primary-button:hover {
+  background: #46523A !important;
+}
+.notes-metadata-grid label, .notes-tags-field label {
+  color: #77786F !important;
+}
+.notes-metadata-grid select, .notes-tags-field input, .notes-search-field input {
+  border-radius: 9px !important;
+}
+.notes-editor-content .ProseMirror ::selection {
+  background: rgba(196,154,90,.24) !important;
+}
