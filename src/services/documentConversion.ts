@@ -176,7 +176,7 @@ export async function extractTextFromPdf(file: File): Promise<string> {
     if (raw.slice(Math.max(0, match.index - 500), match.index).includes("/FlateDecode")) {
       if (typeof DecompressionStream === "undefined") continue;
       try {
-        const decompressed = new Blob([streamBytes]).stream().pipeThrough(new DecompressionStream("deflate"));
+        const decompressed = new Blob([streamBytes as BlobPart]).stream().pipeThrough(new DecompressionStream("deflate"));
         streamBytes = new Uint8Array(await new Response(decompressed).arrayBuffer());
       } catch { streamRegex.lastIndex = end + 9; continue; }
     }
