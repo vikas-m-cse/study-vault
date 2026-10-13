@@ -245,10 +245,6 @@ export default function Resources({
                         </button>
                     )}
                 </div>
-                    {filteredResources.length} resource
-                    {filteredResources.length !== 1 ? "s" : ""} found
-                </p>
-
                 {filteredResources.length === 0 ? (
                     <div className="empty-resources">
                         <FileText size={32} />
