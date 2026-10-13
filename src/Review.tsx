@@ -348,7 +348,7 @@ export default function Review({ subjects, focusNoteId }: ReviewProps) {
       confidence: confidenceScore,
       at: timestamp,
     });
-    recordMasteryLevel(selected.id, level);
+    recordMasteryLevel(selected.id, level, timestamp + interval, timestamp);
     setRecall("");
     setRevealed(false);
     setSelectedId(null);
