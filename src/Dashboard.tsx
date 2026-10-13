@@ -2,7 +2,6 @@
 import {
     BookOpen,
     FileText,
-    Star,
     ArrowUpRight,
     Plus,
     ExternalLink,
