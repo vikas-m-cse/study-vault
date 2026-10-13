@@ -367,6 +367,8 @@ function App() {
                         <DailyPlanner subjects={subjects} />
                     ) : activePage === "Inbox" ? (
                         <Inbox onNavigate={(page) => { navigate(page); setUnreadCount(unreadInboxCount()); }} />
+                    ) : activePage === "Activity Timeline" ? (
+                        <ActivityTimeline onNavigate={(page) => navigate(page)} />
                     ) : activePage === "Timetable" ? (
                         <DailyTimetable />
                     ) : activePage === "Review" ? (
