@@ -5,9 +5,11 @@ on:
     branches:
       - main
       - design/studyvault-premium-visuals
+      - feature/adaptive-daily-planner
   pull_request:
     branches:
       - main
+      - design/studyvault-premium-visuals
 
 permissions:
   contents: read
