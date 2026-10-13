@@ -665,3 +665,63 @@ button:focus-visible, [role="button"]:focus-visible, a:focus-visible {
   .review-revision-checkpoint { grid-template-columns: 38px minmax(0,1fr); padding: 16px; gap: 12px; }
   .review-revision-start { grid-column: 2; justify-self: start; }
 }
+
+
+/* Final palette authority: Champagne Gold & Ivory.
+   Keep legacy glass-blue selectors from tinting the approved light workspace. */
+:root {
+  --glass-paper: #f7f4ed;
+  --glass-ink: #292a25;
+  --glass-ink-soft: #55564d;
+  --glass-blue: #a77a3d;
+  --glass-blue-deep: #805a2a;
+  --glass-border: #e4dac8;
+  --sv-cursor-blue: #805a2a;
+}
+html, body, #root { background: #f7f4ed; color: #292a25; }
+.app-layout, .main-content, .page-content { background: transparent !important; }
+.sidebar, .topbar, .content-card, .resource-card, .subject-card,
+.dashboard-grid > *, .sv-command-strip, .sv-home-hero {
+  border-color: #e4dac8 !important;
+}
+.sv-home-hero {
+  background: linear-gradient(115deg, #fffefa 0%, #f8f3e8 58%, #efe2ca 100%) !important;
+}
+.sv-hero-copy h1, .sv-hero-copy h1:not(em) {
+  color: #292a25 !important;
+  -webkit-text-fill-color: #292a25 !important;
+}
+.sv-hero-copy h1 em, .sv-dashboard-intro h2 em {
+  color: #a77a3d !important;
+  -webkit-text-fill-color: #a77a3d !important;
+}
+.sv-hero-copy p, .sv-hero-note, .sv-hero-kicker,
+.sv-hero-kicker b, .sv-dashboard-intro p {
+  color: #68665d !important;
+}
+.sv-hero-primary, .primary-button, .add-resource-button,
+.review-revision-start {
+  background: linear-gradient(135deg, #c9a46b, #a77a3d) !important;
+  border-color: #b58a4c !important;
+  color: #29251e !important;
+}
+.sv-hero-primary:hover, .primary-button:hover, .add-resource-button:hover,
+.review-revision-start:hover {
+  background: linear-gradient(135deg, #d3b47f, #b58a4c) !important;
+}
+.nav-item:hover { background: #f3ecdf !important; color: #805a2a !important; }
+.nav-item.active, .nav-item[aria-current="page"] {
+  background: #f3ecdf !important;
+  border-color: #ddc9a7 !important;
+  color: #805a2a !important;
+}
+.sv-core, .resource-icon, .subject-large-icon {
+  background: linear-gradient(145deg, #fffefa, #f1e7d4) !important;
+  color: #9a7139 !important;
+  box-shadow: 0 8px 22px rgba(112, 81, 39, .08) !important;
+}
+.resource-row:hover, .text-button:hover { background: #f6f0e5 !important; }
+.text-button, .nav-item.active svg { color: #a77a3d !important; }
+button:focus-visible, a:focus-visible, [tabindex]:focus-visible {
+  outline-color: #a77a3d !important;
+}
