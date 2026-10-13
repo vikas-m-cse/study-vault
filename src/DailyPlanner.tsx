@@ -233,6 +233,9 @@ export default function DailyPlanner({ subjects }: { subjects: { id: number; nam
           at: timestamp,
         });
         recordMasteryLevel(conceptId, outcome === "correct" ? Math.min(5, (currentMastery?.bestLevel ?? 0) + 1) : 0, nextReviewAt, timestamp);
+        const reviewState = safeReadReviewState();
+        reviewState[conceptId] = { ...reviewState[conceptId], nextReviewAt, lastReviewedAt: timestamp };
+        localStorage.setItem(REVIEW_KEY, JSON.stringify(reviewState));
         localStorage.setItem(eventKey, "1");
       } catch {
         setStorageError("The task was saved, but the learning outcome could not be recorded.");
