@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import {
   BrainCircuit,
+  BookOpen,
   CheckCircle2,
   ChevronRight,
   Clock3,
@@ -9,6 +10,7 @@ import {
   RotateCcw,
   Sparkles,
   Target,
+  SlidersHorizontal,
 } from "lucide-react";
 import { getAllNotes } from "./services/noteStorage";
 import type { Note, TipTapNode } from "./types/note";
@@ -226,7 +228,11 @@ export default function Review({ subjects, focusNoteId }: ReviewProps) {
   const [recall, setRecall] = useState("");
   const [revealed, setRevealed] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const [mode, setMode] = useState<"recall" | "questions">("recall");
+  const [questionMode, setQuestionMode] = useState<"recall" | "questions">("recall");
+  const [reviewMode, setReviewMode] = useState<"custom" | "due" | "smart">("custom");
+  const [subjectFilter, setSubjectFilter] = useState("all");
+  const [conceptFilter, setConceptFilter] = useState<"weak" | "all" | "new">("weak");
+  const [sessionSize, setSessionSize] = useState("10");
   const [now, setNow] = useState(() => Date.now());
 
   useEffect(() => {
@@ -282,7 +288,30 @@ export default function Review({ subjects, focusNoteId }: ReviewProps) {
     [concepts, reviewState, now, focusNoteId],
   );
 
-  const selected = dueConcepts.find((concept) => concept.id === selectedId) ?? dueConcepts[0] ?? null;
+  const availableConcepts = useMemo(() => {
+    const masteryById = getMastery();
+    const source = reviewMode === "custom" ? concepts : dueConcepts;
+    return source
+      .filter((concept) => !focusNoteId || concept.noteId === focusNoteId)
+      .filter((concept) => subjectFilter === "all" || concept.subjectName === subjectFilter)
+      .filter((concept) => {
+        const record = masteryById[concept.id];
+        if (conceptFilter === "new") return !record || record.attempts === 0;
+        if (conceptFilter === "weak") {
+          if (!record || record.attempts === 0) return true;
+          return masteryPercent(record) < 70 || record.lastOutcome === "incorrect" || record.lastOutcome === "partial";
+        }
+        return true;
+      })
+      .sort((a, b) => {
+        if (reviewMode === "smart") return learningPriority(masteryById[b.id], now) - learningPriority(masteryById[a.id], now);
+        if (reviewMode === "due") return (reviewState[a.id]?.nextReviewAt ?? 0) - (reviewState[b.id]?.nextReviewAt ?? 0);
+        return a.noteTitle.localeCompare(b.noteTitle) || a.index - b.index;
+      })
+      .slice(0, sessionSize === "all" ? undefined : Number(sessionSize));
+  }, [concepts, dueConcepts, focusNoteId, subjectFilter, conceptFilter, reviewMode, reviewState, now, sessionSize]);
+
+  const selected = availableConcepts.find((concept) => concept.id === selectedId) ?? availableConcepts[0] ?? null;
   const currentState = selected ? reviewState[selected.id] : undefined;
 
   const reveal = () => {
@@ -292,7 +321,7 @@ export default function Review({ subjects, focusNoteId }: ReviewProps) {
 
   const selectedMastery = selected ? getMastery()[selected.id] : undefined;
   const adaptiveAction = selected ? getAdaptiveAction(selectedMastery) : null;
-  const questionType: QuestionType = mode === "questions" ? (adaptiveAction?.questionType ?? "recall") : "recall";
+  const questionType: QuestionType = questionMode === "questions" ? (adaptiveAction?.questionType ?? "recall") : "recall";
 
   const adaptivePrompt = selected && adaptiveAction
     ? adaptiveAction.questionType === "why"
@@ -384,19 +413,19 @@ export default function Review({ subjects, focusNoteId }: ReviewProps) {
           <div className="review-mode-switch" role="tablist" aria-label="Review mode">
             <button
               type="button"
-              className={mode === "recall" ? "active" : ""}
-              onClick={() => { setMode("recall"); setRecall(""); setRevealed(false); }}
+              className={questionMode === "recall" ? "active" : ""}
+              onClick={() => { setQuestionMode("recall"); setRecall(""); setRevealed(false); }}
               role="tab"
-              aria-selected={mode === "recall"}
+              aria-selected={questionMode === "recall"}
             >
               Active recall
             </button>
             <button
               type="button"
-              className={mode === "questions" ? "active" : ""}
-              onClick={() => { setMode("questions"); setRecall(""); setRevealed(false); }}
+              className={questionMode === "questions" ? "active" : ""}
+              onClick={() => { setQuestionMode("questions"); setRecall(""); setRevealed(false); }}
               role="tab"
-              aria-selected={mode === "questions"}
+              aria-selected={questionMode === "questions"}
             >
               Questions
             </button>
@@ -409,6 +438,41 @@ export default function Review({ subjects, focusNoteId }: ReviewProps) {
           <div><strong>{learnedConcepts}</strong><span>well practiced</span></div>
         </div>
       </div>
+
+      <section className="review-selection" aria-label="Choose review topics">
+        <div className="review-selection-heading">
+          <div>
+            <span className="review-selection-kicker"><SlidersHorizontal size={14} /> SESSION SETUP</span>
+            <h2>What do you want to review?</h2>
+            <p>Choose a subject and focus. Your existing review history and spacing schedule stay intact.</p>
+          </div>
+          <span className="review-selection-count"><BookOpen size={15} /> {availableConcepts.length} in this session</span>
+        </div>
+        <div className="review-selection-controls">
+          <label><span>Review mode</span>
+            <select value={reviewMode} onChange={(event) => { setReviewMode(event.target.value as "custom" | "due" | "smart"); setSelectedId(null); setRecall(""); setRevealed(false); }}>
+              <option value="custom">My topics</option><option value="due">Due for review</option><option value="smart">Smart review</option>
+            </select>
+          </label>
+          <label><span>Subject</span>
+            <select value={subjectFilter} onChange={(event) => { setSubjectFilter(event.target.value); setSelectedId(null); setRecall(""); setRevealed(false); }}>
+              <option value="all">All subjects</option>
+              {subjects.map((subject) => <option key={subject.id} value={subject.name}>{subject.name}</option>)}
+            </select>
+          </label>
+          <label><span>Concepts</span>
+            <select value={conceptFilter} onChange={(event) => { setConceptFilter(event.target.value as "weak" | "all" | "new"); setSelectedId(null); setRecall(""); setRevealed(false); }}>
+              <option value="weak">Weak / missed</option><option value="all">All concepts</option><option value="new">Not reviewed yet</option>
+            </select>
+          </label>
+          <label><span>Session size</span>
+            <select value={sessionSize} onChange={(event) => { setSessionSize(event.target.value); setSelectedId(null); setRecall(""); setRevealed(false); }}>
+              <option value="5">5 concepts</option><option value="10">10 concepts</option><option value="20">20 concepts</option><option value="all">All matching</option>
+            </select>
+          </label>
+        </div>
+        {availableConcepts.length === 0 && <p className="review-selection-empty">No concepts match these filters. Try “All concepts” or choose another subject.</p>}
+      </section>
 
       <div className="review-v2-layout">
         <section className="review-v2-main">
@@ -430,7 +494,7 @@ export default function Review({ subjects, focusNoteId }: ReviewProps) {
                   <strong>{selected.noteTitle}</strong>
                 </div>
                 <div className="review-v2-progress">
-                  Concept {selected.index} of {selected.totalInNote}
+                  Session {availableConcepts.findIndex((concept) => concept.id === selected.id) + 1} of {availableConcepts.length} · {selected.index}/{selected.totalInNote} in note
                 </div>
               </div>
 
@@ -461,10 +525,10 @@ export default function Review({ subjects, focusNoteId }: ReviewProps) {
 
                 <div className="review-v2-question">
                   <strong>
-                    {mode === "questions" ? adaptivePrompt : selected.prompt}
+                    {questionMode === "questions" ? adaptivePrompt : selected.prompt}
                   </strong>
                   <p>
-                    {mode === "questions"
+                    {questionMode === "questions"
                       ? "Answer from memory. Start with the definition or core idea, then add key points, steps, relationships, or an example."
                       : "Try to reconstruct the idea from memory. Don't copy the note and don't worry about exact wording."}
                   </p>
