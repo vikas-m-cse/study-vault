@@ -1,10 +1,10 @@
 import { useEffect, useMemo, useState, type CSSProperties } from "react";
 import {
   Activity, ArrowRight, BookOpen, CheckCircle2, Clock3, Flame,
-  Gauge, NotebookPen, RefreshCw, Sparkles, Target, TrendingUp,
+  Gauge, NotebookPen, RefreshCw, Sparkles, Target,
 } from "lucide-react";
 import { getAllNotes } from "./services/noteStorage";
-import type { Note } from "./types/note";
+import type { Note, TipTapNode } from "./types/note";
 import type { Subject } from "./Subjects";
 import {
   getLearningEvents, getMastery, masteryPercent,
@@ -36,47 +36,81 @@ function plainText(note: Note): string {
   return note.plainText?.trim() ?? "";
 }
 
-function noteConceptIds(note: Note): string[] {
-  // Keep concept IDs aligned with Review's noteId::index convention.
-  const headings: string[] = [];
-  const paragraphs: string[] = [];
-  const visit = (nodes: Note["content"]["content"]) => {
-    for (const node of nodes) {
-      const text = node.text ?? (node.content ?? []).map((child) => child.text ?? "").join(" ");
-      if (node.type === "heading" && text.trim()) headings.push(text.trim());
-      else if (["paragraph", "list_item", "blockquote", "codeBlock"].includes(node.type) && text.trim()) paragraphs.push(text.trim());
-      if (node.content) visit(node.content as Note["content"]["content"]);
-    }
-  };
-  visit(note.content?.content ?? []);
+type ReviewBlock = { kind: "heading" | "text"; text: string };
 
-  let count = 0;
-  if (headings.length) {
-    // Review creates one concept for each non-empty section after a heading.
-    const nodes = note.content?.content ?? [];
-    let hasHeading = false;
-    let sectionHasText = false;
-    const walk = (items: Note["content"]["content"]) => {
-      for (const node of items) {
-        if (node.type === "heading") {
-          if (sectionHasText) count += 1;
-          hasHeading = true;
-          sectionHasText = false;
-        } else if (["paragraph", "list_item", "blockquote", "codeBlock"].includes(node.type)) {
-          const text = node.text ?? (node.content ?? []).map((child) => child.text ?? "").join(" ");
-          if (text.trim()) sectionHasText = true;
-        }
-        if (node.content) walk(node.content as Note["content"]["content"]);
-      }
-    };
-    walk(nodes);
-    if (sectionHasText) count += 1;
-    if (!hasHeading) count = 0;
-  } else {
-    const text = plainText(note);
-    count = text ? Math.max(1, Math.ceil(text.length / 850)) : 0;
+function getNodeText(node: TipTapNode): string {
+  if (typeof node.text === "string") return node.text;
+  return (node.content ?? []).map(getNodeText).join(" ").replace(/\s+/g, " ").trim();
+}
+
+function collectBlocks(nodes: TipTapNode[], blocks: ReviewBlock[] = []): ReviewBlock[] {
+  for (const node of nodes) {
+    if (node.type === "heading") {
+      const text = getNodeText(node);
+      if (text) blocks.push({ kind: "heading", text });
+      continue;
+    }
+    if (["paragraph", "list_item", "blockquote", "codeBlock"].includes(node.type)) {
+      const text = getNodeText(node);
+      if (text) blocks.push({ kind: "text", text });
+      continue;
+    }
+    if (node.content) collectBlocks(node.content, blocks);
   }
-  return Array.from({ length: count }, (_, index) => `${note.id}::${index}`);
+  return blocks;
+}
+
+function splitLongText(text: string, maxChars = 850): string[] {
+  if (text.length <= maxChars) return [text];
+  const sentences = text.split(/(?<=[.!?])\s+/).filter(Boolean);
+  const chunks: string[] = [];
+  let current = "";
+  for (const sentence of sentences) {
+    if (current && current.length + sentence.length + 1 > maxChars) {
+      chunks.push(current.trim());
+      current = sentence;
+    } else {
+      current = current ? `${current} ${sentence}` : sentence;
+    }
+  }
+  if (current.trim()) chunks.push(current.trim());
+  return chunks;
+}
+
+function noteConceptIds(note: Note): string[] {
+  // Mirrors Review's concept splitting and ID order so coverage is real, not estimated.
+  const blocks = collectBlocks(note.content.content);
+  const ids: string[] = [];
+  if (blocks.some((block) => block.kind === "heading")) {
+    let currentBlocks: string[] = [];
+    const flush = () => {
+      if (!currentBlocks.length) return;
+      const chunks = splitLongText(currentBlocks.join("\n\n"));
+      chunks.forEach(() => ids.push(`${note.id}::${ids.length}`));
+      currentBlocks = [];
+    };
+    for (const block of blocks) {
+      if (block.kind === "heading") flush();
+      else currentBlocks.push(block.text);
+    }
+    flush();
+  } else {
+    const paragraphs = blocks.map((block) => block.text);
+    const chunks: string[] = [];
+    let current = "";
+    for (const paragraph of paragraphs) {
+      if (current && current.length + paragraph.length + 2 > 850) {
+        chunks.push(current.trim());
+        current = paragraph;
+      } else {
+        current = current ? `${current}\n\n${paragraph}` : paragraph;
+      }
+    }
+    if (current.trim()) chunks.push(current.trim());
+    if (!chunks.length && plainText(note)) chunks.push(...splitLongText(plainText(note)));
+    chunks.forEach((_, index) => ids.push(`${note.id}::${index}`));
+  }
+  return ids;
 }
 
 function percent(value: number, total: number): number {
