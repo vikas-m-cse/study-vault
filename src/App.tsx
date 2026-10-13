@@ -106,6 +106,7 @@ function App() {
     const [searchQuery, setSearchQuery] = useState("");
     const [notesTarget, setNotesTarget] = useState<{ noteId?: string; folderId?: string } | null>(null);
     const [reviewNoteId, setReviewNoteId] = useState<string | null>(null);
+    const [reviewConceptId, setReviewConceptId] = useState<string | null>(null);
     const [resourceTargetId, setResourceTargetId] = useState<string | null>(null);
     const [subjectTargetId, setSubjectTargetId] = useState<number | null>(null);
     const storageAvailable = isStorageAvailable();
@@ -375,7 +376,7 @@ function App() {
                     ) : activePage === "Study Analytics" ? (
                         <StudyAnalytics onNavigate={(page) => navigate(page)} />
                     ) : activePage === "Learning Gaps" ? (
-                        <LearningGaps onNavigate={(page) => navigate(page)} onOpenConcept={(conceptId) => { setReviewNoteId(conceptId.split("::")[0]); navigate("Review"); }} />
+                        <LearningGaps onNavigate={(page) => navigate(page)} onOpenConcept={(conceptId) => { setReviewNoteId(conceptId.split("::")[0]); setReviewConceptId(conceptId); navigate("Review"); }} />
                     ) : activePage === "File Converter" ? (
                         <DocumentConverter />
                     ) : activePage === "Timetable" ? (
@@ -385,6 +386,7 @@ function App() {
                             resources={resources}
                             subjects={subjects}
                             focusNoteId={reviewNoteId}
+                            focusConceptId={reviewConceptId}
                         />
                     ) : (
                         <div className="page-heading">
