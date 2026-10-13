@@ -2342,3 +2342,28 @@ button, input, textarea, select { accent-color: var(--sv-olive); }
     transition-duration: .01ms !important;
   }
 }
+
+
+/* Workspace fit-and-finish: resilient text, balanced hierarchy, and touch-friendly layouts. */
+.notes-page,.review-page,.dashboard,.progress-page{min-width:0}
+.notes-page-heading h1,.review-v2-header h1,.progress-header h1{letter-spacing:-.035em;text-wrap:balance}
+.notes-page-heading p,.review-v2-subtitle{max-width:62ch;line-height:1.7}
+.notes-page .notes-list-scroll{overscroll-behavior:contain}
+.notes-page .notes-list-item-heading,.notes-page .notes-editor-panel,.dashboard .dashboard-grid>*{min-width:0}
+.notes-page .notes-list-item-meta,.notes-page .notes-list-item-tags,.notes-page .notes-editor-footer{flex-wrap:wrap;gap:8px}
+.notes-page .notes-editor-content img{max-width:100%;height:auto;border-radius:10px}
+.notes-page .notes-editor-content table{display:block;max-width:100%;overflow-x:auto;border-collapse:collapse}
+.notes-page .notes-editor-content a{color:#59664b;text-underline-offset:3px}
+.review-page .review-v2-concept,.review-page .review-v2-compare,.review-page .review-v2-rating{min-width:0}
+.review-page .review-v2-panel p,.review-page .review-v2-concept p{overflow-wrap:anywhere;line-height:1.75}
+.review-page .review-v2-next{border-color:#e5e7dc;background:linear-gradient(135deg,#fbfcf8,#f4f6ee)}
+.dashboard .sv-hero-copy h1,.dashboard .sv-hero-copy h2{letter-spacing:-.04em;text-wrap:balance}
+.dashboard .sv-hero-copy p{max-width:52ch;line-height:1.75}
+.dashboard .sv-hero-primary{box-shadow:0 5px 14px #59664b18}
+.subjects-grid-v2 .subject-card-v2{transition:transform .2s var(--sv-polish-ease),border-color .2s ease,box-shadow .2s ease}
+.subjects-grid-v2 .subject-card-v2:hover{transform:translateY(-2px)}
+.subjects-grid-v2 .subject-card-copy h2{overflow-wrap:anywhere;text-wrap:balance}
+.progress-page .progress-card{min-width:0}
+.progress-page .progress-subject-top h3,.progress-page .progress-card-heading h2{text-wrap:balance}
+@media(max-width:760px){.notes-page .notes-list-scroll{scrollbar-gutter:auto}.review-page .review-v2-compare{grid-template-columns:minmax(0,1fr)}.review-page .review-v2-rating-buttons{grid-template-columns:repeat(2,minmax(0,1fr))}.dashboard .sv-hero-copy p{max-width:100%}.subjects-grid-v2 .subject-card-v2:hover{transform:none}}
+@media(hover:none){.notes-page .notes-list-item:hover,.subjects-grid-v2 .subject-card-v2:hover,.review-page .review-v2-rating-buttons button:not(:disabled):hover{transform:none;box-shadow:none}}
