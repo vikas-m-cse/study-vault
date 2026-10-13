@@ -232,12 +232,12 @@ describe("Notes and application regression", () => {
         render(<App />);
         expect(await screen.findByRole("heading", { name: /Build knowledge.*that stays\./i })).toBeTruthy();
         await user.click(screen.getByRole("button", { name: "Notes" }));
-        expect(await screen.findByRole("heading", { name: "Notes" })).toBeTruthy();
+        expect(await screen.findByRole("heading", { name: /Give your ideas.*room to grow\./i })).toBeTruthy();
         fireEvent.keyDown(window, { key: "k", ctrlKey: true });
         expect(await screen.findByRole("dialog", { name: "Search your knowledge" })).toBeTruthy();
         await user.type(screen.getByRole("textbox", { name: "Search your knowledge" }), "Operating Systems");
         await user.click(await screen.findByRole("option"));
-        expect(await screen.findByRole("heading", { name: "My Subjects" })).toBeTruthy();
+        expect(await screen.findByRole("heading", { name: /Build your.*learning world\./i })).toBeTruthy();
     });
 
     it("exposes legacy notes as read-only until explicit conversion", async () => {
