@@ -11,6 +11,7 @@ import {
     Timer,
     NotebookPen,
     Inbox,
+    History,
     Settings,
     Library,
 } from "lucide-react";
@@ -60,6 +61,10 @@ const navigationItems = [
     {
         label: "Inbox",
         icon: Inbox,
+    },
+    {
+        label: "Activity Timeline",
+        icon: History,
     },
     {
         label: "Timetable",
