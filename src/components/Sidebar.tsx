@@ -13,6 +13,7 @@ import {
     Inbox,
     History,
     ChartNoAxesCombined,
+    ArrowRightLeft,
     Settings,
     Library,
 } from "lucide-react";
@@ -70,6 +71,10 @@ const navigationItems = [
     {
         label: "Study Analytics",
         icon: ChartNoAxesCombined,
+    },
+    {
+        label: "File Converter",
+        icon: ArrowRightLeft,
     },
     {
         label: "Timetable",
