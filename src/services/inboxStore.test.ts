@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import {
   dismissNotification, markAllMessagesRead, markAllNotificationsRead, markMessageRead,
-  markNotificationRead, readMessages, readNotifications, savePersonalMessage,
+  markNotificationRead, readInboxPreferences, readMessages, readNotifications, saveInboxPreferences, savePersonalMessage,
   syncStudyNotifications, unreadInboxCount,
 } from "./inboxStore";
 
