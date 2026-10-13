@@ -93,6 +93,10 @@ export default function WeeklyReflection() {
     () => summarizePlannerWeek(history, bounds.startAt, bounds.endAt),
     [history, bounds],
   );
+  const recommendations = useMemo(
+    () => buildNextWeekRecommendations(notes, subjects, currentTime),
+    [notes, subjects, currentTime],
+  );
   const weeklyEvents = useMemo(
     () => events.filter((event) => event.at >= bounds.startAt && event.at < bounds.endAt),
     [events, bounds],
@@ -108,14 +112,22 @@ export default function WeeklyReflection() {
   const isCurrentWeek = bounds.startAt <= currentTime && currentTime < bounds.endAt;
 
   useEffect(() => {
+    let cancelled = false;
     const refresh = () => {
       setHistory(readPlannerHistory());
       setEvents(getLearningEvents());
+      getAllNotes().then((loaded) => {
+        if (!cancelled) setNotes(loaded);
+      }).catch(() => {
+        if (!cancelled) setNotes([]);
+      });
     };
+    refresh();
     window.addEventListener("focus", refresh);
     window.addEventListener("studyvault:learning-updated", refresh);
     window.addEventListener("storage", refresh);
     return () => {
+      cancelled = true;
       window.removeEventListener("focus", refresh);
       window.removeEventListener("studyvault:learning-updated", refresh);
       window.removeEventListener("storage", refresh);
