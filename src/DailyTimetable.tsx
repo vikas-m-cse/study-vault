@@ -24,8 +24,8 @@ const formatTime=(v:string)=>{const [h,m]=v.split(":").map(Number);const d=new D
 const duration=(b:TimeBlock)=>Math.max(0,toMinutes(b.end)-toMinutes(b.start));
 const applies=(b:TimeBlock,d:Date)=>b.days==="everyday"||(b.days==="weekdays"&&d.getDay()>=1&&d.getDay()<=5)||(b.days==="weekend"&&(d.getDay()===0||d.getDay()===6));
 const repeatsOnSameDay=(a:Repeat,b:Repeat)=>a==="everyday"||b==="everyday"||a===b;
-function loadPlan():TimeBlock[]{try{const v=localStorage.getItem(PLAN_KEY);if(v){const p:unknown=JSON.parse(v);if(Array.isArray(p))return p as TimeBlock[];}}catch{}return starterPlan;}
-function loadDone():CompletionMap{try{const v=localStorage.getItem(COMPLETION_KEY);if(v)return JSON.parse(v) as CompletionMap;}catch{}return {};}
+function loadPlan():TimeBlock[]{try{const v=localStorage.getItem(PLAN_KEY);if(v){const p:unknown=JSON.parse(v);if(Array.isArray(p))return p as TimeBlock[];}}catch { /* Keep the in-memory defaults when browser storage is unavailable. */ }return starterPlan;}
+function loadDone():CompletionMap{try{const v=localStorage.getItem(COMPLETION_KEY);if(v)return JSON.parse(v) as CompletionMap;}catch { /* Keep the in-memory defaults when browser storage is unavailable. */ }return {};}
 
 export default function DailyTimetable(){
  const [blocks,setBlocks]=useState<TimeBlock[]>(loadPlan);
@@ -36,8 +36,8 @@ export default function DailyTimetable(){
  const [editingId,setEditingId]=useState<string|null>(null);
  const [error,setError]=useState("");
  const [draft,setDraft]=useState<Omit<TimeBlock,"id">>({title:"",start:"17:00",end:"18:00",category:"study",days:"weekdays"});
- useEffect(()=>{try{localStorage.setItem(PLAN_KEY,JSON.stringify(blocks));}catch{}},[blocks]);
- useEffect(()=>{try{localStorage.setItem(COMPLETION_KEY,JSON.stringify(doneByDate));}catch{}},[doneByDate]);
+ useEffect(()=>{try{localStorage.setItem(PLAN_KEY,JSON.stringify(blocks));}catch { /* Keep the in-memory defaults when browser storage is unavailable. */ }},[blocks]);
+ useEffect(()=>{try{localStorage.setItem(COMPLETION_KEY,JSON.stringify(doneByDate));}catch { /* Keep the in-memory defaults when browser storage is unavailable. */ }},[doneByDate]);
  useEffect(()=>{const timer=window.setInterval(()=>setClock(new Date()),30_000);return()=>window.clearInterval(timer);},[]);
  useEffect(()=>{if(!formOpen)return;const handleKeyDown=(event:KeyboardEvent)=>{if(event.key==="Escape")setFormOpen(false);};window.addEventListener("keydown",handleKeyDown);return()=>window.removeEventListener("keydown",handleKeyDown);},[formOpen]);
  const activeDate=useMemo(()=>{const [y,m,d]=selectedDate.split("-").map(Number);return new Date(y,m-1,d);},[selectedDate]);
