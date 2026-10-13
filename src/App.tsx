@@ -17,6 +17,7 @@ import DailyPlanner from "./DailyPlanner";
 import WeeklyReflection from "./WeeklyReflection";
 import Inbox from "./Inbox";
 import ActivityTimeline from "./ActivityTimeline";
+import StudyAnalytics from "./StudyAnalytics";
 import { getLearningEvents } from "./services/learningCore";
 import { readPlannerHistory } from "./services/plannerHistory";
 import { syncStudyNotifications, unreadInboxCount } from "./services/inboxStore";
@@ -369,6 +370,8 @@ function App() {
                         <Inbox onNavigate={(page) => { navigate(page); setUnreadCount(unreadInboxCount()); }} />
                     ) : activePage === "Activity Timeline" ? (
                         <ActivityTimeline onNavigate={(page) => navigate(page)} />
+                    ) : activePage === "Study Analytics" ? (
+                        <StudyAnalytics onNavigate={(page) => navigate(page)} />
                     ) : activePage === "Timetable" ? (
                         <DailyTimetable />
                     ) : activePage === "Review" ? (
