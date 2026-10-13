@@ -54,8 +54,8 @@ export function buildStudyAnalytics(
   });
   const weeks: AnalyticsWeek[] = starts.map((startAt) => {
     const endAt = startAt + 7 * DAY;
-    const weekSessions = sessions.filter((session) => Number.isFinite(session.completedAt) && session.completedAt >= startAt && session.completedAt < endAt);
-    const weekEvents = events.filter((event) => Number.isFinite(event.at) && event.at >= startAt && event.at < endAt);
+    const weekSessions = sessions.filter((session) => Number.isFinite(session.completedAt) && session.completedAt <= now && session.completedAt >= startAt && session.completedAt < endAt);
+    const weekEvents = events.filter((event) => Number.isFinite(event.at) && event.at <= now && event.at >= startAt && event.at < endAt);
     const outcomes = weekEvents.length;
     const score = weekEvents.reduce((sum, event) => sum + (event.outcome === "correct" ? 1 : event.outcome === "partial" ? 0.5 : 0), 0);
     const active = new Set<number>();
