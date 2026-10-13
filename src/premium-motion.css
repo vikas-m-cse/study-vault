@@ -2367,3 +2367,217 @@ button, input, textarea, select { accent-color: var(--sv-olive); }
 .progress-page .progress-subject-top h3,.progress-page .progress-card-heading h2{text-wrap:balance}
 @media(max-width:760px){.notes-page .notes-list-scroll{scrollbar-gutter:auto}.review-page .review-v2-compare{grid-template-columns:minmax(0,1fr)}.review-page .review-v2-rating-buttons{grid-template-columns:repeat(2,minmax(0,1fr))}.dashboard .sv-hero-copy p{max-width:100%}.subjects-grid-v2 .subject-card-v2:hover{transform:none}}
 @media(hover:none){.notes-page .notes-list-item:hover,.subjects-grid-v2 .subject-card-v2:hover,.review-page .review-v2-rating-buttons button:not(:disabled):hover{transform:none;box-shadow:none}}
+
+
+/* ==========================================================================
+   EDITORIAL LIGHT V2 — hard reset for the legacy dark surfaces seen in QA.
+   Palette is intentionally restrained: porcelain + ink + olive, brass sparingly.
+========================================================================== */
+:root {
+  --sv-paper: #F7F6F2;
+  --sv-porcelain: #FFFFFF;
+  --sv-ink: #262823;
+  --sv-muted: #777970;
+  --sv-olive: #566448;
+  --sv-olive-dark: #414D36;
+  --sv-olive-tint: #EEF1E9;
+  --sv-brass: #B9955A;
+  --sv-stone: #E8E6DE;
+  --sv-stone-soft: #F0EFE9;
+}
+html, body, #root {
+  background: var(--sv-paper) !important;
+  color: var(--sv-ink) !important;
+  color-scheme: light !important;
+}
+body {
+  background: var(--sv-paper) !important;
+  background-image: none !important;
+}
+.app-layout, .main-content, .page-content, .dashboard, .resources-page,
+.notes-page, .review-page, .subjects-page, .favourites-page, .progress-page,
+.timetable-page {
+  background: transparent !important;
+  color: var(--sv-ink) !important;
+}
+
+/* Make common form controls light even when old rules set a dark fill. */
+input, textarea, select {
+  background-color: #FFFFFF !important;
+  color: var(--sv-ink) !important;
+  border-color: var(--sv-stone) !important;
+  color-scheme: light !important;
+}
+input::placeholder, textarea::placeholder { color: #96978E !important; }
+select option { background: #FFFFFF !important; color: var(--sv-ink) !important; }
+
+/* Resources — remove the black search rail and black resource row. */
+.resources-toolbar {
+  background: #FFFFFF !important;
+  color: var(--sv-ink) !important;
+  border: 1px solid var(--sv-stone) !important;
+  border-radius: 14px !important;
+  box-shadow: 0 5px 22px rgba(38,40,35,.035) !important;
+}
+.resource-search, .resource-search input {
+  background: #F8F8F5 !important;
+  color: var(--sv-ink) !important;
+  border-color: var(--sv-stone) !important;
+  box-shadow: none !important;
+}
+.resources-count { color: var(--sv-muted) !important; }
+.resources-library-list {
+  background: #FFFFFF !important;
+  color: var(--sv-ink) !important;
+  border: 1px solid var(--sv-stone) !important;
+  border-radius: 14px !important;
+  padding: 8px !important;
+  box-shadow: 0 6px 24px rgba(38,40,35,.04) !important;
+}
+.resource-row, .resource-row--library {
+  background: #FFFFFF !important;
+  color: var(--sv-ink) !important;
+  border-color: var(--sv-stone-soft) !important;
+  border-radius: 10px !important;
+}
+.resource-row:hover, .resource-row--library:hover { background: #F8F8F4 !important; }
+.resource-info, .resource-info strong, .resource-info h3,
+.resource-row-main, .resource-type { color: var(--sv-ink) !important; }
+.resource-info p, .resource-date { color: var(--sv-muted) !important; }
+.resource-icon {
+  background: #F0F2EB !important;
+  color: var(--sv-olive) !important;
+  border-color: #E2E6DA !important;
+}
+.resource-type { background: #F4F2EC !important; border-color: var(--sv-stone) !important; }
+.resource-open-icon, .resource-row-actions button, .resource-row-actions .subject-action-button {
+  color: #73766B !important;
+  background: #FFFFFF !important;
+  border-color: var(--sv-stone) !important;
+}
+.resource-row-actions button:hover { background: var(--sv-olive-tint) !important; color: var(--sv-olive-dark) !important; }
+
+/* Notes — every column, including editor metadata and toolbar, is light. */
+.notes-workspace, .notes-panel, .notes-left-panel, .notes-list-panel, .notes-editor-panel {
+  background: #FFFFFF !important;
+  color: var(--sv-ink) !important;
+  border-color: var(--sv-stone) !important;
+  box-shadow: none !important;
+}
+.notes-workspace { border: 1px solid var(--sv-stone) !important; border-radius: 16px !important; }
+.notes-panel-heading, .notes-list-header, .notes-editor-header, .notes-editor-footer {
+  background: #FAFAF7 !important;
+  color: var(--sv-ink) !important;
+  border-color: var(--sv-stone) !important;
+}
+.notes-panel-kicker, .notes-section-label, .notes-editor-breadcrumb,
+.notes-list-summary, .notes-list-item-meta, .notes-muted-copy {
+  color: var(--sv-muted) !important;
+}
+.notes-nav-list, .notes-folder-list, .notes-tag-list { background: transparent !important; color: var(--sv-muted) !important; }
+.notes-nav-item, .notes-nav-list button, .notes-folder-list button, .notes-tag-list button {
+  color: #686B61 !important;
+  background: transparent !important;
+}
+.notes-nav-item:hover, .notes-nav-list button:hover, .notes-folder-list button:hover, .notes-tag-list button:hover {
+  color: var(--sv-ink) !important; background: #F7F7F2 !important;
+}
+.notes-nav-item.active, .notes-nav-list .active, .notes-nav-list [aria-current="page"] {
+  color: var(--sv-olive-dark) !important; background: var(--sv-olive-tint) !important;
+}
+.notes-list-item {
+  background: #FFFFFF !important; color: var(--sv-ink) !important; border-color: var(--sv-stone-soft) !important;
+}
+.notes-list-item:hover { background: #FAFAF7 !important; }
+.notes-list-item.active { background: #F1F3EC !important; border-color: #DDE3D4 !important; box-shadow: inset 3px 0 0 var(--sv-brass) !important; }
+.notes-list-item-heading { color: var(--sv-ink) !important; }
+.notes-list-item-tags span { background: #F5F3ED !important; color: #6B6D63 !important; border-color: var(--sv-stone) !important; }
+.notes-search-field, .notes-search-field input, .notes-title-input,
+.notes-metadata-grid select, .notes-tags-field input {
+  background: #FFFFFF !important; color: var(--sv-ink) !important; border-color: var(--sv-stone) !important;
+}
+.notes-editor-scroll, .notes-editor, .notes-editor-content {
+  background: #FFFFFF !important; color: #34362F !important;
+}
+.notes-editor-scroll .ProseMirror { color: #34362F !important; background: #FFFFFF !important; }
+.notes-editor-scroll .ProseMirror :where(h1,h2,h3,h4,strong,b) { color: #262823 !important; }
+.notes-editor-scroll .ProseMirror a { color: #566448 !important; }
+.notes-editor-scroll .ProseMirror blockquote { border-left-color: var(--sv-brass) !important; color: #6F7168 !important; }
+.notes-editor-toolbar { background: #F8F8F5 !important; border-color: var(--sv-stone) !important; }
+.notes-editor-tool, .notes-editor-toolbar button {
+  background: transparent !important; color: #66695F !important; border-color: transparent !important; box-shadow: none !important;
+}
+.notes-editor-tool:hover, .notes-editor-toolbar button:hover { background: #ECEFE6 !important; color: var(--sv-olive-dark) !important; }
+.notes-editor-tool.active, .notes-editor-toolbar button.active { background: #E8EDE1 !important; color: var(--sv-olive-dark) !important; }
+.notes-heading-actions .secondary-button, .notes-panel-close, .notes-fullscreen-button,
+.notes-reading-mode-button, .notes-study-tools-button, .notes-editor-header-actions button,
+.notes-note-actions button, .notes-status-actions button {
+  background: #FFFFFF !important; color: var(--sv-olive) !important; border: 1px solid var(--sv-stone) !important; box-shadow: none !important;
+}
+.notes-heading-actions .secondary-button:hover, .notes-panel-close:hover, .notes-fullscreen-button:hover,
+.notes-reading-mode-button:hover, .notes-study-tools-button:hover, .notes-editor-header-actions button:hover,
+.notes-note-actions button:hover, .notes-status-actions button:hover {
+  background: var(--sv-olive-tint) !important; color: var(--sv-olive-dark) !important;
+}
+.notes-editor-header-actions .notes-review-button, .notes-heading-actions .primary-button {
+  background: var(--sv-olive) !important; color: #FFFFFF !important; border-color: var(--sv-olive) !important;
+}
+
+/* Review — no dark recall boxes, dark textarea or low-contrast prompt text. */
+.review-v2-main, .review-v2-main .content-card, .review-v2-panel,
+.review-v2-recall, .review-v2-recall textarea, .review-v2-side-card,
+.review-v2-next-action, .review-v2-concept, .review-v2-question {
+  background: #FFFFFF !important;
+  color: var(--sv-ink) !important;
+  border-color: var(--sv-stone) !important;
+}
+.review-v2-recall, .review-v2-recall textarea {
+  background: #FAFAF7 !important;
+  color: #34362F !important;
+  border: 1px solid var(--sv-stone) !important;
+  border-radius: 12px !important;
+}
+.review-v2-recall textarea::placeholder { color: #92938A !important; }
+.review-v2-panel-heading, .review-v2-kicker, .review-v2-meta,
+.review-v2-source-label, .review-v2-small { color: var(--sv-muted) !important; }
+.review-v2-rating-buttons button, .review-v2-confidence-buttons button,
+.review-v2-outcome button, .review-v2-reveal, .review-v2-next {
+  background: #FFFFFF !important;
+  color: var(--sv-olive) !important;
+  border: 1px solid var(--sv-stone) !important;
+  box-shadow: none !important;
+}
+.review-v2-rating-buttons button:hover, .review-v2-confidence-buttons button:hover,
+.review-v2-outcome button:hover, .review-v2-reveal:hover, .review-v2-next:hover {
+  background: var(--sv-olive-tint) !important;
+  color: var(--sv-olive-dark) !important;
+  border-color: #D7DECD !important;
+}
+.review-v2-next-action { background: #F7F8F3 !important; border-color: #E5E9DE !important; }
+.review-v2-next-action-dimension { color: var(--sv-olive) !important; }
+
+/* Dashboard — remove the blue/teal gradient headline and keep accents quiet. */
+.sv-hero-copy h1, .sv-hero-copy h1 span, .sv-home-hero h1,
+.sv-home-hero h1 span, .sv-home-hero .gradient-text {
+  color: #FFFFFF !important;
+  background: none !important;
+  background-image: none !important;
+  -webkit-background-clip: border-box !important;
+  background-clip: border-box !important;
+  -webkit-text-fill-color: #FFFFFF !important;
+}
+.sv-hero-copy > p, .sv-home-hero p { color: #D5D7CF !important; }
+.sv-hero-kicker, .sv-orbit-label { color: #D2BB8D !important; }
+.sv-orbit, .sv-core { border-color: rgba(185,149,90,.20) !important; }
+.sv-hero-primary { background: var(--sv-brass) !important; color: #292B26 !important; }
+.sv-home-hero { background: linear-gradient(120deg, #33392D, #292D25) !important; }
+
+/* Keep all page headings, selected navigation and controls within the same system. */
+.page-heading h1, .subjects-heading h1, .notes-page-heading h1,
+.review-v2-header h1, .eyebrow + h1 { color: var(--sv-ink) !important; }
+.nav-item.active { background: var(--sv-olive-tint) !important; color: var(--sv-olive-dark) !important; }
+.primary-button { background: var(--sv-olive) !important; color: #FFFFFF !important; border-color: var(--sv-olive) !important; }
+.primary-button:hover { background: var(--sv-olive-dark) !important; }
+button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible {
+  outline: 2px solid rgba(86,100,72,.55) !important; outline-offset: 2px !important;
+}
