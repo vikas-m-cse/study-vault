@@ -628,3 +628,40 @@ button:focus-visible, [role="button"]:focus-visible, a:focus-visible {
   .review-selection-heading { flex-direction: column; }
   .review-selection-controls { grid-template-columns: 1fr; }
 }
+
+
+/* Persistent revision checkpoint: bring yesterday's learning back into view. */
+.review-revision-checkpoint {
+  display: grid; grid-template-columns: 42px minmax(0,1fr) auto; align-items: start; gap: 15px;
+  margin: 0 0 22px; padding: 20px 22px;
+  border: 1px solid rgba(198,161,106,.42); border-radius: 18px;
+  background: radial-gradient(ellipse at 0% 0%,rgba(239,224,195,.48),transparent 48%),
+    linear-gradient(125deg,rgba(255,254,250,.97),rgba(250,246,236,.95));
+  box-shadow: 0 10px 28px rgba(83,64,34,.055), inset 0 1px 0 rgba(255,255,255,.96);
+}
+.review-revision-icon {
+  display: grid; place-items: center; width: 42px; height: 42px; border-radius: 13px;
+  color: #8b6735; background: linear-gradient(145deg,#f2e5cc,#e7d3ad);
+  border: 1px solid rgba(181,139,80,.24);
+}
+.review-revision-kicker { color: #96713d; font-size: 10px; font-weight: 800; letter-spacing: .14em; }
+.review-revision-copy h2 { margin: 5px 0 5px; color: #292a24; font-size: 18px; letter-spacing: -.025em; }
+.review-revision-copy > p { margin: 0; max-width: 700px; color: #77766c; font-size: 13px; line-height: 1.55; }
+.review-revision-keypoints { display: grid; gap: 8px; margin-top: 14px; }
+.review-revision-keypoints > div { display: flex; align-items: flex-start; gap: 9px; padding: 10px 11px; border: 1px solid rgba(220,211,193,.68); border-radius: 10px; background: rgba(255,254,250,.74); color: #987342; }
+.review-revision-keypoints span { display: grid; gap: 3px; min-width: 0; }
+.review-revision-keypoints strong { color: #39382f; font-size: 12px; }
+.review-revision-keypoints small { color: #77796f; font-size: 12px; line-height: 1.5; }
+.review-revision-start {
+  display: inline-flex; align-items: center; justify-content: center; gap: 7px; white-space: nowrap;
+  padding: 11px 14px; border: 1px solid rgba(151,108,49,.2); border-radius: 11px;
+  color: #fffdf8; background: linear-gradient(135deg,#b58b50,#90652f);
+  font-size: 12px; font-weight: 700; box-shadow: 0 5px 14px rgba(137,98,47,.15);
+  transition: transform 180ms ease, box-shadow 180ms ease, filter 180ms ease;
+}
+.review-revision-start:hover { transform: translateY(-1px); box-shadow: 0 8px 18px rgba(137,98,47,.2); filter: saturate(1.05); }
+.review-revision-start:active { transform: scale(.98); }
+@media (max-width: 760px) {
+  .review-revision-checkpoint { grid-template-columns: 38px minmax(0,1fr); padding: 16px; gap: 12px; }
+  .review-revision-start { grid-column: 2; justify-self: start; }
+}
