@@ -7,7 +7,8 @@ import {
     Star,
     BrainCircuit,
     TrendingUp,
-    CalendarDays,\n    Timer,
+    CalendarDays,
+    Timer,\n    Timer,
     Settings,
     Library,
 } from "lucide-react";
@@ -45,6 +46,10 @@ const navigationItems = [
     {
         label: "Progress",
         icon: TrendingUp,
+    },
+    {
+        label: "Daily Planner",
+        icon: Timer,
     },
     {
         label: "Timetable",
