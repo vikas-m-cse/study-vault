@@ -15,6 +15,10 @@ import Progress from "./Progress";
 import DailyTimetable from "./DailyTimetable";
 import DailyPlanner from "./DailyPlanner";
 import WeeklyReflection from "./WeeklyReflection";
+import Inbox from "./Inbox";
+import { getLearningEvents } from "./services/learningCore";
+import { readPlannerHistory } from "./services/plannerHistory";
+import { syncStudyNotifications, unreadInboxCount } from "./services/inboxStore";
 import {
     isStorageAvailable,
     loadResources,
@@ -63,6 +67,7 @@ const DEFAULT_SUBJECTS: Subject[] = [
 
 function App() {
     const [activePage, setActivePage] = useState("Dashboard");
+    const [unreadCount, setUnreadCount] = useState(() => unreadInboxCount());
 
     const navigate = useCallback((page: string) => {
         if (page === activePage) return;
@@ -74,6 +79,22 @@ function App() {
             update();
         }
     }, [activePage]);
+    useEffect(() => {
+        const refreshInboxCount = () => {
+            syncStudyNotifications(readPlannerHistory(), getLearningEvents());
+            setUnreadCount(unreadInboxCount());
+        };
+        refreshInboxCount();
+        window.addEventListener("focus", refreshInboxCount);
+        window.addEventListener("storage", refreshInboxCount);
+        window.addEventListener("studyvault:learning-updated", refreshInboxCount);
+        return () => {
+            window.removeEventListener("focus", refreshInboxCount);
+            window.removeEventListener("storage", refreshInboxCount);
+            window.removeEventListener("studyvault:learning-updated", refreshInboxCount);
+        };
+    }, []);
+
     const [isSearchOpen, setIsSearchOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
     const [notesTarget, setNotesTarget] = useState<{ noteId?: string; folderId?: string } | null>(null);
@@ -282,6 +303,8 @@ function App() {
                     onOpenSearch={() => setIsSearchOpen(true)}
                     searchQuery={searchQuery}
                     onSearchQueryChange={setSearchQuery}
+                    onOpenInbox={() => navigate("Inbox")}
+                    unreadCount={unreadCount}
                 />
 
                 {storageError && (
@@ -338,6 +361,8 @@ function App() {
                         <WeeklyReflection subjects={subjects} onOpenPlanner={() => navigate("Daily Planner")} />
                     ) : activePage === "Daily Planner" ? (
                         <DailyPlanner subjects={subjects} />
+                    ) : activePage === "Inbox" ? (
+                        <Inbox onNavigate={(page) => { navigate(page); setUnreadCount(unreadInboxCount()); }} />
                     ) : activePage === "Timetable" ? (
                         <DailyTimetable />
                     ) : activePage === "Review" ? (
