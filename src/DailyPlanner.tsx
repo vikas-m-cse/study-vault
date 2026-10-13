@@ -338,7 +338,7 @@ export default function DailyPlanner({ subjects }: { subjects: { id: number; nam
               {activeTask?.sourceTitle && <div className="planner-source-card"><BookOpen size={17} /><div><strong>{activeTask.sourceTitle}</strong><span>{activeTask.rationale}</span></div></div>}
               {activeTask?.kind === "warmup" && activeTask.candidateId && (
                 <label className="planner-recall-label">What do you remember? (optional)
-                  <textarea value={recallText} onChange={(event) => setRecallText(event.target.value)} placeholder="Write a few key ideas from memory…" rows={3} />
+                  <textarea value={recallText} onChange={(event) => setRecallText(event.target.value)} placeholder="Write a few key ideas from memory…" rows={3} disabled={session.status !== "active"} />
                 </label>
               )}
               {activeTask?.sourceExcerpt && (
@@ -351,13 +351,13 @@ export default function DailyPlanner({ subjects }: { subjects: { id: number; nam
                 <div className="planner-outcomes">
                   <p>How well did you recall it?</p>
                   <div>
-                    <button onClick={() => { updateTask(activeTask.id, { status: "completed", outcome: "incorrect" }); setShowSource(false); setRecallText(""); }}>Need review</button>
-                    <button onClick={() => { updateTask(activeTask.id, { status: "completed", outcome: "partial" }); setShowSource(false); setRecallText(""); }}>Partly</button>
-                    <button onClick={() => { updateTask(activeTask.id, { status: "completed", outcome: "correct" }); setShowSource(false); setRecallText(""); }}>Remembered</button>
+                    <button disabled={session.status !== "active"} onClick={() => { updateTask(activeTask.id, { status: "completed", outcome: "incorrect" }); setShowSource(false); setRecallText(""); }}>Need review</button>
+                    <button disabled={session.status !== "active"} onClick={() => { updateTask(activeTask.id, { status: "completed", outcome: "partial" }); setShowSource(false); setRecallText(""); }}>Partly</button>
+                    <button disabled={session.status !== "active"} onClick={() => { updateTask(activeTask.id, { status: "completed", outcome: "correct" }); setShowSource(false); setRecallText(""); }}>Remembered</button>
                   </div>
                 </div>
               ) : (
-                <button className="planner-primary" onClick={() => updateTask(activeTask?.id ?? "", { status: "completed" })} disabled={!activeTask}><Check size={16} /> Mark task complete</button>
+                <button className="planner-primary" onClick={() => updateTask(activeTask?.id ?? "", { status: "completed" })} disabled={!activeTask || session.status !== "active"}><Check size={16} /> Mark task complete</button>
               )}
             </div>
             <aside className="planner-session-aside">
