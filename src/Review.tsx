@@ -428,8 +428,8 @@ export default function Review({ subjects, focusNoteId }: ReviewProps) {
     <div className="review-page">
       <div className="review-v2-header">
         <div>
-          <p className="eyebrow">RETRIEVAL + SPACING WORKSPACE</p>
-          <h1>Review</h1>
+          <p className="eyebrow">STUDYVAULT / REVIEW</p>
+          <h1>Remember what <em>you learn.</em></h1>
           <p className="review-v2-subtitle">
             StudyVault turns long notes into small, retrievable concepts. Recall first, get feedback second,
             then revisit the same concept after a delay.
