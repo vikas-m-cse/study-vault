@@ -1489,3 +1489,99 @@ button:focus-visible, [role="button"]:focus-visible, a:focus-visible,
   .resources-page > .content-card { padding: 10px !important; }
   .resource-row--library { min-height: 0 !important; }
 }
+
+
+/* My Resources typography pass — readable first, compact second. */
+.resources-page {
+  font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-optical-sizing: auto;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+.resources-page > .page-heading .eyebrow {
+  font-size: 10px !important;
+  line-height: 1.5 !important;
+  letter-spacing: .15em !important;
+  font-weight: 750 !important;
+}
+.resources-page > .page-heading h1 {
+  font-size: clamp(29px, 2.5vw, 35px) !important;
+  line-height: 1.12 !important;
+  letter-spacing: -.045em !important;
+  font-weight: 720 !important;
+}
+.resources-page > .page-heading .page-description {
+  font-size: 13px !important;
+  line-height: 1.65 !important;
+  letter-spacing: -.005em !important;
+  color: #6f695e !important;
+}
+.resources-page > .page-heading .primary-button {
+  font-size: 12px !important;
+  font-weight: 600 !important;
+}
+.resource-search input {
+  font-size: 12px !important;
+  line-height: 1.5 !important;
+  letter-spacing: 0 !important;
+}
+.resource-search input::placeholder { color: #827b6f !important; opacity: 1; }
+.resource-subject-trigger {
+  font-size: 12px !important;
+  line-height: 1.45 !important;
+  font-weight: 550 !important;
+}
+.resource-subject-menu-label {
+  font-size: 10px !important;
+  line-height: 1.5 !important;
+  letter-spacing: .12em !important;
+}
+.resource-subject-option-copy strong {
+  font-size: 12px !important;
+  line-height: 1.45 !important;
+  font-weight: 650 !important;
+}
+.resource-subject-option-copy small {
+  font-size: 11px !important;
+  line-height: 1.45 !important;
+}
+.resource-type-chip {
+  font-size: 11px !important;
+  line-height: 1.4 !important;
+  font-weight: 600 !important;
+}
+.resources-count, .resources-clear-filters {
+  font-size: 11px !important;
+  line-height: 1.5 !important;
+}
+.resource-row--library .resource-info h3 {
+  font-size: 14px !important;
+  line-height: 1.4 !important;
+  letter-spacing: -.02em !important;
+  font-weight: 700 !important;
+}
+.resource-row--library .resource-info p {
+  font-size: 12px !important;
+  line-height: 1.55 !important;
+  color: #71695d !important;
+}
+.resource-row--library .resource-type {
+  font-size: 10px !important;
+  line-height: 1.4 !important;
+  font-weight: 700 !important;
+}
+.resource-row--library .subject-action-button {
+  font-size: 12px !important;
+}
+.resources-page button:focus-visible,
+.resources-page input:focus-visible,
+.resources-page select:focus-visible {
+  outline: 2px solid #b58b50 !important;
+  outline-offset: 2px !important;
+}
+@media (max-width: 640px) {
+  .resources-page > .page-heading h1 { font-size: 29px !important; }
+  .resources-page > .page-heading .page-description { font-size: 12px !important; }
+  .resource-row--library .resource-info h3 { font-size: 13px !important; }
+  .resource-row--library .resource-info p { font-size: 11px !important; }
+}
