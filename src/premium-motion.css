@@ -1829,3 +1829,61 @@ button, input, textarea, select { accent-color: var(--sv-olive); }
 @media(prefers-reduced-motion:reduce) {
   .timetable-block-card,.timetable-progress-track span { transition:none; }
 }
+
+
+/* Timetable week navigator + decision-support metrics */
+.timetable-weekbar {
+  display:grid; grid-template-columns:38px minmax(0,1fr) 38px; align-items:stretch; gap:10px; margin:0 0 16px;
+}
+.timetable-week-arrow {
+  display:grid; place-items:center; align-self:center; width:36px; height:36px;
+  border:1px solid #e7e6dc; border-radius:12px; background:#fffefa; color:#73796a; cursor:pointer;
+}
+.timetable-week-arrow:hover { border-color:#cbd3c2; background:#f2f4ec; color:#4f6042; }
+.timetable-week-days { display:grid; grid-template-columns:repeat(7,minmax(0,1fr)); gap:7px; min-width:0; }
+.timetable-week-day {
+  display:flex; flex-direction:column; align-items:center; justify-content:center; gap:5px; min-width:0; min-height:86px; padding:10px 3px;
+  border:1px solid #e8e7de; border-radius:14px; background:rgba(255,254,250,.78); color:#77786f; cursor:pointer;
+  transition:transform .18s ease,border-color .18s ease,background .18s ease,box-shadow .18s ease;
+}
+.timetable-week-day:hover { transform:translateY(-2px); border-color:#cbd3c2; }
+.timetable-week-day > span { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.04em; }
+.timetable-week-day > strong { color:#34372e; font-size:22px; line-height:1; letter-spacing:-.05em; }
+.timetable-week-day > i { color:#99988e; font-size:8px; font-style:normal; white-space:nowrap; }
+.timetable-week-day.today > span { color:#59664b; }
+.timetable-week-day.today > strong { color:#59664b; }
+.timetable-week-day.selected { border-color:#59664b; background:#59664b; box-shadow:0 5px 13px rgba(89,102,75,.17); }
+.timetable-week-day.selected > span,.timetable-week-day.selected > strong,.timetable-week-day.selected > i { color:#fffefa; }
+.timetable-insight-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:11px; margin-top:15px; }
+.timetable-insight-card { display:flex; align-items:center; gap:12px; min-width:0; padding:16px; border:1px solid #e9e7de; border-radius:15px; background:#fffefa; box-shadow:0 3px 12px rgba(41,43,38,.018); }
+.timetable-insight-icon { display:grid; place-items:center; flex:0 0 39px; width:39px; height:39px; border-radius:12px; background:#edf0e6; color:#59664b; }
+.timetable-insight-icon.study { background:#eaf0f5; color:#4c6680; }
+.timetable-insight-icon.rest { background:#f7eee0; color:#9b7743; }
+.timetable-insight-card > div { display:flex; flex-direction:column; gap:4px; min-width:0; }
+.timetable-insight-card > div > span { color:#8b897e; font-size:8px; font-weight:800; letter-spacing:.1em; }
+.timetable-insight-card strong { color:#292b26; font-size:21px; line-height:1.1; letter-spacing:-.05em; overflow-wrap:anywhere; }
+.timetable-insight-card small { color:#929085; font-size:9px; line-height:1.4; }
+.timetable-next { gap:13px; }
+.timetable-next-copy { min-width:0; flex:1; }
+.timetable-next-duration { display:inline-flex; align-items:center; gap:6px; flex:0 0 auto; padding:8px 10px; border:1px solid #e6e8dd; border-radius:999px; background:#f7f8f2; color:#66745a; font-size:10px; font-weight:750; white-space:nowrap; }
+@media(max-width:760px) {
+  .timetable-weekbar { grid-template-columns:28px minmax(0,1fr) 28px; gap:5px; margin-bottom:12px; }
+  .timetable-week-arrow { width:28px; height:34px; border-radius:9px; }
+  .timetable-week-days { gap:4px; }
+  .timetable-week-day { min-height:70px; padding:8px 1px; gap:5px; border-radius:10px; }
+  .timetable-week-day > span { font-size:8px; }
+  .timetable-week-day > strong { font-size:18px; }
+  .timetable-week-day > i { font-size:7px; letter-spacing:-.02em; }
+  .timetable-insight-grid { grid-template-columns:repeat(3,minmax(0,1fr)); gap:7px; margin-top:10px; }
+  .timetable-insight-card { align-items:flex-start; flex-direction:column; gap:9px; padding:11px 9px; border-radius:12px; }
+  .timetable-insight-icon { flex-basis:32px; width:32px; height:32px; border-radius:10px; }
+  .timetable-insight-card > div > span { font-size:7px; letter-spacing:.05em; }
+  .timetable-insight-card strong { font-size:17px; }
+  .timetable-insight-card small { font-size:8px; }
+  .timetable-next-duration { align-self:flex-start; font-size:9px; padding:7px 8px; }
+}
+@media(max-width:390px) {
+  .timetable-week-day > i { display:none; }
+  .timetable-insight-card { padding:9px 7px; }
+  .timetable-insight-card strong { font-size:15px; }
+}
