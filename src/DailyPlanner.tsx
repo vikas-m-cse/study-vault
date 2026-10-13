@@ -9,7 +9,7 @@ import {
   getMastery, learningPriority, recordLearningEvent,
 } from "./services/learningCore";
 import {
-  buildRevisionPlan, normalizeAvailableMinutes,
+  buildRevisionPlan, conceptIdsForNote, normalizeAvailableMinutes,
   type PlannerEnergy, type PlannerGoal, type PlannedRevisionTask,
   type RevisionCandidate, type RevisionPlan,
 } from "./services/dailyPlanner";
@@ -72,10 +72,10 @@ function makeCandidates(notes: Note[], subjects: { id: number; name: string }[],
   const review = safeReadReviewState();
   return notes
     .filter((note) => note.status === "active" && plainExcerpt(note).length > 0)
-    .map((note) => {
-      const conceptId = `${note.id}::0`;
+    .flatMap((note) => conceptIdsForNote(note.id, mastery, review).map((conceptId) => {
       const record = mastery[conceptId];
       const schedule = review[conceptId];
+      const nextReviewAt = schedule?.nextReviewAt ?? record?.nextReviewAt;
       return {
         id: conceptId,
         noteId: note.id,
@@ -83,11 +83,11 @@ function makeCandidates(notes: Note[], subjects: { id: number; name: string }[],
         subjectName: subjects.find((subject) => subject.id === note.subjectId)?.name,
         excerpt: plainExcerpt(note),
         updatedAt: note.updatedAt,
-        due: Boolean(schedule?.nextReviewAt && schedule.nextReviewAt <= now),
+        due: typeof nextReviewAt === "number" && nextReviewAt <= now,
         priority: learningPriority(record, now),
         attempts: record?.attempts ?? 0,
       };
-    });
+    }));
 }
 
 function saveSession(session: SavedSession): SavedSession {
