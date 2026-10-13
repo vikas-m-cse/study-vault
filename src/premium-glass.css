@@ -354,3 +354,120 @@ button[title="Close"] svg,
 @media (hover: none), (pointer: coarse) {
   html, body, button, a, [role="button"] { cursor: auto; }
 }
+
+
+/* ── StudyVault interaction pass: visible, consistent, state-aware motion ── */
+:root {
+  --sv-motion-ease: cubic-bezier(.22,.8,.24,1);
+  --sv-motion-fast: 140ms;
+  --sv-motion-base: 210ms;
+  --sv-motion-enter: 260ms;
+}
+
+/* Consistent tactile response for all interactive controls. */
+button, a, [role="button"], .nav-item, .resource-row, .subject-card-v2,
+input, textarea, select, summary {
+  transition:
+    color var(--sv-motion-fast) ease,
+    background-color var(--sv-motion-base) var(--sv-motion-ease),
+    border-color var(--sv-motion-base) var(--sv-motion-ease),
+    box-shadow var(--sv-motion-base) var(--sv-motion-ease),
+    transform var(--sv-motion-base) var(--sv-motion-ease),
+    opacity var(--sv-motion-base) ease;
+}
+button:not(:disabled):active, .nav-item:active, a:active,
+[role="button"]:active, .subject-action-button:active {
+  transform: scale(.975);
+}
+button:disabled { opacity: .58; }
+
+/* Clear, elegant hover states — no exaggerated bouncing or neon. */
+@media (hover: hover) and (pointer: fine) {
+  .content-card, .stat-card, .subject-card-v2, .resource-row,
+  .global-search-result, .note-card, .folder-card, .timetable-block {
+    transition: transform 200ms var(--sv-motion-ease), box-shadow 200ms ease,
+      border-color 200ms ease, background-color 200ms ease;
+  }
+  .content-card:hover, .stat-card:hover {
+    box-shadow: 0 14px 34px rgba(33,63,96,.075);
+    border-color: rgba(160,190,219,.72);
+  }
+  .resource-row:hover, .global-search-result:hover {
+    background-color: rgba(235,243,251,.72);
+  }
+  .nav-item svg, .icon-button svg, .subject-action-button svg,
+  .resource-row .resource-icon svg {
+    transition: transform 180ms var(--sv-motion-ease), color 180ms ease;
+  }
+  .nav-item:hover svg { transform: translateX(1px); }
+  .icon-button:hover svg { transform: translateY(-1px) scale(1.06); }
+  .subject-action-button:hover svg { transform: scale(1.08); }
+  .resource-row:hover .resource-icon svg { transform: scale(1.06); }
+  .sv-hero-primary:hover, .primary-button:hover, .add-resource-button:hover {
+    box-shadow: 0 7px 18px rgba(40,87,128,.20);
+    transform: translateY(-1px);
+  }
+  .brand-icon { transition: transform 240ms var(--sv-motion-ease), box-shadow 240ms ease; }
+  .sidebar-brand:hover .brand-icon { transform: translateY(-1px) rotate(-3deg); }
+}
+
+/* Page content enters gently on navigation, without animating every child. */
+@keyframes sv-page-enter {
+  from { opacity: .45; transform: translateY(5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.page-content > * {
+  animation: sv-page-enter var(--sv-motion-enter) var(--sv-motion-ease) both;
+}
+
+/* Dialogs and command search: fade + small scale, never a dramatic zoom. */
+@keyframes sv-overlay-enter {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes sv-dialog-enter {
+  from { opacity: 0; transform: translateY(7px) scale(.985); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+.resource-modal-overlay, .global-search-overlay, .modal-overlay,
+.study-tools-overlay, .note-viewer-overlay {
+  animation: sv-overlay-enter 160ms ease-out both;
+}
+.resource-modal, .resource-modal-content, .global-search-panel,
+.global-search-dialog, .study-tools-modal, .note-viewer {
+  animation: sv-dialog-enter 210ms var(--sv-motion-ease) both;
+}
+
+/* Close/X controls: rotate on hover and keyboard focus; selectors cover icon buttons. */
+button[aria-label="Close"] svg, button[aria-label="close"] svg,
+button[aria-label="Cancel"] svg, button[title="Close"] svg,
+.modal-close svg, .close-button svg, .close-icon-button svg,
+button:has(> svg.lucide-x) svg {
+  transform-origin: center;
+  transition: transform 220ms var(--sv-motion-ease), color 160ms ease;
+}
+@media (hover: hover) and (pointer: fine) {
+  button[aria-label="Close"]:hover svg, button[aria-label="close"]:hover svg,
+  button[title="Close"]:hover svg, .modal-close:hover svg,
+  .close-button:hover svg, .close-icon-button:hover svg,
+  button:has(> svg.lucide-x):hover svg {
+    transform: rotate(90deg);
+  }
+}
+
+/* Inputs signal focus without changing layout. */
+input:not([type="checkbox"]):not([type="radio"]):focus,
+textarea:focus, select:focus, [contenteditable="true"]:focus {
+  border-color: rgba(88,137,184,.9);
+  box-shadow: 0 0 0 3px rgba(88,137,184,.13);
+}
+
+/* Respect accessibility settings and avoid motion on touch-first devices. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: .01ms !important;
+  }
+}
