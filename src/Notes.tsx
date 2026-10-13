@@ -166,7 +166,7 @@ export default function Notes({ resources, subjects, openNoteId, openFolderId, i
 
         loadNotes();
         return () => { cancelled = true; };
-    }, [openFolderId, openNoteId]);
+    }, [openFolderId, openNoteId, selectNote]);
 
     useEffect(() => {
         return () => {
