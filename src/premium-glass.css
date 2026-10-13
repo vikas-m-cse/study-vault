@@ -1661,3 +1661,47 @@ main h1 + p, main h2 + p, main h3 + p,
     font-size: 14px !important;
   }
 }
+
+
+/* Fix clipped subject dropdown: render above the library panel and viewport-safe. */
+.resources-page,
+.resources-page > .content-card,
+.resources-page .resources-toolbar,
+.resources-page .resource-subject-filter {
+  overflow: visible !important;
+}
+.resources-page > .content-card {
+  isolation: auto !important;
+}
+.resource-subject-filter {
+  z-index: 80 !important;
+}
+.resource-subject-dismiss {
+  z-index: 79 !important;
+}
+.resource-subject-menu {
+  z-index: 81 !important;
+  max-height: min(420px, calc(100vh - 150px)) !important;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: #c9b38c #f7f1e7;
+}
+.resource-subject-option {
+  min-height: 52px;
+}
+.resource-subject-menu::-webkit-scrollbar { width: 7px; }
+.resource-subject-menu::-webkit-scrollbar-track {
+  margin: 9px 0;
+  border-radius: 99px;
+  background: #f7f1e7;
+}
+.resource-subject-menu::-webkit-scrollbar-thumb {
+  border: 2px solid #f7f1e7;
+  border-radius: 99px;
+  background: #c9b38c;
+}
+@media (max-height: 560px) {
+  .resource-subject-menu {
+    max-height: calc(100vh - 100px) !important;
+  }
+}
