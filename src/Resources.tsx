@@ -51,6 +51,7 @@ export default function Resources({
     const [search, setSearch] = useState("");
     const [selectedSubject, setSelectedSubject] = useState("All");
     const [subjectMenuOpen, setSubjectMenuOpen] = useState(false);
+    const [selectedType, setSelectedType] = useState("All");
     const [viewingNote, setViewingNote] = useState<Resource | null>(null);
     const [actionError, setActionError] = useState<string | null>(null);
 
@@ -62,7 +63,13 @@ export default function Resources({
             selectedSubject === "All" ||
             resource.subjectId === Number(selectedSubject);
 
-        return matchesSearch && matchesSubject;
+        const normalizedType = resource.type.toLowerCase();
+        const matchesType = selectedType === "All" ||
+            (selectedType === "Document" ? ["document", "doc", "docx"].includes(normalizedType) :
+             selectedType === "Other" ? !["note", "pdf", "document", "doc", "docx", "image", "link", "video"].includes(normalizedType) :
+             normalizedType === selectedType.toLowerCase());
+
+        return matchesSearch && matchesSubject && matchesType;
     });
 
     const openResource = useCallback((resource: Resource) => {
@@ -204,7 +211,40 @@ export default function Resources({
                     </div>
                 </div>
 
-                <p className="resources-count">
+                <div className="resource-type-filters" aria-label="Filter resources by type">
+                    {[
+                        { value: "All", label: "All" },
+                        { value: "Note", label: "Notes" },
+                        { value: "PDF", label: "PDF" },
+                        { value: "Document", label: "Docs" },
+                        { value: "Image", label: "Images" },
+                        { value: "Link", label: "Links" },
+                        { value: "Video", label: "Videos" },
+                        { value: "Other", label: "Others" },
+                    ].map((filter) => (
+                        <button
+                            key={filter.value}
+                            type="button"
+                            className={`resource-type-chip ${selectedType === filter.value ? "active" : ""}`}
+                            aria-pressed={selectedType === filter.value}
+                            onClick={() => setSelectedType(filter.value)}
+                        >
+                            {filter.label}
+                            {filter.value === "All" && <span className="resource-type-chip-count">{resources.length}</span>}
+                        </button>
+                    ))}
+                </div>
+
+                <div className="resources-results-bar">
+                    <p className="resources-count">
+                        {filteredResources.length} {filteredResources.length === 1 ? "resource" : "resources"} found
+                    </p>
+                    {(search || selectedSubject !== "All" || selectedType !== "All") && (
+                        <button type="button" className="resources-clear-filters" onClick={() => { setSearch(""); setSelectedSubject("All"); setSelectedType("All"); }}>
+                            Clear filters
+                        </button>
+                    )}
+                </div>
                     {filteredResources.length} resource
                     {filteredResources.length !== 1 ? "s" : ""} found
                 </p>
