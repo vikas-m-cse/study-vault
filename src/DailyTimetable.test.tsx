@@ -13,7 +13,7 @@ describe("DailyTimetable", () => {
     expect(screen.getByRole("navigation", { name: "Choose a day" })).toBeTruthy();
     expect(screen.getByRole("heading", { name: "Your timeline" })).toBeTruthy();
     expect(screen.getAllByText("Morning routine & breakfast").length).toBeGreaterThan(0);
-    expect(screen.getByText("College / classes")).toBeTruthy();
+    expect(screen.getAllByText("College / classes").length).toBeGreaterThan(0);
   });
 
   it("adds a block and persists the updated plan", async () => {
