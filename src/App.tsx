@@ -300,6 +300,8 @@ function App() {
                             setSubjects={handleSetSubjects}
                             resources={resources}
                             focusSubjectId={subjectTargetId}
+                            onOpenResource={(id) => { setResourceTargetId(id); navigate("My Resources"); }}
+                            onOpenNote={(id) => { setNotesTarget({ noteId: id }); navigate("Notes"); }}
                         />
                     ) : activePage === "My Resources" ? (
                         <Resources
