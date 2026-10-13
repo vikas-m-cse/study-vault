@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildRevisionPlan, rankRevisionCandidates, type RevisionCandidate } from "./services/dailyPlanner";
+import { buildRevisionPlan, conceptIdsForNote, rankRevisionCandidates, type RevisionCandidate } from "./services/dailyPlanner";
 
 const candidate = (overrides: Partial<RevisionCandidate> = {}): RevisionCandidate => ({
   id: "note-1::0",
@@ -67,5 +67,26 @@ describe("adaptive revision plan", () => {
       { availableMinutes: 31, energy: "normal", goal: "revision", now: 1000 },
       [candidate()],
     ).totalMinutes).toBe(30);
+  });
+});
+
+describe("planner concept coverage", () => {
+  it("includes every tracked concept rather than only the first concept in a note", () => {
+    expect(conceptIdsForNote("os-note", {
+      "os-note::0": { attempts: 2 },
+      "os-note::1": { attempts: 4 },
+      "another-note::0": { attempts: 1 },
+    })).toEqual(["os-note::0", "os-note::1"]);
+  });
+
+  it("includes scheduled concepts even if mastery evidence is absent", () => {
+    expect(conceptIdsForNote("math-note", {}, {
+      "math-note::0": { nextReviewAt: 100 },
+      "math-note::2": { nextReviewAt: 200 },
+    })).toEqual(["math-note::0", "math-note::2"]);
+  });
+
+  it("creates a first-review candidate only when no concepts are tracked", () => {
+    expect(conceptIdsForNote("new-note", {})).toEqual(["new-note::0"]);
   });
 });
