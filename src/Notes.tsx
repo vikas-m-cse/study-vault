@@ -96,12 +96,15 @@ export default function Notes({ resources, subjects, openNoteId, openFolderId, i
     const [readingMode, setReadingMode] = useState(false);
     const [detailsOpen, setDetailsOpen] = useState(false);
 
-    useEffect(() => {
-        setReadingMode(false);
-        setDetailsOpen(false);
-    }, [selectedId]);
     const [isNotesFullscreen, setIsNotesFullscreen] = useState(false);
     const workspaceRef = useRef<HTMLDivElement | null>(null);
+
+    const selectNote = useCallback((noteId: string | null) => {
+        setSelectedId(noteId);
+        setReadingMode(false);
+        setDetailsOpen(false);
+    }, []);
+
 
     const toggleNotesFullscreen = useCallback(async () => {
         const workspace = workspaceRef.current;
@@ -147,7 +150,7 @@ export default function Notes({ resources, subjects, openNoteId, openFolderId, i
                 }
                 if (openNoteId && noteResult.notes.some((note) => note.id === openNoteId)) {
                     setFilter("all");
-                    setSelectedId(openNoteId);
+                    selectNote(openNoteId);
                 }
                 setLoadError(noteResult.issues.length > 0
                     ? `${noteResult.issues.length} saved note${noteResult.issues.length === 1 ? " has" : "s have"} recoverable data issues. Existing records were left unchanged.`
@@ -301,7 +304,7 @@ export default function Notes({ resources, subjects, openNoteId, openFolderId, i
         try {
             await createNote(note);
             setNotes((current) => [note, ...current]);
-            setSelectedId(note.id);
+            selectNote(note.id);
             setFilter("all");
             setSaveStates((current) => ({ ...current, [note.id]: "saved" }));
             setLoadError(null);
@@ -342,7 +345,7 @@ export default function Notes({ resources, subjects, openNoteId, openFolderId, i
         try {
             await createNote(converted);
             setNotes((current) => [converted, ...current]);
-            setSelectedId(converted.id);
+            selectNote(converted.id);
             setLoadError(null);
         } catch (error) {
             console.error("[StudyVault] Failed to migrate legacy note:", error);
@@ -545,7 +548,7 @@ export default function Notes({ resources, subjects, openNoteId, openFolderId, i
                                         type="button"
                                         className={`notes-list-item ${effectiveSelectedId === note.id ? "selected" : ""}`}
                                         key={note.id}
-                                        onClick={() => setSelectedId(note.id)}
+                                        onClick={() => selectNote(note.id)}
                                     >
                                         <div className="notes-list-item-heading">
                                             <h3>{currentNote.title || "Untitled note"}</h3>
