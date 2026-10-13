@@ -124,10 +124,10 @@ export default function Resources({
         <div className="resources-page">
             <div className="page-heading">
                 <div>
-                    <p className="eyebrow">YOUR KNOWLEDGE LIBRARY</p>
-                    <h1>My Resources</h1>
+                    <p className="eyebrow">STUDYVAULT / RESOURCES</p>
+                    <h1>Make space for <em>what you learn.</em></h1>
                     <p className="page-description">
-                        All your learning materials, organised in one place.
+                        All your learning materials, thoughtfully organised in one place.
                     </p>
                 </div>
 
