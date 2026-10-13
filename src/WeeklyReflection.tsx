@@ -41,19 +41,13 @@ function saveReflection(key: string, record: ReflectionRecord): boolean {
   }
 }
 
-function emptySummary(): WeeklyPlannerSummary {
-  return {
-    completedSessions: 0, completedTasks: 0, plannedMinutes: 0,
-    recallCorrect: 0, recallPartial: 0, recallIncorrect: 0, activeDays: 0,
-  };
-}
-
 function dateLabel(timestamp: number): string {
   return new Date(timestamp).toLocaleDateString(undefined, { month: "short", day: "numeric" });
 }
 
 export default function WeeklyReflection() {
   const [anchor, setAnchor] = useState(() => Date.now());
+  const [currentTime] = useState(() => Date.now());
   const [history, setHistory] = useState(() => readPlannerHistory());
   const [events, setEvents] = useState(() => getLearningEvents());
   const [reflections, setReflections] = useState(() => readReflections());
@@ -78,7 +72,7 @@ export default function WeeklyReflection() {
   const performance = recallTotal
     ? Math.round(((recallOutcomes.correct + recallOutcomes.partial * 0.5) / recallTotal) * 100)
     : null;
-  const isCurrentWeek = bounds.startAt <= Date.now() && Date.now() < bounds.endAt;
+  const isCurrentWeek = bounds.startAt <= currentTime && currentTime < bounds.endAt;
 
   useEffect(() => {
     const record = reflections[bounds.key] ?? { wentWell: "", feltDifficult: "", nextFocus: "", updatedAt: 0 };
