@@ -10,10 +10,10 @@ describe("DailyTimetable", () => {
 
   it("shows the weekly selector, daily summary, and starter routine", () => {
     render(<DailyTimetable />);
-    expect(screen.getByRole("navigation", { name: "Choose a day" })).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: "Your timeline" })).toBeInTheDocument();
-    expect(screen.getByText("Morning routine & breakfast")).toBeInTheDocument();
-    expect(screen.getByText("College / classes")).toBeInTheDocument();
+    expect(screen.getByRole("navigation", { name: "Choose a day" })).toBeTruthy();
+    expect(screen.getByRole("heading", { name: "Your timeline" })).toBeTruthy();
+    expect(screen.getByText("Morning routine & breakfast")).toBeTruthy();
+    expect(screen.getByText("College / classes")).toBeTruthy();
   });
 
   it("adds a block and persists the updated plan", async () => {
@@ -25,7 +25,7 @@ describe("DailyTimetable", () => {
     fireEvent.change(screen.getByLabelText("Ends"), { target: { value: "19:00" } });
     await user.selectOptions(screen.getByLabelText("Repeats"), "weekdays");
     await user.click(screen.getByRole("button", { name: /add to my day/i }));
-    expect(screen.getByText("Java practice")).toBeInTheDocument();
+    expect(screen.getByText("Java practice")).toBeTruthy();
     const saved = JSON.parse(localStorage.getItem("studyvault-daily-timetable-v1") ?? "[]");
     expect(saved.some((block: { title: string }) => block.title === "Java practice")).toBe(true);
   });
@@ -39,8 +39,8 @@ describe("DailyTimetable", () => {
     fireEvent.change(screen.getByLabelText("Ends"), { target: { value: "08:30" } });
     await user.selectOptions(screen.getByLabelText("Repeats"), "weekdays");
     await user.click(screen.getByRole("button", { name: /add to my day/i }));
-    expect(screen.getByRole("alert")).toHaveTextContent(/overlaps another block/i);
-    expect(screen.queryByText("Overlap test")).not.toBeInTheDocument();
+    expect(screen.getByRole("alert").textContent).toMatch(/overlaps another block/i);
+    expect(screen.queryByText("Overlap test")).toBeNull();
   });
 
   it("records completion and keeps it when restoring the starter routine", async () => {
@@ -64,6 +64,6 @@ describe("DailyTimetable", () => {
     fireEvent.change(screen.getByLabelText("Starts"), { target: { value: "18:00" } });
     fireEvent.change(screen.getByLabelText("Ends"), { target: { value: "18:00" } });
     await user.click(screen.getByRole("button", { name: /add to my day/i }));
-    expect(screen.getByRole("alert")).toHaveTextContent(/end time must be after start time/i);
+    expect(screen.getByRole("alert").textContent).toMatch(/end time must be after start time/i);
   });
 });
