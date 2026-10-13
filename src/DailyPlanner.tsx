@@ -115,10 +115,6 @@ function createSession(plan: RevisionPlan, minutes: number, energy: PlannerEnerg
   };
 }
 
-function formatTime(value: number): string {
-  return new Date(value).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
-}
-
 export default function DailyPlanner({ subjects }: { subjects: { id: number; name: string }[] }) {
   const [notes, setNotes] = useState<Note[]>([]);
   const [isLoading, setIsLoading] = useState(true);
