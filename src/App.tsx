@@ -303,7 +303,7 @@ function App() {
                     onOpenSearch={() => setIsSearchOpen(true)}
                     searchQuery={searchQuery}
                     onSearchQueryChange={setSearchQuery}
-                    onOpenInbox={() => navigate("Inbox")}
+                    onOpenInbox={() => { syncStudyNotifications(readPlannerHistory(), getLearningEvents()); setUnreadCount(unreadInboxCount()); navigate("Inbox"); }}
                     unreadCount={unreadCount}
                 />
 
