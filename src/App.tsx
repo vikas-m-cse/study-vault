@@ -87,11 +87,14 @@ function App() {
         refreshInboxCount();
         window.addEventListener("focus", refreshInboxCount);
         window.addEventListener("storage", refreshInboxCount);
+        const refreshUnreadOnly = () => setUnreadCount(unreadInboxCount());
         window.addEventListener("studyvault:learning-updated", refreshInboxCount);
+        window.addEventListener("studyvault:inbox-updated", refreshUnreadOnly);
         return () => {
             window.removeEventListener("focus", refreshInboxCount);
             window.removeEventListener("storage", refreshInboxCount);
             window.removeEventListener("studyvault:learning-updated", refreshInboxCount);
+            window.removeEventListener("studyvault:inbox-updated", refreshUnreadOnly);
         };
     }, []);
 
