@@ -11,6 +11,8 @@ type TopbarProps = {
     onOpenSearch: () => void;
     searchQuery: string;
     onSearchQueryChange: (query: string) => void;
+    onOpenInbox: () => void;
+    unreadCount: number;
 };
 
 export function Topbar({
@@ -18,6 +20,8 @@ export function Topbar({
     onOpenSearch,
     searchQuery,
     onSearchQueryChange,
+    onOpenInbox,
+    unreadCount,
 }: TopbarProps) {
     return (
         <header className="topbar">
@@ -50,11 +54,13 @@ export function Topbar({
                 </div>
 
                 <button
-                    className="icon-button"
-                    aria-label="Notifications"
-                    title="Notifications"
+                    className="icon-button topbar-inbox-button"
+                    onClick={onOpenInbox}
+                    aria-label={unreadCount > 0 ? `Inbox, ${unreadCount} unread items` : "Open inbox"}
+                    title={unreadCount > 0 ? `${unreadCount} unread inbox items` : "Open inbox"}
                 >
                     <Bell size={19} />
+                    {unreadCount > 0 && <span className="topbar-inbox-badge">{unreadCount > 99 ? "99+" : unreadCount}</span>}
                 </button>
 
                 <button
