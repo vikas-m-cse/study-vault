@@ -263,14 +263,6 @@ export default function Review({ subjects, focusNoteId, focusConceptId }: Review
     [notes, subjects],
   );
 
-  useEffect(() => {
-    if (focusConceptId && concepts.some((concept) => concept.id === focusConceptId)) {
-      setSelectedId(focusConceptId);
-      setRecall("");
-      setRevealed(false);
-    }
-  }, [focusConceptId, concepts]);
-
   const dueConcepts = useMemo(
     () => concepts
       .filter((concept) => {
@@ -292,7 +284,10 @@ export default function Review({ subjects, focusNoteId, focusConceptId }: Review
     [concepts, reviewState, now, focusNoteId, focusConceptId],
   );
 
-  const selected = dueConcepts.find((concept) => concept.id === selectedId) ?? dueConcepts[0] ?? null;
+  const selected = (focusConceptId ? dueConcepts.find((concept) => concept.id === focusConceptId) : undefined)
+    ?? dueConcepts.find((concept) => concept.id === selectedId)
+    ?? dueConcepts[0]
+    ?? null;
   const currentState = selected ? reviewState[selected.id] : undefined;
 
   const reveal = () => {
