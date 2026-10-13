@@ -45,11 +45,14 @@ export default function Inbox({ onNavigate }: { onNavigate: (page: string) => vo
   }, []);
 
   useEffect(() => {
-    refresh();
+    let mounted = true;
+    const loadInitial = () => { if (mounted) refresh(); };
+    Promise.resolve().then(loadInitial);
     window.addEventListener("focus", refresh);
     window.addEventListener("storage", refresh);
     window.addEventListener("studyvault:learning-updated", refresh);
     return () => {
+      mounted = false;
       window.removeEventListener("focus", refresh);
       window.removeEventListener("storage", refresh);
       window.removeEventListener("studyvault:learning-updated", refresh);
