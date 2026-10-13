@@ -12,6 +12,7 @@ import {
     NotebookPen,
     Inbox,
     History,
+    ChartNoAxesCombined,
     Settings,
     Library,
 } from "lucide-react";
@@ -65,6 +66,10 @@ const navigationItems = [
     {
         label: "Activity Timeline",
         icon: History,
+    },
+    {
+        label: "Study Analytics",
+        icon: ChartNoAxesCombined,
     },
     {
         label: "Timetable",
