@@ -19,7 +19,7 @@ type ReviewEntry = {
   attempts?: number;
 };
 
-type ProgressProps = { subjects: Subject[] };
+type ProgressProps = { subjects: Subject[]; onOpenReview: () => void };
 
 const REVIEW_STATE_KEY = "studyvault-review-v2";
 
@@ -95,7 +95,7 @@ function ProgressRing({ value }: { value: number }) {
   );
 }
 
-export default function Progress({ subjects }: ProgressProps) {
+export default function Progress({ subjects, onOpenReview }: ProgressProps) {
   const [notes, setNotes] = useState<Note[]>([]);
   const [reviewState, setReviewState] = useState<Record<string, ReviewEntry>>(() => readReviewState());
   const [events, setEvents] = useState<LearningEvent[]>(() => getLearningEvents());
@@ -258,7 +258,7 @@ export default function Progress({ subjects }: ProgressProps) {
           <div className="progress-card-heading"><span className="progress-metric-icon"><Activity size={18} /></span><div><span className="progress-eyebrow">NEXT BEST STEP</span><h2>{dueCount > 0 ? "Continue your review" : "You're up to date"}</h2></div></div>
           <p>{totalConcepts === 0 ? "Write a note with meaningful content to create review material." : dueCount > 0 ? `${dueCount} concepts are new or due for another review.` : "No concepts are currently due based on your saved review schedule."}</p>
           <div className="progress-next-stat"><Gauge size={18} /><span>{totalConcepts - reviewedCount} concepts have not yet been reviewed</span></div>
-          <button className="progress-cta" onClick={() => window.dispatchEvent(new CustomEvent("studyvault:navigate", { detail: "Review" }))}>Open Review <ArrowRight size={16} /></button>
+          <button className="progress-cta" onClick={onOpenReview}>Open Review <ArrowRight size={16} /></button>
         </article>
       </section>
     </div>
