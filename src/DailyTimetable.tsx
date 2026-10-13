@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import {
   CalendarDays, Clock3, Plus, Trash2, Check, Pencil, X,
-  Coffee, BookOpen, GraduationCap, Utensils, Dumbbell, Sparkles,
+  Coffee, BookOpen, GraduationCap, Utensils, Dumbbell, Sparkles, ChevronLeft, ChevronRight, Target, Sun,
 } from "lucide-react";
 
 type BlockCategory = "class" | "study" | "break" | "meal" | "personal";
