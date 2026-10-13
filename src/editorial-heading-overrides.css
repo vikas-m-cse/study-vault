@@ -210,3 +210,36 @@ body { background-image: none !important; }
 .subjects-page .subject-card-copy > p {
   color: #788598 !important;
 }
+
+
+/* Match the Daily Planner's editorial typography on the dashboard hero too. */
+.dashboard .sv-home-hero .sv-hero-kicker {
+  display: flex !important;
+  align-items: center !important;
+  gap: 9px !important;
+  color: #858579 !important;
+  font-size: 10px !important;
+  font-weight: 800 !important;
+  letter-spacing: .16em !important;
+  text-transform: uppercase !important;
+}
+.dashboard .sv-home-hero h1 {
+  color: #292a27 !important;
+  font-family: Georgia, "Times New Roman", serif !important;
+  font-size: clamp(40px, 4.4vw, 54px) !important;
+  font-weight: 700 !important;
+  letter-spacing: -.045em !important;
+  line-height: 1.04 !important;
+}
+.dashboard .sv-home-hero h1 em {
+  color: #6c7c62 !important;
+  font-weight: 500 !important;
+}
+.dashboard .sv-home-hero > .sv-hero-copy > p {
+  color: #7c7e78 !important;
+  font-size: 15px !important;
+  line-height: 1.65 !important;
+}
+@media (max-width: 700px) {
+  .dashboard .sv-home-hero h1 { font-size: clamp(34px, 8vw, 42px) !important; }
+}
