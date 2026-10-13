@@ -2064,3 +2064,22 @@ button, input, textarea, select { accent-color: var(--sv-olive); }
  .tt2-field-row{gap:8px}
 }
 @media(prefers-reduced-motion:reduce){.tt2-page *{scroll-behavior:auto!important;transition:none!important}}
+
+
+/* Notes Experience 2.0: content first, metadata and formatting on demand. */
+.notes-reading-mode-button,.notes-details-toggle{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:34px;padding:0 11px;border:1px solid #e4e2d8;border-radius:10px;background:#fffefa;color:#59664b;font-size:12px;font-weight:650;cursor:pointer}
+.notes-reading-mode-button:hover,.notes-details-toggle:hover{background:#f3f4ed;border-color:#cbd3c1}
+.notes-details-toggle-row{display:flex;align-items:center;flex-wrap:wrap;gap:10px;margin:0 0 13px}
+.notes-details-toggle{min-height:29px;padding:0 9px;font-size:11px}
+.notes-details-toggle svg{transition:transform .18s ease}
+.notes-details-toggle svg.is-open{transform:rotate(90deg)}
+.notes-details-summary,.notes-reading-hint{color:#858579;font-size:11px}
+.notes-editor.read-only .notes-editor-content{max-width:760px;margin-inline:auto}
+.notes-editor.read-only .ProseMirror{font-size:17px;line-height:1.9;color:#3d4037}
+.notes-editor.read-only .ProseMirror h1{margin-top:1.65em;font-size:1.8em}
+.notes-editor.read-only .ProseMirror h2{margin-top:1.5em;font-size:1.4em}
+.notes-editor.read-only .ProseMirror h3{margin-top:1.3em;font-size:1.15em}
+.notes-editor.read-only .ProseMirror p{margin:0 0 1.1em}
+.notes-editor.read-only .ProseMirror li{margin:.35em 0}
+.notes-editor.read-only .ProseMirror :focus{outline:none}
+@media(max-width:760px){.notes-reading-mode-button{min-height:32px;padding-inline:9px}.notes-editor.read-only .ProseMirror{font-size:16px;line-height:1.8}}
