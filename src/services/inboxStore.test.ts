@@ -58,4 +58,20 @@ describe("local inbox storage", () => {
     markAllMessagesRead();
     expect(readMessages()[0].read).toBe(true);
   });
+  it("persists notification preferences and hides disabled categories", () => {
+    expect(readInboxPreferences()).toEqual({ review: true, planner: true, learning: true });
+    expect(saveInboxPreferences({ review: false, planner: true, learning: false })).toBe(true);
+
+    const result = syncStudyNotifications(
+      [{ id: "session-2", completedAt: 5000, plannedMinutes: 15 }],
+      [{ conceptId: "note-2::0", outcome: "incorrect", at: 4000 }],
+      6000,
+    );
+
+    expect(result.some((item) => item.category === "planner")).toBe(true);
+    expect(result.some((item) => item.category === "learning")).toBe(false);
+    expect(result.some((item) => item.category === "review")).toBe(false);
+    expect(readInboxPreferences()).toEqual({ review: false, planner: true, learning: false });
+  });
+
 });
