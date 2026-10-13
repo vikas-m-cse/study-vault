@@ -45,7 +45,7 @@ export function buildStudyAnalytics(
   now = Date.now(),
   weekCount = 8,
 ): StudyAnalytics {
-  const safeWeekCount = Math.max(1, Math.min(52, Math.floor(weekCount) || 8));
+  const safeWeekCount = Math.max(1, Math.min(52, Number.isFinite(weekCount) ? Math.floor(weekCount) : 8));
   const currentStart = weekStart(now);
   const starts = Array.from({ length: safeWeekCount }, (_, index) => {
     const date = new Date(currentStart);
