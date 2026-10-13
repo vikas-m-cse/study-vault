@@ -1,276 +1,89 @@
 import { useEffect, useMemo, useState } from "react";
-import {
-  CalendarDays, Clock3, Plus, Trash2, Check, Pencil, X,
-  Coffee, BookOpen, GraduationCap, Utensils, Dumbbell, Sparkles, ChevronLeft, ChevronRight, Target, Sun,
-} from "lucide-react";
+import { CalendarDays, Clock3, Plus, Trash2, Check, Pencil, X, Coffee, BookOpen, GraduationCap, Utensils, Dumbbell, Sparkles, ChevronLeft, ChevronRight, Target, Sun, RotateCcw, ArrowRight, CircleCheck } from "lucide-react";
 
-type BlockCategory = "class" | "study" | "break" | "meal" | "personal";
-type TimeBlock = {
-  id: string;
-  title: string;
-  start: string;
-  end: string;
-  category: BlockCategory;
-  days: "everyday" | "weekdays" | "weekend";
-};
+type Category = "class" | "study" | "break" | "meal" | "personal";
+type Repeat = "everyday" | "weekdays" | "weekend";
+type TimeBlock = { id: string; title: string; start: string; end: string; category: Category; days: Repeat };
 type CompletionMap = Record<string, string[]>;
-
 const PLAN_KEY = "studyvault-daily-timetable-v1";
 const COMPLETION_KEY = "studyvault-timetable-completions-v1";
 const starterPlan: TimeBlock[] = [
-  { id: "starter-morning", title: "Morning routine & breakfast", start: "06:30", end: "07:30", category: "personal", days: "weekdays" },
-  { id: "starter-college", title: "College / classes", start: "08:00", end: "16:00", category: "class", days: "weekdays" },
-  { id: "starter-reset", title: "Travel, snack & reset", start: "16:00", end: "16:45", category: "break", days: "weekdays" },
-  { id: "starter-dsa", title: "Focused study", start: "16:45", end: "18:00", category: "study", days: "weekdays" },
-  { id: "starter-dinner", title: "Dinner", start: "19:30", end: "20:00", category: "meal", days: "everyday" },
-  { id: "starter-revision", title: "Revision & active recall", start: "20:00", end: "21:00", category: "study", days: "everyday" },
-  { id: "starter-winddown", title: "Wind down & prepare for tomorrow", start: "21:00", end: "21:30", category: "personal", days: "everyday" },
+  { id:"starter-morning", title:"Morning routine & breakfast", start:"06:30", end:"07:30", category:"personal", days:"weekdays" },
+  { id:"starter-college", title:"College / classes", start:"08:00", end:"16:00", category:"class", days:"weekdays" },
+  { id:"starter-reset", title:"Travel, snack & reset", start:"16:00", end:"16:45", category:"break", days:"weekdays" },
+  { id:"starter-focus", title:"Deep work · priority subject", start:"16:45", end:"18:00", category:"study", days:"weekdays" },
+  { id:"starter-dinner", title:"Dinner", start:"19:30", end:"20:00", category:"meal", days:"everyday" },
+  { id:"starter-recall", title:"Active recall & revision", start:"20:00", end:"21:00", category:"study", days:"everyday" },
+  { id:"starter-winddown", title:"Wind down · prepare for tomorrow", start:"21:00", end:"21:30", category:"personal", days:"everyday" },
 ];
+const categoryLabels: Record<Category,string> = { class:"Classes", study:"Focused study", break:"Break", meal:"Meal", personal:"Personal" };
+const categoryIcons = { class:GraduationCap, study:BookOpen, break:Coffee, meal:Utensils, personal:Dumbbell };
+const toMinutes=(v:string)=>{const [h,m]=v.split(":").map(Number);return h*60+m;};
+const dateKey=(d:Date)=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+const formatTime=(v:string)=>{const [h,m]=v.split(":").map(Number);const d=new Date();d.setHours(h,m,0,0);return d.toLocaleTimeString([],{hour:"numeric",minute:"2-digit"});};
+const duration=(b:TimeBlock)=>Math.max(0,toMinutes(b.end)-toMinutes(b.start));
+const applies=(b:TimeBlock,d:Date)=>b.days==="everyday"||(b.days==="weekdays"&&d.getDay()>=1&&d.getDay()<=5)||(b.days==="weekend"&&(d.getDay()===0||d.getDay()===6));
+function loadPlan():TimeBlock[]{try{const v=localStorage.getItem(PLAN_KEY);if(v){const p:unknown=JSON.parse(v);if(Array.isArray(p))return p as TimeBlock[];}}catch{}return starterPlan;}
+function loadDone():CompletionMap{try{const v=localStorage.getItem(COMPLETION_KEY);if(v)return JSON.parse(v) as CompletionMap;}catch{}return {};}
 
-const categoryLabels: Record<BlockCategory, string> = {
-  class: "College",
-  study: "Study",
-  break: "Break",
-  meal: "Meal",
-  personal: "Personal",
-};
-
-const categoryIcons = {
-  class: GraduationCap,
-  study: BookOpen,
-  break: Coffee,
-  meal: Utensils,
-  personal: Dumbbell,
-};
-
-const timeToMinutes = (value: string) => {
-  const [hours, minutes] = value.split(":").map(Number);
-  return hours * 60 + minutes;
-};
-const dateKey = (date: Date) => {
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const day = String(date.getDate()).padStart(2, "0");
-  return `${year}-${month}-${day}`;
-};
-const formatTime = (value: string) => {
-  const [hours, minutes] = value.split(":").map(Number);
-  const date = new Date();
-  date.setHours(hours, minutes, 0, 0);
-  return date.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
-};
-
-function readStoredPlan(): TimeBlock[] {
-  try {
-    const raw = localStorage.getItem(PLAN_KEY);
-    if (raw) {
-      const parsed: unknown = JSON.parse(raw);
-      if (Array.isArray(parsed)) return parsed as TimeBlock[];
-    }
-  } catch { /* Keep the app usable if local storage is unavailable. */ }
-  return starterPlan;
-}
-
-function readCompletions(): CompletionMap {
-  try {
-    const raw = localStorage.getItem(COMPLETION_KEY);
-    if (raw) return JSON.parse(raw) as CompletionMap;
-  } catch { /* Start with an empty completion history. */ }
-  return {};
-}
-
-export default function DailyTimetable() {
-  const [blocks, setBlocks] = useState<TimeBlock[]>(readStoredPlan);
-  const [completions, setCompletions] = useState<CompletionMap>(readCompletions);
-  const [selectedDate, setSelectedDate] = useState(() => dateKey(new Date()));
-  const [showForm, setShowForm] = useState(false);
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const [formError, setFormError] = useState("");
-  const [draft, setDraft] = useState<Omit<TimeBlock, "id">>({
-    title: "", start: "17:00", end: "18:00", category: "study", days: "everyday",
-  });
-
-  useEffect(() => {
-    try { localStorage.setItem(PLAN_KEY, JSON.stringify(blocks)); } catch { /* Best effort persistence. */ }
-  }, [blocks]);
-  useEffect(() => {
-    try { localStorage.setItem(COMPLETION_KEY, JSON.stringify(completions)); } catch { /* Best effort persistence. */ }
-  }, [completions]);
-
-  const activeDate = useMemo(() => {
-    const [year, month, day] = selectedDate.split("-").map(Number);
-    return new Date(year, month - 1, day);
-  }, [selectedDate]);
-  const weekday = activeDate.getDay();
-  const visibleBlocks = useMemo(() => blocks
-    .filter((block) => block.days === "everyday" || (block.days === "weekdays" && weekday >= 1 && weekday <= 5) || (block.days === "weekend" && (weekday === 0 || weekday === 6)))
-    .slice()
-    .sort((a, b) => timeToMinutes(a.start) - timeToMinutes(b.start)), [blocks, weekday]);
-  const doneIds = completions[selectedDate] ?? [];
-  const completedCount = visibleBlocks.filter((block) => doneIds.includes(block.id)).length;
-  const plannedMinutes = visibleBlocks.reduce((total, block) => total + Math.max(0, timeToMinutes(block.end) - timeToMinutes(block.start)), 0);
-  const completionPercent = visibleBlocks.length ? Math.round(completedCount / visibleBlocks.length * 100) : 0;
-  const todayKey = dateKey(new Date());
-  const isToday = selectedDate === todayKey;
-  const dateLabel = isToday ? "TODAY'S PLAN" : activeDate.toLocaleDateString([], { weekday: "long", month: "long", day: "numeric" }).toUpperCase();
-  const nowMinutes = new Date().getHours() * 60 + new Date().getMinutes();
-  const nextBlock = isToday ? visibleBlocks.find((block) => !doneIds.includes(block.id) && timeToMinutes(block.end) > nowMinutes) : undefined;
-  const studyMinutes = visibleBlocks.filter((block) => block.category === "study").reduce((sum, block) => sum + timeToMinutes(block.end) - timeToMinutes(block.start), 0);
-  const weekDays = useMemo(() => {
-    const monday = new Date(activeDate);
-    monday.setDate(monday.getDate() - ((monday.getDay() + 6) % 7));
-    return Array.from({ length: 7 }, (_, index) => {
-      const day = new Date(monday);
-      day.setDate(monday.getDate() + index);
-      return day;
-    });
-  }, [activeDate]);
-  const shiftDate = (amount: number) => {
-    const date = new Date(activeDate);
-    date.setDate(date.getDate() + amount);
-    setSelectedDate(dateKey(date));
-  };
-
-  const openNew = () => {
-    setEditingId(null);
-    setDraft({ title: "", start: "17:00", end: "18:00", category: "study", days: "everyday" });
-    setFormError("");
-    setShowForm(true);
-  };
-  const openEdit = (block: TimeBlock) => {
-    setEditingId(block.id);
-    setDraft({ title: block.title, start: block.start, end: block.end, category: block.category, days: block.days });
-    setFormError("");
-    setShowForm(true);
-  };
-  const saveDraft = () => {
-    if (!draft.title.trim()) { setFormError("Give this time block a name."); return; }
-    if (timeToMinutes(draft.end) <= timeToMinutes(draft.start)) { setFormError("End time must be later than start time."); return; }
-    const overlaps = visibleBlocks.some((block) => block.id !== editingId && draft.days !== "weekend" && block.days !== "weekend" && timeToMinutes(draft.start) < timeToMinutes(block.end) && timeToMinutes(draft.end) > timeToMinutes(block.start));
-    if (overlaps) { setFormError("This overlaps another block on the selected day. Adjust the time or schedule."); return; }
-    if (editingId) {
-      setBlocks((current) => current.map((block) => block.id === editingId ? { ...draft, id: editingId, title: draft.title.trim() } : block));
-    } else {
-      const id = `block-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
-      setBlocks((current) => [...current, { ...draft, id, title: draft.title.trim() }]);
-    }
-    setShowForm(false);
-  };
-  const toggleDone = (id: string) => setCompletions((current) => {
-    const existing = current[selectedDate] ?? [];
-    return { ...current, [selectedDate]: existing.includes(id) ? existing.filter((item) => item !== id) : [...existing, id] };
-  });
-  const removeBlock = (id: string) => {
-    setBlocks((current) => current.filter((block) => block.id !== id));
-    setCompletions((current) => Object.fromEntries(Object.entries(current).map(([day, ids]) => [day, ids.filter((item) => item !== id)])));
-  };
-  const resetPlan = () => {
-    setBlocks(starterPlan);
-    setCompletions({});
-  };
-
-  return (
-    <div className="timetable-page">
-      <header className="timetable-header">
-        <div>
-          <span className="timetable-eyebrow">YOUR TIME, INTENTIONALLY SPENT</span>
-          <h1>Daily <em>timetable.</em></h1>
-          <p>Give every part of your day a place. Plan it, follow it, and learn from what you complete.</p>
-        </div>
-        <button className="timetable-primary" onClick={openNew}><Plus size={17} /> Add time block</button>
-      </header>
-
-      <section className="timetable-weekbar" aria-label="Choose a day">
-        <button className="timetable-week-arrow" onClick={() => shiftDate(-7)} aria-label="Previous week"><ChevronLeft size={18} /></button>
-        <div className="timetable-week-days">
-          {weekDays.map((day) => {
-            const key = dateKey(day);
-            const selected = key === selectedDate;
-            const isDayToday = key === todayKey;
-            const count = blocks.filter((block) => block.days === "everyday" || (block.days === "weekdays" && day.getDay() >= 1 && day.getDay() <= 5) || (block.days === "weekend" && (day.getDay() === 0 || day.getDay() === 6))).length;
-            return <button key={key} className={"timetable-week-day" + (selected ? " selected" : "") + (isDayToday ? " today" : "")} onClick={() => setSelectedDate(key)} aria-pressed={selected}>
-              <span>{day.toLocaleDateString([], { weekday: "short" })}</span><strong>{day.getDate()}</strong><i>{count ? count + " planned" : "Open day"}</i>
-            </button>;
-          })}
-        </div>
-        <button className="timetable-week-arrow" onClick={() => shiftDate(7)} aria-label="Next week"><ChevronRight size={18} /></button>
-      </section>
-
-      <section className="timetable-hero">
-        <div className="timetable-hero-copy">
-          <span className="timetable-eyebrow">{dateLabel}</span>
-          <h2>{activeDate.toLocaleDateString([], { weekday: "long", month: "long", day: "numeric" })}</h2>
-          <p>{visibleBlocks.length ? `${completedCount} of ${visibleBlocks.length} blocks completed. Small, consistent steps count.` : "Your day is open. Add a block to give it structure."}</p>
-          <div className="timetable-progress-track"><span style={{ width: `${completionPercent}%` }} /></div>
-          <div className="timetable-progress-meta"><span>{completionPercent}% complete</span><span>{Math.floor(plannedMinutes / 60)}h {plannedMinutes % 60}m planned</span></div>
-        </div>
-        <div className="timetable-date-control">
-          <label htmlFor="timetable-date">View another day</label>
-          <input id="timetable-date" type="date" value={selectedDate} onChange={(event) => setSelectedDate(event.target.value)} />
-          <button type="button" onClick={() => setSelectedDate(todayKey)} disabled={isToday}>Back to today</button>
-        </div>
-      </section>
-
-      <section className="timetable-insight-grid">
-        <article className="timetable-insight-card"><span className="timetable-insight-icon study"><BookOpen size={17} /></span><div><span>FOCUSED STUDY</span><strong>{Math.floor(studyMinutes / 60)}h {studyMinutes % 60}m</strong><small>Protected learning time</small></div></article>
-        <article className="timetable-insight-card"><span className="timetable-insight-icon"><Target size={17} /></span><div><span>FOLLOW-THROUGH</span><strong>{completedCount}/{visibleBlocks.length}</strong><small>Blocks checked off</small></div></article>
-        <article className="timetable-insight-card"><span className="timetable-insight-icon rest"><Sun size={17} /></span><div><span>DAY AT A GLANCE</span><strong>{visibleBlocks.length} blocks</strong><small>{Math.floor(plannedMinutes / 60)}h {plannedMinutes % 60}m scheduled</small></div></article>
-      </section>
-
-      {isToday && nextBlock && (
-        <section className="timetable-next">
-          <div className="timetable-next-icon"><Sparkles size={18} /></div>
-          <div><span className="timetable-eyebrow">UP NEXT</span><strong>{nextBlock.title}</strong><p>{formatTime(nextBlock.start)} – {formatTime(nextBlock.end)} · {categoryLabels[nextBlock.category]}</p></div>
-        </section>
-      )}
-
-      <div className="timetable-section-heading">
-        <div><span className="timetable-eyebrow">THE PLAN</span><h2>Your day, block by block</h2></div>
-        <span>{visibleBlocks.length} time blocks</span>
-      </div>
-
-      {visibleBlocks.length ? (
-        <div className="timetable-list">
-          {visibleBlocks.map((block) => {
-            const Icon = categoryIcons[block.category];
-            const done = doneIds.includes(block.id);
-            const nowMinutes = new Date().getHours() * 60 + new Date().getMinutes();
-            const current = isToday && nowMinutes >= timeToMinutes(block.start) && nowMinutes < timeToMinutes(block.end) && !done;
-            return (
-              <article className={`timetable-block ${done ? "is-done" : ""} ${current ? "is-current" : ""}`} key={block.id}>
-                <div className="timetable-time"><strong>{formatTime(block.start)}</strong><span>{formatTime(block.end)}</span></div>
-                <div className="timetable-timeline"><span className="timetable-timeline-dot" /><span className="timetable-timeline-line" /></div>
-                <div className="timetable-block-card">
-                  <div className={`timetable-block-icon category-${block.category}`}><Icon size={18} /></div>
-                  <div className="timetable-block-copy"><div className="timetable-block-title-row"><h3>{block.title}</h3>{current && <span className="timetable-live-pill">NOW</span>}</div><p>{categoryLabels[block.category]} · {Math.floor((timeToMinutes(block.end) - timeToMinutes(block.start)) / 60) ? `${Math.floor((timeToMinutes(block.end) - timeToMinutes(block.start)) / 60)}h ` : ""}{(timeToMinutes(block.end) - timeToMinutes(block.start)) % 60 ? `${(timeToMinutes(block.end) - timeToMinutes(block.start)) % 60}m` : ""}</p></div>
-                  <div className="timetable-block-actions">
-                    <button className={`timetable-done-button ${done ? "checked" : ""}`} onClick={() => toggleDone(block.id)} aria-label={done ? `Mark ${block.title} incomplete` : `Mark ${block.title} complete`} title={done ? "Mark incomplete" : "Mark complete"}>{done ? <Check size={16} /> : <span />}</button>
-                    <button className="timetable-icon-button" onClick={() => openEdit(block)} aria-label={`Edit ${block.title}`} title="Edit"><Pencil size={15} /></button>
-                    <button className="timetable-icon-button delete" onClick={() => removeBlock(block.id)} aria-label={`Delete ${block.title}`} title="Delete"><Trash2 size={15} /></button>
-                  </div>
-                </div>
-              </article>
-            );
-          })}
-        </div>
-      ) : (
-        <div className="timetable-empty"><CalendarDays size={27} /><h3>A blank day is a fresh start.</h3><p>Add your first block or restore the editable student starter plan.</p><div><button className="timetable-primary" onClick={openNew}><Plus size={16} /> Add a block</button><button className="timetable-secondary" onClick={resetPlan}>Use starter plan</button></div></div>
-      )}
-
-      <p className="timetable-footnote"><Clock3 size={14} /> Your timetable and completion ticks are saved on this device. A completed block records your check-in, not proof of learning.</p>
-
-      {showForm && (
-        <div className="timetable-modal-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) setShowForm(false); }}>
-          <section className="timetable-modal" role="dialog" aria-modal="true" aria-labelledby="timetable-form-title">
-            <div className="timetable-modal-heading"><div><span className="timetable-eyebrow">{editingId ? "REFINE YOUR ROUTINE" : "MAKE SPACE FOR WHAT MATTERS"}</span><h2 id="timetable-form-title">{editingId ? "Edit time block" : "Add time block"}</h2></div><button className="timetable-icon-button" onClick={() => setShowForm(false)} aria-label="Close form"><X size={18} /></button></div>
-            <label className="timetable-field">Activity name<input autoFocus value={draft.title} onChange={(event) => setDraft((current) => ({ ...current, title: event.target.value }))} placeholder="e.g. Java practice" maxLength={90} /></label>
-            <div className="timetable-form-grid"><label className="timetable-field">Start time<input type="time" value={draft.start} onChange={(event) => setDraft((current) => ({ ...current, start: event.target.value }))} /></label><label className="timetable-field">End time<input type="time" value={draft.end} onChange={(event) => setDraft((current) => ({ ...current, end: event.target.value }))} /></label></div>
-            <div className="timetable-form-grid"><label className="timetable-field">Type<select value={draft.category} onChange={(event) => setDraft((current) => ({ ...current, category: event.target.value as BlockCategory }))}>{Object.entries(categoryLabels).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></label><label className="timetable-field">Repeats<select value={draft.days} onChange={(event) => setDraft((current) => ({ ...current, days: event.target.value as TimeBlock["days"] }))}><option value="everyday">Every day</option><option value="weekdays">Weekdays</option><option value="weekend">Weekends</option></select></label></div>
-            {formError && <p className="timetable-form-error" role="alert">{formError}</p>}
-            <div className="timetable-modal-actions"><button className="timetable-secondary" onClick={() => setShowForm(false)}>Cancel</button><button className="timetable-primary" onClick={saveDraft}>{editingId ? "Save changes" : "Add to timetable"}</button></div>
-          </section>
-        </div>
-      )}
-    </div>
-  );
+export default function DailyTimetable(){
+ const [blocks,setBlocks]=useState<TimeBlock[]>(loadPlan);
+ const [doneByDate,setDoneByDate]=useState<CompletionMap>(loadDone);
+ const [selectedDate,setSelectedDate]=useState(()=>dateKey(new Date()));
+ const [formOpen,setFormOpen]=useState(false);
+ const [editingId,setEditingId]=useState<string|null>(null);
+ const [error,setError]=useState("");
+ const [draft,setDraft]=useState<Omit<TimeBlock,"id">>({title:"",start:"17:00",end:"18:00",category:"study",days:"weekdays"});
+ useEffect(()=>{try{localStorage.setItem(PLAN_KEY,JSON.stringify(blocks));}catch{}},[blocks]);
+ useEffect(()=>{try{localStorage.setItem(COMPLETION_KEY,JSON.stringify(doneByDate));}catch{}},[doneByDate]);
+ const activeDate=useMemo(()=>{const [y,m,d]=selectedDate.split("-").map(Number);return new Date(y,m-1,d);},[selectedDate]);
+ const todayKey=dateKey(new Date()),isToday=selectedDate===todayKey,now=new Date().getHours()*60+new Date().getMinutes();
+ const week=useMemo(()=>{const monday=new Date(activeDate);monday.setDate(monday.getDate()-((monday.getDay()+6)%7));return Array.from({length:7},(_,i)=>{const d=new Date(monday);d.setDate(monday.getDate()+i);return d;});},[activeDate]);
+ const visible=useMemo(()=>blocks.filter(b=>applies(b,activeDate)).slice().sort((a,b)=>toMinutes(a.start)-toMinutes(b.start)),[blocks,activeDate]);
+ const done=doneByDate[selectedDate]??[];
+ const completed=visible.filter(b=>done.includes(b.id)).length;
+ const planned=visible.reduce((s,b)=>s+duration(b),0);
+ const study=visible.filter(b=>b.category==="study").reduce((s,b)=>s+duration(b),0);
+ const percent=visible.length?Math.round(completed/visible.length*100):0;
+ const current= isToday ? visible.find(b=>!done.includes(b.id)&&toMinutes(b.start)<=now&&toMinutes(b.end)>now):undefined;
+ const next= isToday ? visible.find(b=>!done.includes(b.id)&&toMinutes(b.end)>now):undefined;
+ const setDate=(d:Date)=>setSelectedDate(dateKey(d));
+ const shiftWeek=(n:number)=>{const d=new Date(activeDate);d.setDate(d.getDate()+n*7);setDate(d);};
+ const openNew=()=>{setEditingId(null);setDraft({title:"",start:"17:00",end:"18:00",category:"study",days:"weekdays"});setError("");setFormOpen(true);};
+ const openEdit=(b:TimeBlock)=>{setEditingId(b.id);setDraft({title:b.title,start:b.start,end:b.end,category:b.category,days:b.days});setError("");setFormOpen(true);};
+ const save=()=>{
+  if(!draft.title.trim()){setError("Give this block a clear name.");return;}
+  if(toMinutes(draft.end)<=toMinutes(draft.start)){setError("End time must be after start time.");return;}
+  const collision=blocks.some(b=>b.id!==editingId&&b.days===draft.days&&toMinutes(draft.start)<toMinutes(b.end)&&toMinutes(draft.end)>toMinutes(b.start));
+  if(collision){setError("This time overlaps another block with the same repeat pattern.");return;}
+  if(editingId)setBlocks(prev=>prev.map(b=>b.id===editingId?{...draft,id:editingId,title:draft.title.trim()}:b));
+  else setBlocks(prev=>[...prev,{...draft,id:`block-${Date.now()}-${Math.random().toString(36).slice(2,7)}`,title:draft.title.trim()}]);
+  setFormOpen(false);
+ };
+ const toggle=(id:string)=>setDoneByDate(prev=>{const ids=prev[selectedDate]??[];return {...prev,[selectedDate]:ids.includes(id)?ids.filter(x=>x!==id):[...ids,id]};});
+ const remove=(id:string)=>{setBlocks(prev=>prev.filter(b=>b.id!==id));setDoneByDate(prev=>Object.fromEntries(Object.entries(prev).map(([day,ids])=>[day,ids.filter(x=>x!==id)])));};
+ const restore=()=>{setBlocks(starterPlan);setDoneByDate({});};
+ const dayTitle=activeDate.toLocaleDateString([],{weekday:"long",month:"long",day:"numeric"});
+ const upcomingLabel=current?"IN PROGRESS":next?"UP NEXT":"YOUR DAY, YOUR PACE";
+ return <main className="tt2-page">
+  <header className="tt2-header">
+   <div><div className="tt2-kicker"><span className="tt2-kicker-mark"/>STUDYVAULT / DAILY PLANNER</div><h1>Make room for <em>what matters.</em></h1><p>A thoughtful plan for focused work, real breaks, and a day that feels possible.</p></div>
+   <button className="tt2-primary" onClick={openNew}><Plus size={17}/> Add a block</button>
+  </header>
+  <nav className="tt2-week" aria-label="Choose a day">
+   <button className="tt2-week-arrow" onClick={()=>shiftWeek(-1)} aria-label="Previous week"><ChevronLeft size={18}/></button>
+   <div className="tt2-week-days">{week.map(d=>{const key=dateKey(d),selected=key===selectedDate,today=key===todayKey,count=blocks.filter(b=>applies(b,d)).length;return <button key={key} className={`tt2-day ${selected?"selected":""} ${today?"today":""}`} onClick={()=>setDate(d)} aria-pressed={selected}><span>{d.toLocaleDateString([],{weekday:"short"})}</span><strong>{d.getDate()}</strong><small>{count?count+" blocks":"Open"}</small><i/></button>;})}</div>
+   <button className="tt2-week-arrow" onClick={()=>shiftWeek(1)} aria-label="Next week"><ChevronRight size={18}/></button>
+  </nav>
+  <section className="tt2-overview">
+   <div className="tt2-overview-main"><div className="tt2-date-line"><span>{isToday?"TODAY'S INTENTION":activeDate.toLocaleDateString([],{weekday:"long"}).toUpperCase()}</span>{!isToday&&<button onClick={()=>setSelectedDate(todayKey)}>Return to today</button>}</div><h2>{dayTitle}</h2><p>{visible.length?completed===visible.length?"You showed up for every block. Let that count.":`${completed} of ${visible.length} blocks complete. Progress over perfection.`:"A little structure can change the shape of your day."}</p><div className="tt2-progress"><span style={{width:`${percent}%`}}/></div><div className="tt2-progress-foot"><strong>{percent}% <small>complete</small></strong><span>{Math.floor(planned/60)}h {planned%60}m planned</span></div></div>
+   <div className="tt2-overview-stats"><div className="tt2-big-stat"><span className="tt2-stat-icon sage"><BookOpen size={17}/></span><div><small>FOCUSED STUDY</small><strong>{Math.floor(study/60)}h <i>{study%60}m</i></strong></div></div><div className="tt2-stat-divider"/><div className="tt2-big-stat"><span className="tt2-stat-icon gold"><Target size={17}/></span><div><small>TIME BLOCKS</small><strong>{visible.length}<i> planned</i></strong></div></div></div>
+  </section>
+  {isToday&&<section className="tt2-focus-card"><div className="tt2-focus-icon"><Sparkles size={18}/></div><div className="tt2-focus-copy"><span>{upcomingLabel}</span><strong>{current?.title??next?.title??"Nothing else scheduled"}</strong><p>{current? `Until ${formatTime(current.end)} · ${categoryLabels[current.category]}`:next?`${formatTime(next.start)} – ${formatTime(next.end)} · ${categoryLabels[next.category]}`:"Take a breath or add something meaningful."}</p></div>{next&&<div className="tt2-focus-time"><Clock3 size={14}/>{current?"ENDS IN": "STARTS"}<strong>{current?Math.max(0,toMinutes(current.end)-now)+" min":formatTime(next.start)}</strong></div>}</section>}
+  <section className="tt2-plan-section"><div className="tt2-section-heading"><div><span className="tt2-overline">THE RHYTHM OF YOUR DAY</span><h2>Your timeline</h2><p>Give each block your attention, then mark it done.</p></div><div className="tt2-heading-actions"><span>{visible.length} {visible.length===1?"block":"blocks"}</span><button onClick={restore} title="Restore the starter routine"><RotateCcw size={14}/> Reset plan</button></div></div>
+   {visible.length?<div className="tt2-timeline">{visible.map((b,i)=>{const Icon=categoryIcons[b.category],isDone=done.includes(b.id),isCurrent=isToday&&now>=toMinutes(b.start)&&now<toMinutes(b.end)&&!isDone;return <article className={`tt2-event ${isDone?"done":""} ${isCurrent?"current":""}`} key={b.id}><div className="tt2-event-time"><strong>{formatTime(b.start)}</strong><span>{formatTime(b.end)}</span></div><div className="tt2-rail"><i/><b/></div><div className="tt2-event-card"><span className={`tt2-event-icon ${b.category}`}><Icon size={18}/></span><div className="tt2-event-copy"><div className="tt2-event-title">{b.title}{isCurrent&&<span className="tt2-live">NOW</span>}</div><div className="tt2-event-meta"><span>{categoryLabels[b.category]}</span><i/> <span>{Math.floor(duration(b)/60)?Math.floor(duration(b)/60)+"h ":""}{duration(b)%60?duration(b)%60+"m":""}</span><i/><span>{b.days==="everyday"?"Every day":b.days==="weekdays"?"Weekdays":"Weekends"}</span></div></div><div className="tt2-event-actions"><button className={`tt2-check ${isDone?"checked":""}`} onClick={()=>toggle(b.id)} aria-label={isDone?"Mark incomplete":"Mark complete"} title={isDone?"Mark incomplete":"Mark complete"}>{isDone?<Check size={16}/>:<CircleCheck size={17}/>}</button><button onClick={()=>openEdit(b)} aria-label={`Edit ${b.title}`} title="Edit"><Pencil size={15}/></button><button className="danger" onClick={()=>remove(b.id)} aria-label={`Delete ${b.title}`} title="Delete"><Trash2 size={15}/></button></div></div></article>;})}</div>:<div className="tt2-empty"><span><CalendarDays size={24}/></span><h3>A blank page is an opportunity.</h3><p>Start with one meaningful block. You can build the rest of the day around it.</p><button className="tt2-primary" onClick={openNew}><Plus size={16}/> Create your first block</button><button className="tt2-text-button" onClick={restore}>Restore starter routine</button></div>}
+  </section>
+  <footer className="tt2-footer"><span><Sun size={15}/> A plan should support your life, not compete with it.</span><span>Saved on this device</span></footer>
+  {formOpen&&<div className="tt2-backdrop" role="presentation" onMouseDown={e=>{if(e.target===e.currentTarget)setFormOpen(false);}}><section className="tt2-modal" role="dialog" aria-modal="true" aria-labelledby="tt2-form-title"><header className="tt2-modal-head"><div><span className="tt2-overline">{editingId?"MAKE A SMALL ADJUSTMENT":"MAKE SPACE FOR WHAT MATTERS"}</span><h2 id="tt2-form-title">{editingId?"Edit time block":"Create a time block"}</h2><p>Choose a time that leaves room to breathe.</p></div><button className="tt2-close" onClick={()=>setFormOpen(false)} aria-label="Close"><X size={18}/></button></header><label className="tt2-field">Activity name<input autoFocus maxLength={90} value={draft.title} onChange={e=>setDraft(v=>({...v,title:e.target.value}))} placeholder="e.g. Java problem-solving"/></label><div className="tt2-field-row"><label className="tt2-field">Starts<input type="time" value={draft.start} onChange={e=>setDraft(v=>({...v,start:e.target.value}))}/></label><label className="tt2-field">Ends<input type="time" value={draft.end} onChange={e=>setDraft(v=>({...v,end:e.target.value}))}/></label></div><div className="tt2-field-row"><label className="tt2-field">Kind<select value={draft.category} onChange={e=>setDraft(v=>({...v,category:e.target.value as Category}))}>{Object.entries(categoryLabels).map(([v,l])=><option key={v} value={v}>{l}</option>)}</select></label><label className="tt2-field">Repeats<select value={draft.days} onChange={e=>setDraft(v=>({...v,days:e.target.value as Repeat}))}><option value="everyday">Every day</option><option value="weekdays">Weekdays</option><option value="weekend">Weekends</option></select></label></div>{error&&<p className="tt2-error" role="alert">{error}</p>}<div className="tt2-modal-foot"><button className="tt2-secondary" onClick={()=>setFormOpen(false)}>Cancel</button><button className="tt2-primary" onClick={save}>{editingId?"Save changes":"Add to my day"}<ArrowRight size={15}/></button></div></section></div>}
+ </main>;
 }
