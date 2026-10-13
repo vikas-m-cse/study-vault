@@ -9,6 +9,8 @@ import {
     Trash2,
     Image as ImageIcon,
     Link as LinkIcon,
+    ChevronDown,
+    Check,
 } from "lucide-react";
 
 import { useCallback, useEffect, useState } from "react";
@@ -48,6 +50,7 @@ export default function Resources({
 }: ResourcesProps) {
     const [search, setSearch] = useState("");
     const [selectedSubject, setSelectedSubject] = useState("All");
+    const [subjectMenuOpen, setSubjectMenuOpen] = useState(false);
     const [viewingNote, setViewingNote] = useState<Resource | null>(null);
     const [actionError, setActionError] = useState<string | null>(null);
 
@@ -140,19 +143,65 @@ export default function Resources({
                         />
                     </div>
 
-                    <select
-                        value={selectedSubject}
-                        onChange={(event) =>
-                            setSelectedSubject(event.target.value)
-                        }
-                    >
-                        <option value="All">All subjects</option>
-                        {subjects.map((subject) => (
-                            <option key={subject.id} value={subject.id}>
-                                {subject.name}
-                            </option>
-                        ))}
-                    </select>
+                    <div className="resource-subject-filter">
+                        <button
+                            type="button"
+                            className="resource-subject-trigger"
+                            aria-haspopup="listbox"
+                            aria-expanded={subjectMenuOpen}
+                            onClick={() => setSubjectMenuOpen((open) => !open)}
+                            onKeyDown={(event) => {
+                                if (event.key === "Escape") setSubjectMenuOpen(false);
+                            }}
+                        >
+                            <span>{selectedSubject === "All" ? "All subjects" : subjects.find((subject) => String(subject.id) === selectedSubject)?.name ?? "All subjects"}</span>
+                            <ChevronDown size={16} className={subjectMenuOpen ? "is-open" : ""} />
+                        </button>
+                        {subjectMenuOpen && (
+                            <>
+                                <button
+                                    type="button"
+                                    className="resource-subject-dismiss"
+                                    aria-label="Close subject filter"
+                                    tabIndex={-1}
+                                    onClick={() => setSubjectMenuOpen(false)}
+                                />
+                                <div className="resource-subject-menu" role="listbox" aria-label="Filter resources by subject">
+                                    <p className="resource-subject-menu-label">FILTER BY SUBJECT</p>
+                                    <button
+                                        type="button"
+                                        role="option"
+                                        aria-selected={selectedSubject === "All"}
+                                        className={`resource-subject-option ${selectedSubject === "All" ? "selected" : ""}`}
+                                        onClick={() => { setSelectedSubject("All"); setSubjectMenuOpen(false); }}
+                                    >
+                                        <span className="resource-subject-option-mark"><BookOpen size={15} /></span>
+                                        <span className="resource-subject-option-copy"><strong>All subjects</strong><small>Show every resource</small></span>
+                                        {selectedSubject === "All" && <Check size={16} className="resource-subject-check" />}
+                                    </button>
+                                    {subjects.map((subject) => {
+                                        const value = String(subject.id);
+                                        const active = selectedSubject === value;
+                                        const count = resources.filter((resource) => resource.subjectId === subject.id).length;
+                                        return (
+                                            <button
+                                                key={subject.id}
+                                                type="button"
+                                                role="option"
+                                                aria-selected={active}
+                                                className={`resource-subject-option ${active ? "selected" : ""}`}
+                                                onClick={() => { setSelectedSubject(value); setSubjectMenuOpen(false); }}
+                                            >
+                                                <span className="resource-subject-option-mark"><BookOpen size={15} /></span>
+                                                <span className="resource-subject-option-copy"><strong>{subject.name}</strong><small>{count} {count === 1 ? "resource" : "resources"}</small></span>
+                                                {active && <Check size={16} className="resource-subject-check" />}
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                            </>
+                        )}
+                    </div>
                 </div>
 
                 <p className="resources-count">
