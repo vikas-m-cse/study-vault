@@ -10,6 +10,7 @@ export type NextWeekRecommendation = {
   title: string;
   subjectName?: string;
   priority: number;
+  due: boolean;
   mastery: number;
   retention: number;
   label: string;
@@ -39,6 +40,7 @@ export function buildNextWeekRecommendations(
         title: note.title || "Untitled note",
         subjectName: subjects.find((subject) => subject.id === note.subjectId)?.name,
         priority,
+        due,
         mastery: masteryPercent(mastery),
         retention,
         label: due ? "Review overdue concept" : action.label,
@@ -49,6 +51,6 @@ export function buildNextWeekRecommendations(
         minutes: priority >= 80 ? 20 : priority >= 50 ? 15 : 10,
       };
     })
-    .sort((a, b) => b.priority - a.priority || a.retention - b.retention || a.title.localeCompare(b.title))
+    .sort((a, b) => Number(b.due) - Number(a.due) || b.priority - a.priority || a.retention - b.retention || a.title.localeCompare(b.title))
     .slice(0, 3);
 }
