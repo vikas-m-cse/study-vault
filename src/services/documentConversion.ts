@@ -1,3 +1,4 @@
+/* eslint-disable no-control-regex */
 import type { Note } from "../types/note";
 
 export type ConversionNote = Pick<Note, "id" | "title" | "plainText" | "updatedAt">;
