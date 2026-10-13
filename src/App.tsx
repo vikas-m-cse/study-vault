@@ -366,7 +366,7 @@ function App() {
                      ) : activePage === "Progress" ? (
                         <Progress subjects={subjects} onOpenReview={() => navigate("Review")} />
                     ) : activePage === "Weekly Reflection" ? (
-                        <WeeklyReflection subjects={subjects} onOpenPlanner={() => navigate("Daily Planner")} />
+                        <WeeklyReflection subjects={subjects} onOpenPlanner={() => navigate("Daily Planner")} onOpenConcept={(noteId, conceptId) => { setReviewNoteId(noteId); setReviewConceptId(conceptId); navigate("Review"); }} />
                     ) : activePage === "Daily Planner" ? (
                         <DailyPlanner subjects={subjects} />
                     ) : activePage === "Inbox" ? (
