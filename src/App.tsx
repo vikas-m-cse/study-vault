@@ -374,6 +374,8 @@ function App() {
                         <ActivityTimeline onNavigate={(page) => navigate(page)} />
                     ) : activePage === "Study Analytics" ? (
                         <StudyAnalytics onNavigate={(page) => navigate(page)} />
+                    ) : activePage === "Learning Gaps" ? (
+                        <LearningGaps onNavigate={(page) => navigate(page)} />
                     ) : activePage === "File Converter" ? (
                         <DocumentConverter />
                     ) : activePage === "Timetable" ? (
