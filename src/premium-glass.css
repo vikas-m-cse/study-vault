@@ -575,3 +575,56 @@ button:focus-visible, [role="button"]:focus-visible, a:focus-visible {
     box-shadow: 0 8px 20px rgba(137,98,47,.22) !important;
   }
 }
+
+
+/* Review topic/session selector — warm, compact and responsive. */
+.review-selection {
+  margin: 0 0 24px;
+  padding: 22px 24px;
+  border: 1px solid rgba(220,211,193,.82);
+  border-radius: 18px;
+  background: rgba(255,254,250,.9);
+  box-shadow: 0 8px 24px rgba(66,53,32,.04);
+}
+.review-selection-heading {
+  display: flex; align-items: flex-start; justify-content: space-between;
+  gap: 18px; margin-bottom: 18px;
+}
+.review-selection-kicker {
+  display: inline-flex; align-items: center; gap: 7px;
+  color: #96713d; font-size: 10px; font-weight: 750; letter-spacing: .13em;
+}
+.review-selection-heading h2 { margin: 7px 0 5px; color: #252820; font-size: 20px; letter-spacing: -.025em; }
+.review-selection-heading p { margin: 0; color: #77796f; font-size: 13px; line-height: 1.55; }
+.review-selection-count {
+  display: inline-flex; align-items: center; gap: 7px; flex: 0 0 auto;
+  padding: 8px 11px; border: 1px solid rgba(220,211,193,.8); border-radius: 999px;
+  color: #805a2a; background: #faf5eb; font-size: 12px; font-weight: 650;
+}
+.review-selection-controls {
+  display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 12px;
+}
+.review-selection-controls label { display: flex; flex-direction: column; gap: 7px; min-width: 0; }
+.review-selection-controls label > span { color: #68695f; font-size: 11px; font-weight: 650; }
+.review-selection-controls select {
+  width: 100%; min-width: 0; min-height: 42px; padding: 0 34px 0 12px;
+  border: 1px solid rgba(220,211,193,.95); border-radius: 10px;
+  color: #35352e; background: #fffefa; font-size: 13px; outline: none;
+  transition: border-color 180ms ease, box-shadow 180ms ease, background 180ms ease;
+}
+.review-selection-controls select:hover { background: #fcf8f0; border-color: rgba(198,161,106,.85); }
+.review-selection-controls select:focus-visible {
+  border-color: #b58b50; box-shadow: 0 0 0 3px rgba(198,161,106,.16);
+}
+.review-selection-empty {
+  margin: 14px 0 0; padding: 12px 14px; border-radius: 10px;
+  color: #805a2a; background: #faf3e6; font-size: 13px;
+}
+@media (max-width: 1000px) {
+  .review-selection-controls { grid-template-columns: repeat(2,minmax(0,1fr)); }
+}
+@media (max-width: 600px) {
+  .review-selection { padding: 17px; }
+  .review-selection-heading { flex-direction: column; }
+  .review-selection-controls { grid-template-columns: 1fr; }
+}
