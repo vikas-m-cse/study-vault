@@ -199,7 +199,9 @@ export function syncStudyNotifications(
     // An invalid optional review schedule must not break the inbox.
   }
 
+  const preferences = readInboxPreferences();
   const merged = [...generated, ...existing.filter((item) => !generated.some((next) => next.id === item.id))]
+    .filter((item) => preferences[item.category])
     .sort((a, b) => b.createdAt - a.createdAt)
     .slice(0, 200);
   writeList(NOTIFICATIONS_KEY, merged);
