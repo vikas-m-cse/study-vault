@@ -13,6 +13,7 @@ import Subjects, { type Subject } from "./Subjects";
 import Review from "./Review";
 import Progress from "./Progress";
 import DailyTimetable from "./DailyTimetable";
+import DailyPlanner from "./DailyPlanner";
 import {
     isStorageAvailable,
     loadResources,
