@@ -21,10 +21,8 @@ describe("DailyTimetable", () => {
     render(<DailyTimetable />);
     await user.click(screen.getByRole("button", { name: /add a block/i }));
     await user.type(screen.getByPlaceholderText("e.g. Java problem-solving"), "Java practice");
-    await user.clear(screen.getByLabelText("Starts"));
-    await user.type(screen.getByLabelText("Starts"), "18:15");
-    await user.clear(screen.getByLabelText("Ends"));
-    await user.type(screen.getByLabelText("Ends"), "19:00");
+    fireEvent.change(screen.getByLabelText("Starts"), { target: { value: "18:15" } });
+    fireEvent.change(screen.getByLabelText("Ends"), { target: { value: "19:00" } });
     await user.selectOptions(screen.getByLabelText("Repeats"), "weekdays");
     await user.click(screen.getByRole("button", { name: /add to my day/i }));
     expect(screen.getByText("Java practice")).toBeInTheDocument();
@@ -37,10 +35,8 @@ describe("DailyTimetable", () => {
     render(<DailyTimetable />);
     await user.click(screen.getByRole("button", { name: /add a block/i }));
     await user.type(screen.getByPlaceholderText("e.g. Java problem-solving"), "Overlap test");
-    await user.clear(screen.getByLabelText("Starts"));
-    await user.type(screen.getByLabelText("Starts"), "07:00");
-    await user.clear(screen.getByLabelText("Ends"));
-    await user.type(screen.getByLabelText("Ends"), "08:30");
+    fireEvent.change(screen.getByLabelText("Starts"), { target: { value: "07:00" } });
+    fireEvent.change(screen.getByLabelText("Ends"), { target: { value: "08:30" } });
     await user.selectOptions(screen.getByLabelText("Repeats"), "weekdays");
     await user.click(screen.getByRole("button", { name: /add to my day/i }));
     expect(screen.getByRole("alert")).toHaveTextContent(/overlaps another block/i);
@@ -65,10 +61,8 @@ describe("DailyTimetable", () => {
     render(<DailyTimetable />);
     await user.click(screen.getByRole("button", { name: /add a block/i }));
     await user.type(screen.getByPlaceholderText("e.g. Java problem-solving"), "Invalid time");
-    await user.clear(screen.getByLabelText("Starts"));
-    await user.type(screen.getByLabelText("Starts"), "18:00");
-    await user.clear(screen.getByLabelText("Ends"));
-    await user.type(screen.getByLabelText("Ends"), "18:00");
+    fireEvent.change(screen.getByLabelText("Starts"), { target: { value: "18:00" } });
+    fireEvent.change(screen.getByLabelText("Ends"), { target: { value: "18:00" } });
     await user.click(screen.getByRole("button", { name: /add to my day/i }));
     expect(screen.getByRole("alert")).toHaveTextContent(/end time must be after start time/i);
   });
