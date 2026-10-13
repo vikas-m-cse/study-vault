@@ -31,14 +31,17 @@ export default function DailyTimetable(){
  const [blocks,setBlocks]=useState<TimeBlock[]>(loadPlan);
  const [doneByDate,setDoneByDate]=useState<CompletionMap>(loadDone);
  const [selectedDate,setSelectedDate]=useState(()=>dateKey(new Date()));
+ const [clock,setClock]=useState(()=>new Date());
  const [formOpen,setFormOpen]=useState(false);
  const [editingId,setEditingId]=useState<string|null>(null);
  const [error,setError]=useState("");
  const [draft,setDraft]=useState<Omit<TimeBlock,"id">>({title:"",start:"17:00",end:"18:00",category:"study",days:"weekdays"});
  useEffect(()=>{try{localStorage.setItem(PLAN_KEY,JSON.stringify(blocks));}catch{}},[blocks]);
  useEffect(()=>{try{localStorage.setItem(COMPLETION_KEY,JSON.stringify(doneByDate));}catch{}},[doneByDate]);
+ useEffect(()=>{const timer=window.setInterval(()=>setClock(new Date()),30_000);return()=>window.clearInterval(timer);},[]);
+ useEffect(()=>{if(!formOpen)return;const handleKeyDown=(event:KeyboardEvent)=>{if(event.key==="Escape")setFormOpen(false);};window.addEventListener("keydown",handleKeyDown);return()=>window.removeEventListener("keydown",handleKeyDown);},[formOpen]);
  const activeDate=useMemo(()=>{const [y,m,d]=selectedDate.split("-").map(Number);return new Date(y,m-1,d);},[selectedDate]);
- const todayKey=dateKey(new Date()),isToday=selectedDate===todayKey,now=new Date().getHours()*60+new Date().getMinutes();
+ const todayKey=dateKey(clock),isToday=selectedDate===todayKey,now=clock.getHours()*60+clock.getMinutes();
  const week=useMemo(()=>{const monday=new Date(activeDate);monday.setDate(monday.getDate()-((monday.getDay()+6)%7));return Array.from({length:7},(_,i)=>{const d=new Date(monday);d.setDate(monday.getDate()+i);return d;});},[activeDate]);
  const visible=useMemo(()=>blocks.filter(b=>applies(b,activeDate)).slice().sort((a,b)=>toMinutes(a.start)-toMinutes(b.start)),[blocks,activeDate]);
  const done=doneByDate[selectedDate]??[];
