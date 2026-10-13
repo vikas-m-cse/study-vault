@@ -23,6 +23,7 @@ const dateKey=(d:Date)=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,
 const formatTime=(v:string)=>{const [h,m]=v.split(":").map(Number);const d=new Date();d.setHours(h,m,0,0);return d.toLocaleTimeString([],{hour:"numeric",minute:"2-digit"});};
 const duration=(b:TimeBlock)=>Math.max(0,toMinutes(b.end)-toMinutes(b.start));
 const applies=(b:TimeBlock,d:Date)=>b.days==="everyday"||(b.days==="weekdays"&&d.getDay()>=1&&d.getDay()<=5)||(b.days==="weekend"&&(d.getDay()===0||d.getDay()===6));
+const repeatsOnSameDay=(a:Repeat,b:Repeat)=>a==="everyday"||b==="everyday"||a===b;
 function loadPlan():TimeBlock[]{try{const v=localStorage.getItem(PLAN_KEY);if(v){const p:unknown=JSON.parse(v);if(Array.isArray(p))return p as TimeBlock[];}}catch{}return starterPlan;}
 function loadDone():CompletionMap{try{const v=localStorage.getItem(COMPLETION_KEY);if(v)return JSON.parse(v) as CompletionMap;}catch{}return {};}
 
@@ -54,7 +55,7 @@ export default function DailyTimetable(){
  const save=()=>{
   if(!draft.title.trim()){setError("Give this block a clear name.");return;}
   if(toMinutes(draft.end)<=toMinutes(draft.start)){setError("End time must be after start time.");return;}
-  const collision=blocks.some(b=>b.id!==editingId&&b.days===draft.days&&toMinutes(draft.start)<toMinutes(b.end)&&toMinutes(draft.end)>toMinutes(b.start));
+  const collision=blocks.some(b=>b.id!==editingId&&repeatsOnSameDay(b.days,draft.days)&&toMinutes(draft.start)<toMinutes(b.end)&&toMinutes(draft.end)>toMinutes(b.start));
   if(collision){setError("This time overlaps another block with the same repeat pattern.");return;}
   if(editingId)setBlocks(prev=>prev.map(b=>b.id===editingId?{...draft,id:editingId,title:draft.title.trim()}:b));
   else setBlocks(prev=>[...prev,{...draft,id:`block-${Date.now()}-${Math.random().toString(36).slice(2,7)}`,title:draft.title.trim()}]);
@@ -62,7 +63,7 @@ export default function DailyTimetable(){
  };
  const toggle=(id:string)=>setDoneByDate(prev=>{const ids=prev[selectedDate]??[];return {...prev,[selectedDate]:ids.includes(id)?ids.filter(x=>x!==id):[...ids,id]};});
  const remove=(id:string)=>{setBlocks(prev=>prev.filter(b=>b.id!==id));setDoneByDate(prev=>Object.fromEntries(Object.entries(prev).map(([day,ids])=>[day,ids.filter(x=>x!==id)])));};
- const restore=()=>{setBlocks(starterPlan);setDoneByDate({});};
+ const restore=()=>{setBlocks(starterPlan);};
  const dayTitle=activeDate.toLocaleDateString([],{weekday:"long",month:"long",day:"numeric"});
  const upcomingLabel=current?"IN PROGRESS":next?"UP NEXT":"YOUR DAY, YOUR PACE";
  return <main className="tt2-page">
