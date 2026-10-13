@@ -189,6 +189,7 @@ export default function WeeklyReflection({ subjects, onOpenPlanner }: { subjects
                 <div className="weekly-recommendation-copy">
                   <div className="weekly-recommendation-meta">{item.subjectName || "Your notes"} · {item.minutes} min suggested</div>
                   <h3>{item.title}</h3>
+                  <div className="weekly-recommendation-concept">{item.conceptLabel}</div>
                   <strong>{item.label}</strong>
                   <p>{item.reason}</p>
                   <div className="weekly-recommendation-stats"><span>Recorded mastery: {item.mastery}%</span><span>Estimated retention: {item.retention}%</span></div>
