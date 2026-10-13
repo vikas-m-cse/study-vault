@@ -24,7 +24,7 @@ import {
   Zap,
 } from "lucide-react";
 import type { Note, TipTapNode } from "../types/note";
-import { adaptiveNeed, getAdaptiveAction, getMastery, masteryPercent, recordLearningEvent, retentionEstimate, type QuestionType } from "../services/learningCore";
+import { adaptiveNeed, getAdaptiveAction, getMastery, recordLearningEvent, type QuestionType } from "../services/learningCore";
 
 type StudyTool = "mission" | "flashcards" | "questions" | "mnemonics" | "revision" | "teach";
 
