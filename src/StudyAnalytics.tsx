@@ -43,7 +43,6 @@ export default function StudyAnalytics({ onNavigate }: { onNavigate: (page: stri
 
   const analytics = useMemo(() => buildStudyAnalytics(readPlannerHistory(), getLearningEvents(), readSchedules(), now), [now, refreshKey]);
   const maxMinutes = Math.max(1, ...analytics.weeks.map((week) => week.minutes));
-  const maxAttempts = Math.max(1, ...analytics.weeks.map((week) => week.attempts));
   const hasEvidence = analytics.totalSessions > 0 || analytics.totalAttempts > 0 || analytics.conceptsTracked > 0;
 
   return (
