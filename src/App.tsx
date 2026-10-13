@@ -20,6 +20,7 @@ import {
     deleteResource as dbDeleteResource,
 } from "./services/storage";
 import "./App.css";
+import "./premium-motion.css";
 
 // ---------------------------------------------------------------------------
 // Default subjects shown on first launch (before any user data is saved)
