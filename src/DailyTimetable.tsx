@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import {
   CalendarDays, Clock3, Plus, Trash2, Check, Pencil, X,
-  Coffee, BookOpen, GraduationCap, Utensils, Dumbbell, Moon, Sparkles,
+  Coffee, BookOpen, GraduationCap, Utensils, Dumbbell, Sparkles,
 } from "lucide-react";
 
 type BlockCategory = "class" | "study" | "break" | "meal" | "personal";
@@ -193,7 +193,7 @@ export default function DailyTimetable() {
 
       {visibleBlocks.length ? (
         <div className="timetable-list">
-          {visibleBlocks.map((block, index) => {
+          {visibleBlocks.map((block) => {
             const Icon = categoryIcons[block.category];
             const done = doneIds.includes(block.id);
             const nowMinutes = new Date().getHours() * 60 + new Date().getMinutes();
