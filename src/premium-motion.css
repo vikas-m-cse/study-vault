@@ -518,3 +518,149 @@ button:active:not(:disabled) {
     transition-duration: .01ms !important;
   }
 }
+
+
+/* ==========================================================================
+   STUDYVAULT — WARM EDITORIAL PREMIUM PASS
+   Reduce the cold blue cast. Use warm paper, ink, olive and muted brass.
+   This is a visual-only layer; app behavior and saved data are untouched.
+========================================================================== */
+:root {
+  --sv-ink: #292a25;
+  --sv-muted: #77786f;
+  --sv-line: #e9e5dc;
+  --sv-surface: #fffefa;
+  --sv-shadow-soft: 0 8px 28px rgba(43, 39, 29, .055);
+  --sv-shadow-hover: 0 14px 34px rgba(43, 39, 29, .085);
+  --sv-focus-ring: 0 0 0 3px rgba(120, 128, 91, .16);
+  --color-primary: #4f5b43;
+  --color-primary-hover: #3e4935;
+  --color-accent: #c79a58;
+  --color-background: #f7f5ef;
+  --color-surface: #fffefa;
+  --color-surface-muted: #f2efe7;
+  --color-text: #292a25;
+  --color-text-secondary: #77786f;
+  --color-text-muted: #9b9a90;
+  --color-border: #e9e5dc;
+}
+
+html, body {
+  background: #f7f5ef !important;
+  color: #292a25;
+}
+
+body {
+  background:
+    radial-gradient(ellipse at 92% 0%, rgba(199,154,88,.07), transparent 34rem),
+    #f7f5ef !important;
+}
+
+::selection {
+  color: #292a25;
+  background: rgba(199,154,88,.25);
+}
+
+/* Warm white surfaces, quiet borders, no blue glass effect. */
+.sidebar,
+.topbar {
+  background: #fffefa !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+.sidebar {
+  border-right: 1px solid #e9e5dc !important;
+  box-shadow: 4px 0 20px rgba(43,39,29,.025) !important;
+}
+
+.sidebar::after {
+  background: linear-gradient(180deg, rgba(199,154,88,.35), transparent 65%) !important;
+}
+
+.topbar {
+  border-bottom: 1px solid #e9e5dc !important;
+}
+
+:where(.content-card, .stat-card, .subject-card, .resource-card, .review-card, .review-side-card, .notes-workspace) {
+  background-color: #fffefa;
+  border-color: #e9e5dc !important;
+  box-shadow: 0 2px 3px rgba(43,39,29,.018), 0 8px 24px rgba(43,39,29,.035) !important;
+}
+
+:where(.content-card, .stat-card, .subject-card, .resource-card, .review-card, .review-side-card, .notes-workspace):hover {
+  border-color: #d9d2c4 !important;
+  box-shadow: 0 12px 30px rgba(43,39,29,.07) !important;
+}
+
+.primary-button {
+  background: #4f5b43 !important;
+  box-shadow: 0 4px 10px rgba(79,91,67,.13) !important;
+}
+
+.primary-button:hover {
+  background: #3e4935 !important;
+  box-shadow: 0 7px 16px rgba(79,91,67,.18) !important;
+}
+
+.brand-icon {
+  background: linear-gradient(145deg, #667356, #4f5b43 68%, #3e4935) !important;
+  box-shadow: 0 5px 14px rgba(79,91,67,.17), inset 0 1px 0 rgba(255,255,255,.18) !important;
+}
+
+.nav-item.active {
+  color: #414c37 !important;
+  background: #f1f1e8 !important;
+  box-shadow: inset 0 0 0 1px rgba(79,91,67,.07) !important;
+}
+
+.nav-item.active::before {
+  background: #c79a58 !important;
+}
+
+.nav-item:hover:not(.active) {
+  background: #f8f6f0 !important;
+}
+
+:where(button, a, input, textarea, select):focus-visible {
+  outline-color: rgba(79,91,67,.55) !important;
+}
+
+:where(input, textarea, select):focus {
+  border-color: #9ba58d !important;
+  box-shadow: 0 0 0 3px rgba(120,128,91,.13) !important;
+}
+
+input:focus, textarea:focus, select:focus {
+  border-color: #9ba58d !important;
+  box-shadow: 0 0 0 3px rgba(120,128,91,.13) !important;
+}
+
+.resource-row:hover {
+  background: #f8f6f0 !important;
+}
+
+.notes-editor-header {
+  background: #f8f6f0 !important;
+}
+
+.review-card::before {
+  background: linear-gradient(90deg, #c79a58, #9da58b) !important;
+}
+
+.sv-home-hero {
+  box-shadow: 0 18px 48px rgba(35,39,30,.13) !important;
+}
+
+.sv-home-hero:hover .sv-core {
+  box-shadow: 0 0 42px rgba(199,154,88,.13) !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    scroll-behavior: auto !important;
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+  }
+}
