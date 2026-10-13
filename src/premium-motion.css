@@ -403,3 +403,118 @@ input:focus, textarea:focus, select:focus {
     will-change: auto;
   }
 }
+
+
+/* ==========================================================================
+   STUDYVAULT VISUAL REFINEMENT — editorial clarity + purposeful motion
+   Preserves existing page styles and all component behavior.
+========================================================================== */
+:root {
+  --sv-duration-fast: 150ms;
+  --sv-duration: 220ms;
+  --sv-duration-slow: 320ms;
+  --sv-motion-out: cubic-bezier(.2, .75, .25, 1);
+  --sv-focus-ring: 0 0 0 3px rgba(38, 58, 91, .13);
+}
+
+body {
+  background:
+    radial-gradient(ellipse at 88% 0%, rgba(217,168,108,.075), transparent 36rem),
+    radial-gradient(ellipse at 7% 88%, rgba(38,58,91,.035), transparent 34rem),
+    #f7f8fa;
+}
+
+.page-content {
+  contain: paint;
+}
+
+:where(.content-card, .stat-card, .subject-card, .resource-card, .review-card, .review-side-card) {
+  border-radius: 16px;
+  box-shadow: 0 1px 2px rgba(31,48,78,.018), 0 8px 24px rgba(31,48,78,.035);
+  transition:
+    box-shadow var(--sv-duration) var(--sv-motion-out),
+    border-color var(--sv-duration) var(--sv-motion-out),
+    transform var(--sv-duration) var(--sv-motion-out);
+}
+
+:where(.content-card, .stat-card, .subject-card, .resource-card, .review-card, .review-side-card):hover {
+  box-shadow: 0 13px 32px rgba(31,48,78,.075);
+}
+
+:where(button, a, input, textarea, select):focus-visible {
+  outline: 2px solid rgba(38,58,91,.58);
+  outline-offset: 3px;
+}
+
+:where(button, a) {
+  -webkit-tap-highlight-color: transparent;
+}
+
+.nav-item {
+  transition:
+    background-color var(--sv-duration) var(--sv-motion-out),
+    color var(--sv-duration) var(--sv-motion-out),
+    transform var(--sv-duration) var(--sv-motion-out);
+}
+
+.nav-item:active,
+button:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+:where(input, textarea, select) {
+  transition: border-color var(--sv-duration-fast) ease, box-shadow var(--sv-duration-fast) ease;
+}
+
+:where(input, textarea, select):focus {
+  box-shadow: var(--sv-focus-ring);
+}
+
+/* Flashcard/review area: keep the card readable and central, with tactile but
+   lightweight states. Exact dimensions remain fluid and viewport-aware. */
+.study-tools-modal {
+  box-shadow: 0 28px 90px rgba(8,15,30,.28);
+  border-color: rgba(38,58,91,.12);
+}
+
+.sv-card-shell {
+  filter: drop-shadow(0 12px 26px rgba(20,34,56,.12));
+}
+
+.sv-card-face {
+  transition: box-shadow var(--sv-duration) var(--sv-motion-out), border-color var(--sv-duration) ease;
+}
+
+.sv-card-shell:hover .sv-card-face {
+  box-shadow: 0 20px 46px rgba(20,34,56,.19), inset 0 1px rgba(255,255,255,.07) !important;
+}
+
+.sv-command {
+  transition: transform var(--sv-duration-fast) var(--sv-motion-out), background-color var(--sv-duration-fast) ease, border-color var(--sv-duration-fast) ease;
+}
+
+.sv-command:hover {
+  transform: translateY(-1px);
+}
+
+/* Reduced visual movement on smaller devices; retain responsive dimensions. */
+@media (max-width: 900px) {
+  .sv-home-hero {
+    box-shadow: 0 12px 34px rgba(16,25,43,.09);
+  }
+
+  .sv-hero-visual {
+    opacity: .32;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sv-card-shell,
+  .sv-card-face,
+  .sv-command,
+  .nav-item,
+  button,
+  a {
+    transition-duration: .01ms !important;
+  }
+}
