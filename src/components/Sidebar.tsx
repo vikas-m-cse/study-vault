@@ -7,7 +7,7 @@ import {
     Star,
     BrainCircuit,
     TrendingUp,
-    CalendarDays,
+    CalendarDays,\n    Timer,
     Settings,
     Library,
 } from "lucide-react";
