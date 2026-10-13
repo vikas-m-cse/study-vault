@@ -111,7 +111,6 @@ export default function WeeklyReflection() {
     const refresh = () => {
       setHistory(readPlannerHistory());
       setEvents(getLearningEvents());
-      setReflections(readReflections());
     };
     window.addEventListener("focus", refresh);
     window.addEventListener("studyvault:learning-updated", refresh);
