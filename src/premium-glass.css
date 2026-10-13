@@ -217,3 +217,37 @@ input:focus, textarea:focus, select:focus {
 .subject-card-v2 .mini-stack {
   box-shadow: 2px -2px 0 -1px #f2f6fa, 2px -2px 0 0 currentColor !important;
 }
+
+
+/* Contrast and visibility correction for the dashboard hero. */
+.sv-hero-copy h1,
+.sv-hero-copy h1:not(em) {
+  color: #18324d !important;
+  -webkit-text-fill-color: #18324d !important;
+  background: none !important;
+  background-image: none !important;
+  text-shadow: none !important;
+}
+.sv-hero-copy h1 em {
+  color: #477ba8 !important;
+  -webkit-text-fill-color: #477ba8 !important;
+  background: none !important;
+  background-image: none !important;
+}
+.sv-hero-kicker, .sv-hero-kicker b { color: #667e97 !important; }
+.sv-hero-copy > p { color: #586f87 !important; }
+.sv-hero-visual { opacity: .78 !important; filter: saturate(.82) !important; }
+.sv-orbit-label {
+  color: #527392 !important;
+  background: rgba(255,255,255,.88) !important;
+  border: 1px solid rgba(183,204,225,.78) !important;
+  opacity: 1 !important;
+  box-shadow: 0 3px 10px rgba(33,63,96,.06);
+}
+.sv-core {
+  background: rgba(255,255,255,.88) !important;
+  color: #3c6e9f !important;
+  border: 1px solid rgba(193,212,231,.82) !important;
+  box-shadow: 0 8px 24px rgba(33,63,96,.08) !important;
+}
+.sv-orbit { border-color: rgba(103,148,190,.22) !important; }
