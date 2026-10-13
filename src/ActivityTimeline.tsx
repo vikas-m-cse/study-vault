@@ -46,6 +46,7 @@ export default function ActivityTimeline({ onNavigate }: { onNavigate: (page: st
   const [kind, setKind] = useState<FilterKind>("all");
   const [range, setRange] = useState<RangeKind>("30");
   const [query, setQuery] = useState("");
+  const [now] = useState(() => Date.now());
 
   const refresh = useCallback(() => {
     const reflections = safeRead<Record<string, ActivityReflection>>("studyvault-weekly-reflections-v1", {});
@@ -75,14 +76,14 @@ export default function ActivityTimeline({ onNavigate }: { onNavigate: (page: st
   }, [refresh]);
 
   const filtered = useMemo(() => {
-    const cutoff = range === "all" ? 0 : Date.now() - Number(range) * 24 * 60 * 60 * 1000;
+    const cutoff = range === "all" ? 0 : now - Number(range) * 24 * 60 * 60 * 1000;
     const normalizedQuery = query.trim().toLowerCase();
     return entries.filter((entry) =>
       (kind === "all" || entry.kind === kind)
       && entry.at >= cutoff
       && (!normalizedQuery || `${entry.title} ${entry.detail}`.toLowerCase().includes(normalizedQuery)),
     );
-  }, [entries, kind, range, query]);
+  }, [entries, kind, range, query, now]);
 
   const grouped = useMemo(() => {
     const result: { label: string; entries: ActivityEntry[] }[] = [];
