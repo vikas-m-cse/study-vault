@@ -84,13 +84,6 @@ export default function Notes({ resources, subjects, openNoteId, openFolderId, i
     const [filter, setFilter] = useState<NotesFilter>(initialFilter);
     const [search, setSearch] = useState("");
 
-    // App reuses this component for both Notes and Favourites. Keep the
-    // selected filter in sync when navigation changes the initialFilter prop.
-    useEffect(() => {
-        setFilter(initialFilter);
-        setSearch("");
-        setSelectedId(null);
-    }, [initialFilter]);
     const [loadError, setLoadError] = useState<string | null>(null);
     const [saveStates, setSaveStates] = useState<Record<string, SaveState>>({});
     const [saveErrors, setSaveErrors] = useState<Record<string, string>>({});
