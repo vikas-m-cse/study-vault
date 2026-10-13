@@ -294,6 +294,7 @@ function App() {
                             resources={resources}
                             subjects={subjects}
                             onAddResource={handleAddResource}
+                            onOpenReview={() => { setReviewNoteId(null); navigate("Review"); }}
                         />
                     ) : activePage === "Subjects" ? (
                         <Subjects
