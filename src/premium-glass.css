@@ -667,61 +667,170 @@ button:focus-visible, [role="button"]:focus-visible, a:focus-visible {
 }
 
 
-/* Final palette authority: Champagne Gold & Ivory.
-   Keep legacy glass-blue selectors from tinting the approved light workspace. */
+/* =========================================================
+   STUDYVAULT — COHESIVE CHAMPAGNE / IVORY FINISH
+   This is the final layer by design: it neutralizes older
+   blue-grey rules without changing component behavior.
+========================================================= */
 :root {
-  --glass-paper: #f7f4ed;
-  --glass-ink: #292a25;
-  --glass-ink-soft: #55564d;
-  --glass-blue: #a77a3d;
-  --glass-blue-deep: #805a2a;
-  --glass-border: #e4dac8;
-  --sv-cursor-blue: #805a2a;
+  color-scheme: light;
+  --glass-paper: #f7f5f0;
+  --glass-ink: #292923;
+  --glass-ink-soft: #55544c;
+  --glass-muted: #77746a;
+  --glass-white: #fffefa;
+  --glass-border: #e5dfd3;
+  --glass-blue: #a77b3f;
+  --glass-blue-deep: #805d30;
+  --glass-champagne: #c8a66e;
+  --sv-cursor-blue: #805d30;
+  --sv-surface: #fffefa;
+  --sv-border: #e5dfd3;
+  --sv-accent: #a77b3f;
 }
-html, body, #root { background: #f7f4ed; color: #292a25; }
-.app-layout, .main-content, .page-content { background: transparent !important; }
-.sidebar, .topbar, .content-card, .resource-card, .subject-card,
-.dashboard-grid > *, .sv-command-strip, .sv-home-hero {
-  border-color: #e4dac8 !important;
+html, body, #root {
+  background: #f7f5f0 !important;
+  color: #292923 !important;
 }
+body {
+  background: #f7f5f0 !important;
+}
+.app-layout, .main-content, .page-content, .dashboard,
+.dashboard-page, .workspace, .content-area {
+  background: transparent !important;
+  color: #292923 !important;
+}
+/* Calm, light shell: remove blue-tinted glass from the legacy layer. */
+.sidebar, .topbar, .app-header, .app-sidebar, .content-card,
+.stat-card, .resource-card, .subject-card, .subject-card-v2,
+.dashboard-grid > *, .sv-command-strip, .sv-command-strip-premium,
+.review-selection, .review-revision-checkpoint {
+  background-color: #fffefa !important;
+  border-color: #e5dfd3 !important;
+  box-shadow: 0 5px 18px rgba(52, 43, 29, .035) !important;
+}
+.sidebar {
+  background: #fcfbf7 !important;
+  border-right: 1px solid #e5dfd3 !important;
+  box-shadow: none !important;
+}
+.topbar {
+  background: rgba(255,254,250,.96) !important;
+  border-bottom: 1px solid #e5dfd3 !important;
+  box-shadow: none !important;
+}
+.topbar-search, .search-input, .global-search-input, input, textarea, select {
+  background-color: #fffefa !important;
+  border-color: #e5dfd3 !important;
+  color: #292923 !important;
+}
+input::placeholder, textarea::placeholder { color: #888378 !important; }
+/* A restrained hero: ivory first, gold only as an accent. */
 .sv-home-hero {
-  background: linear-gradient(115deg, #fffefa 0%, #f8f3e8 58%, #efe2ca 100%) !important;
+  background: linear-gradient(112deg, #fffefa 0%, #fbf9f4 72%, #f4ecdc 100%) !important;
+  border: 1px solid #e8dfcf !important;
+  box-shadow: 0 14px 36px rgba(52, 43, 29, .055) !important;
+}
+.sv-home-hero::after {
+  border-color: rgba(167,123,63,.15) !important;
+  box-shadow: 0 0 0 30px rgba(167,123,63,.025), 0 0 0 65px rgba(167,123,63,.018) !important;
 }
 .sv-hero-copy h1, .sv-hero-copy h1:not(em) {
-  color: #292a25 !important;
-  -webkit-text-fill-color: #292a25 !important;
+  color: #292923 !important;
+  -webkit-text-fill-color: #292923 !important;
+  background: none !important;
+  background-image: none !important;
 }
 .sv-hero-copy h1 em, .sv-dashboard-intro h2 em {
-  color: #a77a3d !important;
-  -webkit-text-fill-color: #a77a3d !important;
+  color: #a77b3f !important;
+  -webkit-text-fill-color: #a77b3f !important;
+  background: none !important;
+  background-image: none !important;
 }
-.sv-hero-copy p, .sv-hero-note, .sv-hero-kicker,
-.sv-hero-kicker b, .sv-dashboard-intro p {
-  color: #68665d !important;
+.sv-hero-copy p, .sv-hero-note, .sv-hero-kicker, .sv-hero-kicker b,
+.sv-dashboard-intro p, .sv-command-strip, .sv-hero-visual-label {
+  color: #716d63 !important;
 }
-.sv-hero-primary, .primary-button, .add-resource-button,
-.review-revision-start {
-  background: linear-gradient(135deg, #c9a46b, #a77a3d) !important;
-  border-color: #b58a4c !important;
-  color: #29251e !important;
+.sv-hero-kicker > span, .sidebar-live-dot, .sv-hero-live, .sv-strip-live {
+  background: #789681 !important;
+  box-shadow: none !important;
+}
+/* Gold controls, with dark text and no electric-blue details. */
+.sv-hero-primary, .primary-button, .add-resource-button, .review-revision-start {
+  background: #c5a064 !important;
+  border: 1px solid #b38b4e !important;
+  color: #28251f !important;
+  box-shadow: 0 4px 12px rgba(117, 84, 38, .12) !important;
 }
 .sv-hero-primary:hover, .primary-button:hover, .add-resource-button:hover,
 .review-revision-start:hover {
-  background: linear-gradient(135deg, #d3b47f, #b58a4c) !important;
+  background: #d1b27d !important;
+  border-color: #b38b4e !important;
 }
-.nav-item:hover { background: #f3ecdf !important; color: #805a2a !important; }
+.sv-hero-primary svg, .primary-button svg, .add-resource-button svg { color: #28251f !important; }
+.nav-item { color: #716f65 !important; }
+.nav-item:hover {
+  background: #f5f0e6 !important;
+  color: #805d30 !important;
+}
 .nav-item.active, .nav-item[aria-current="page"] {
-  background: #f3ecdf !important;
-  border-color: #ddc9a7 !important;
-  color: #805a2a !important;
+  background: #f4ecdd !important;
+  border-color: #dfcba9 !important;
+  color: #805d30 !important;
+  box-shadow: inset 3px 0 0 #b58c50 !important;
 }
-.sv-core, .resource-icon, .subject-large-icon {
-  background: linear-gradient(145deg, #fffefa, #f1e7d4) !important;
-  color: #9a7139 !important;
-  box-shadow: 0 8px 22px rgba(112, 81, 39, .08) !important;
+.nav-item.active svg, .text-button, .nav-pulse { color: #a77b3f !important; }
+.nav-pulse { background: #b58c50 !important; }
+.sv-core, .resource-icon, .subject-large-icon, .brand-icon {
+  background: #f3ead9 !important;
+  color: #8d6938 !important;
+  box-shadow: none !important;
+  border-color: #e4d5bb !important;
 }
-.resource-row:hover, .text-button:hover { background: #f6f0e5 !important; }
-.text-button, .nav-item.active svg { color: #a77a3d !important; }
-button:focus-visible, a:focus-visible, [tabindex]:focus-visible {
-  outline-color: #a77a3d !important;
+.resource-row, .global-search-result { border-color: #eee8dd !important; }
+.resource-row:hover, .global-search-result:hover, .text-button:hover {
+  background: #f8f4ec !important;
+}
+.sv-orbit { border-color: rgba(167,123,63,.17) !important; }
+.sv-orbit-label {
+  color: #8c6a3a !important;
+  background: #fffefa !important;
+  border-color: #e5dfd3 !important;
+}
+.sv-core {
+  background: #fffefa !important;
+  border: 1px solid #e5dfd3 !important;
+}
+.content-card, .stat-card, .subject-card-v2 {
+  background: #fffefa !important;
+  border-color: #e5dfd3 !important;
+  box-shadow: 0 5px 18px rgba(52,43,29,.035) !important;
+}
+.content-card:hover, .stat-card:hover, .subject-card-v2:hover {
+  border-color: #d8c39e !important;
+  box-shadow: 0 9px 24px rgba(52,43,29,.06) !important;
+}
+.review-selection, .review-revision-checkpoint {
+  background: #fffefa !important;
+  border-color: #e5dfd3 !important;
+}
+.review-revision-icon, .review-selection-count {
+  background: #f5eddf !important;
+  border-color: #e4d5bb !important;
+  color: #805d30 !important;
+}
+.review-revision-start { color: #28251f !important; }
+button:focus-visible, [role="button"]:focus-visible, a:focus-visible,
+[tabindex]:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible {
+  outline: 2px solid #b58c50 !important;
+  outline-offset: 2px !important;
+  box-shadow: 0 0 0 3px rgba(197,160,100,.14) !important;
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
