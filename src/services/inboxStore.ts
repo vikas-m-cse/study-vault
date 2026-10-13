@@ -20,6 +20,44 @@ export type InboxMessage = {
 const NOTIFICATIONS_KEY = "studyvault-inbox-notifications-v1";
 const MESSAGES_KEY = "studyvault-inbox-messages-v1";
 const REVIEW_KEY = "studyvault-review-v2";
+const PREFERENCES_KEY = "studyvault-inbox-preferences-v1";
+
+export type InboxPreferences = {
+  review: boolean;
+  planner: boolean;
+  learning: boolean;
+};
+
+export const DEFAULT_INBOX_PREFERENCES: InboxPreferences = {
+  review: true,
+  planner: true,
+  learning: true,
+};
+
+export function readInboxPreferences(): InboxPreferences {
+  try {
+    const raw = localStorage.getItem(PREFERENCES_KEY);
+    if (!raw) return { ...DEFAULT_INBOX_PREFERENCES };
+    const value: Partial<InboxPreferences> = JSON.parse(raw);
+    return {
+      review: typeof value.review === "boolean" ? value.review : true,
+      planner: typeof value.planner === "boolean" ? value.planner : true,
+      learning: typeof value.learning === "boolean" ? value.learning : true,
+    };
+  } catch {
+    return { ...DEFAULT_INBOX_PREFERENCES };
+  }
+}
+
+export function saveInboxPreferences(preferences: InboxPreferences): boolean {
+  try {
+    localStorage.setItem(PREFERENCES_KEY, JSON.stringify(preferences));
+    if (typeof window !== "undefined") window.dispatchEvent(new CustomEvent("studyvault:inbox-updated"));
+    return true;
+  } catch {
+    return false;
+  }
+}
 
 function readList<T>(key: string): T[] {
   try {
