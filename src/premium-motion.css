@@ -664,3 +664,141 @@ input:focus, textarea:focus, select:focus {
     transition-duration: .01ms !important;
   }
 }
+
+
+/* FINAL SURFACE OVERRIDES — win against older experimental dark/blue CSS. */
+.app-layout, .main-content, .page-content, .dashboard, .subjects-page {
+  background: transparent !important;
+  color: #292a25 !important;
+}
+
+.page-content { color: #292a25 !important; }
+.page-content h1, .page-content h2, .page-content h3,
+.welcome-section h1, .subjects-heading h1 {
+  color: #292a25 !important;
+}
+.page-content p, .welcome-description, .subjects-heading .page-description {
+  color: #77786f !important;
+}
+
+.content-card, .dashboard-grid .content-card,
+.stat-card, .subject-card, .resource-card,
+.notes-workspace, .review-card, .review-side-card {
+  background: #fffefa !important;
+  color: #292a25 !important;
+  border: 1px solid #e9e5dc !important;
+  box-shadow: 0 3px 4px rgba(43,39,29,.018), 0 9px 26px rgba(43,39,29,.035) !important;
+}
+
+.content-card h1, .content-card h2, .content-card h3,
+.stat-card h1, .stat-card h2, .stat-card h3,
+.subject-card h1, .subject-card h2, .subject-card h3,
+.resource-card h1, .resource-card h2, .resource-card h3 {
+  color: #292a25 !important;
+}
+.content-card p, .stat-card p, .subject-card p, .resource-card p,
+.content-card small, .stat-card small, .subject-card small, .resource-card small {
+  color: #77786f !important;
+}
+
+/* Keep one distinctive hero, but replace cold navy/blue with warm charcoal-olive. */
+.sv-home-hero {
+  background:
+    radial-gradient(ellipse at 85% 18%, rgba(199,154,88,.16), transparent 34%),
+    linear-gradient(125deg, #30372b, #252a22 72%) !important;
+  border: 1px solid rgba(199,154,88,.22) !important;
+  box-shadow: 0 20px 48px rgba(35,39,30,.14) !important;
+}
+.sv-home-hero::after {
+  background-image:
+    linear-gradient(rgba(255,255,255,.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,.025) 1px, transparent 1px) !important;
+}
+.sv-hero-copy h1, .sv-home-hero h1, .sv-home-hero h2 {
+  color: #fffdf7 !important;
+}
+.sv-hero-copy > p, .sv-home-hero p {
+  color: #d0d0c5 !important;
+}
+.sv-hero-kicker, .sv-orbit-label {
+  color: #c9b58f !important;
+}
+.sv-hero-primary {
+  background: #c79a58 !important;
+  color: #292a25 !important;
+  border-color: transparent !important;
+}
+.sv-hero-primary:hover {
+  background: #d7ae73 !important;
+}
+.sv-orbit { border-color: rgba(199,154,88,.23) !important; }
+.sv-core {
+  background: rgba(199,154,88,.08) !important;
+  border-color: rgba(199,154,88,.25) !important;
+  box-shadow: 0 0 45px rgba(199,154,88,.08) !important;
+}
+.sv-home-hero:hover .sv-orbit-label { color: #e8d5b1 !important; }
+.sv-home-hero:hover .sv-core { box-shadow: 0 0 45px rgba(199,154,88,.16) !important; }
+
+/* The current Subjects V2 rules were intentionally dark; bring them back into
+   the same warm paper system as the rest of the product. */
+.subjects-toolbar-v2 {
+  background: #fffefa !important;
+  border-color: #e9e5dc !important;
+  box-shadow: 0 4px 14px rgba(43,39,29,.035) !important;
+}
+.subjects-search-v2, .subjects-filter-button, .subjects-view-toggle {
+  background: #f7f5ef !important;
+  border-color: #e5e0d5 !important;
+  color: #77786f !important;
+}
+.subjects-search-v2 input { color: #292a25 !important; }
+.subjects-filter-button:hover { background: #f0ede4 !important; color: #414c37 !important; }
+.subjects-view-toggle button.active {
+  background: #e9ecdf !important;
+  color: #414c37 !important;
+  box-shadow: none !important;
+}
+.subject-card-v2 {
+  background:
+    radial-gradient(260px 160px at 100% 5%, color-mix(in srgb, var(--subject-accent) 8%, transparent), transparent 72%),
+    #fffefa !important;
+  border: 1px solid #e9e5dc !important;
+  box-shadow: 0 3px 5px rgba(43,39,29,.018), 0 10px 24px rgba(43,39,29,.04) !important;
+}
+.subject-card-v2.blue { --subject-accent: #8b9674 !important; }
+.subject-card-v2.violet { --subject-accent: #b99a68 !important; }
+.subject-card-v2.green { --subject-accent: #82906c !important; }
+.subject-card-v2.orange { --subject-accent: #c79a58 !important; }
+.subject-card-v2 .subject-card-copy h2 { color: #292a25 !important; }
+.subject-card-v2 .subject-card-copy p { color: #77786f !important; }
+.subject-card-stats { border-top-color: #eee9df !important; color: #77786f !important; }
+.subject-card-footer-v2 {
+  background: #faf8f2 !important;
+  border-top-color: #eee9df !important;
+}
+.subject-card-footer-v2 button { color: #77786f !important; }
+.subject-card-footer-v2 button:hover { color: #414c37 !important; }
+.subject-card-v2 .subject-action-button {
+  background: #f7f5ef !important;
+  color: #77786f !important;
+  border-color: #e9e5dc !important;
+}
+.subject-card-v2 .subject-open-button {
+  background: #edf0e5 !important;
+  color: #4f5b43 !important;
+  border-color: #dce2d1 !important;
+}
+.subject-card-art { opacity: .22 !important; }
+
+.resource-row { color: #292a25 !important; border-bottom-color: #f0ece3 !important; }
+.resource-row:hover { background: #f8f6f0 !important; }
+.resource-row :where(span, strong, p, small) { color: inherit; }
+.sidebar-brand { border-bottom-color: #eee9df !important; }
+.sidebar-quick { color: #77786f !important; }
+.sidebar-label { color: #9b9a90 !important; }
+.nav-item { color: #77786f !important; }
+.nav-item.active { color: #414c37 !important; }
+.sidebar-footer strong { color: #292a25 !important; }
+.sidebar-footer span { color: #77786f !important; }
+.user-avatar { background: #e9ecdf !important; color: #414c37 !important; }
