@@ -89,6 +89,7 @@ function cleanSnippet(value: string, max = 180): string {
     .replace(/^\d+(?:\.\d+)*[.)]?\s*/, "")
     .replace(/\s+/g, " ")
     .trim()
+    .slice(0, max)
     .replace(/[.!?]+$/, "");
 }
 
@@ -358,7 +359,6 @@ function makeRevision(note: Note): string {
 export default function StudyToolsModal({ note, onClose }: StudyToolsModalProps) {
   const [tool, setTool] = useState<StudyTool>("flashcards");
   const [copied, setCopied] = useState(false);
-  const [revealed, setRevealed] = useState<Record<number, boolean>>({});
   const [flashcardIndex, setFlashcardIndex] = useState(0);
   const [flashcardFlipped, setFlashcardFlipped] = useState(false);
   const [flashcardRatings, setFlashcardRatings] = useState<Record<number, "known" | "missed">>({});
@@ -390,8 +390,6 @@ export default function StudyToolsModal({ note, onClose }: StudyToolsModalProps)
   const flashcardMastery = currentFlashcard ? getMastery()[note.id + "::" + flashcardConcept] : undefined;
   const flashcardNeed = adaptiveNeed(flashcardMastery);
   const flashcardAction = getAdaptiveAction(flashcardMastery);
-  const flashcardMasteryPercent = masteryPercent(flashcardMastery);
-  const flashcardRetention = retentionEstimate(flashcardMastery);
 
   const prefersReducedMotion = useReducedMotion();
 
