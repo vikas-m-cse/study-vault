@@ -10,6 +10,7 @@ import {
     CalendarDays,
     Timer,
     NotebookPen,
+    Inbox,
     Settings,
     Library,
 } from "lucide-react";
@@ -55,6 +56,10 @@ const navigationItems = [
     {
         label: "Weekly Reflection",
         icon: NotebookPen,
+    },
+    {
+        label: "Inbox",
+        icon: Inbox,
     },
     {
         label: "Timetable",
