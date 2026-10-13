@@ -44,16 +44,50 @@ function dateLabel(timestamp: number): string {
   return new Date(timestamp).toLocaleDateString(undefined, { month: "short", day: "numeric" });
 }
 
+function WeeklyReflectionForm({ weekKey }: { weekKey: string }) {
+  const [initial] = useState(() => readReflections()[weekKey] ?? {
+    wentWell: "", feltDifficult: "", nextFocus: "", updatedAt: 0,
+  });
+  const [wentWell, setWentWell] = useState(initial.wentWell);
+  const [feltDifficult, setFeltDifficult] = useState(initial.feltDifficult);
+  const [nextFocus, setNextFocus] = useState(initial.nextFocus);
+  const [saveMessage, setSaveMessage] = useState("");
+
+  const handleSave = () => {
+    const record = { wentWell, feltDifficult, nextFocus, updatedAt: Date.now() };
+    if (!saveReflection(weekKey, record)) {
+      setSaveMessage("Could not save this reflection on this device. Check available storage and try again.");
+      return;
+    }
+    setSaveMessage("Reflection saved on this device.");
+  };
+
+  return (
+    <section className="weekly-reflection-card">
+      <div className="weekly-section-title"><span className="weekly-section-icon"><NotebookPen size={18} /></span><div><p className="weekly-eyebrow">YOUR REFLECTION</p><h2>Make next week easier</h2></div></div>
+      <label>What went well?
+        <textarea value={wentWell} onChange={(event) => setWentWell(event.target.value)} rows={3} maxLength={1200} placeholder="A topic I understood, a habit I kept, or a small win…" />
+      </label>
+      <label>What felt difficult?
+        <textarea value={feltDifficult} onChange={(event) => setFeltDifficult(event.target.value)} rows={3} maxLength={1200} placeholder="A distraction, a confusing concept, or a plan that was too ambitious…" />
+      </label>
+      <label>One focus for next week
+        <textarea value={nextFocus} onChange={(event) => setNextFocus(event.target.value)} rows={2} maxLength={600} placeholder="Choose one useful next step…" />
+      </label>
+      <div className="weekly-save-row">
+        <button className="weekly-save-button" onClick={handleSave}>Save reflection <ArrowRight size={15} /></button>
+        <span role="status" aria-live="polite">{saveMessage}</span>
+      </div>
+      <p className="weekly-privacy-note">Your reflection stays in this browser on this device. It is not sent to a server.</p>
+    </section>
+  );
+}
+
 export default function WeeklyReflection() {
   const [anchor, setAnchor] = useState(() => Date.now());
   const [currentTime] = useState(() => Date.now());
   const [history, setHistory] = useState(() => readPlannerHistory());
   const [events, setEvents] = useState(() => getLearningEvents());
-  const [reflections, setReflections] = useState(() => readReflections());
-  const [wentWell, setWentWell] = useState("");
-  const [feltDifficult, setFeltDifficult] = useState("");
-  const [nextFocus, setNextFocus] = useState("");
-  const [saveMessage, setSaveMessage] = useState("");
   const bounds = useMemo(() => weekBounds(anchor), [anchor]);
   const summary = useMemo(
     () => summarizePlannerWeek(history, bounds.startAt, bounds.endAt),
@@ -72,14 +106,6 @@ export default function WeeklyReflection() {
     ? Math.round(((recallOutcomes.correct + recallOutcomes.partial * 0.5) / recallTotal) * 100)
     : null;
   const isCurrentWeek = bounds.startAt <= currentTime && currentTime < bounds.endAt;
-
-  useEffect(() => {
-    const record = reflections[bounds.key] ?? { wentWell: "", feltDifficult: "", nextFocus: "", updatedAt: 0 };
-    setWentWell(record.wentWell);
-    setFeltDifficult(record.feltDifficult);
-    setNextFocus(record.nextFocus);
-    setSaveMessage("");
-  }, [bounds.key, reflections]);
 
   useEffect(() => {
     const refresh = () => {
@@ -101,16 +127,6 @@ export default function WeeklyReflection() {
     const next = new Date(anchor);
     next.setDate(next.getDate() + amount * 7);
     setAnchor(next.getTime());
-  };
-
-  const handleSave = () => {
-    const record = { wentWell, feltDifficult, nextFocus, updatedAt: Date.now() };
-    if (!saveReflection(bounds.key, record)) {
-      setSaveMessage("Could not save this reflection on this device. Check available storage and try again.");
-      return;
-    }
-    setReflections((current) => ({ ...current, [bounds.key]: record }));
-    setSaveMessage("Reflection saved on this device.");
   };
 
   return (
@@ -159,23 +175,7 @@ export default function WeeklyReflection() {
           )}
         </section>
 
-        <section className="weekly-reflection-card">
-          <div className="weekly-section-title"><span className="weekly-section-icon"><NotebookPen size={18} /></span><div><p className="weekly-eyebrow">YOUR REFLECTION</p><h2>Make next week easier</h2></div></div>
-          <label>What went well?
-            <textarea value={wentWell} onChange={(event) => setWentWell(event.target.value)} rows={3} maxLength={1200} placeholder="A topic I understood, a habit I kept, or a small win…" />
-          </label>
-          <label>What felt difficult?
-            <textarea value={feltDifficult} onChange={(event) => setFeltDifficult(event.target.value)} rows={3} maxLength={1200} placeholder="A distraction, a confusing concept, or a plan that was too ambitious…" />
-          </label>
-          <label>One focus for next week
-            <textarea value={nextFocus} onChange={(event) => setNextFocus(event.target.value)} rows={2} maxLength={600} placeholder="Choose one useful next step…" />
-          </label>
-          <div className="weekly-save-row">
-            <button className="weekly-save-button" onClick={handleSave}>Save reflection <ArrowRight size={15} /></button>
-            <span role="status" aria-live="polite">{saveMessage}</span>
-          </div>
-          <p className="weekly-privacy-note">Your reflection stays in this browser on this device. It is not sent to a server.</p>
-        </section>
+        <WeeklyReflectionForm key={bounds.key} weekKey={bounds.key} />
       </div>
     </div>
   );
