@@ -388,8 +388,8 @@ export default function Notes({ resources, subjects, openNoteId, openFolderId, i
         <div className="notes-page">
             <div className="notes-page-heading">
                 <div>
-                    <p className="eyebrow">{filter === "favourites" ? "YOUR SAVED HIGHLIGHTS" : "YOUR KNOWLEDGE STUDIO"}</p>
-                    <h1>{filter === "favourites" ? "Favourites" : "Notes"}</h1>
+                    <p className="eyebrow">{filter === "favourites" ? "STUDYVAULT / FAVOURITES" : "STUDYVAULT / NOTES"}</p>
+                    <h1>{filter === "favourites" ? <>Keep what matters <em>close.</em></> : <>Give your ideas <em>room to grow.</em></>}</h1>
                     <p className="page-description">{filter === "favourites" ? "Your favourite notes, collected in one place." : "Think clearly, connect ideas, and keep your best work close."}</p>
                 </div>
                 <div className="notes-heading-actions">
