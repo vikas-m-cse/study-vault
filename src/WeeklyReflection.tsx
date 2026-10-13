@@ -7,6 +7,9 @@ import {
   readPlannerHistory, summarizePlannerWeek, weekBounds,
 } from "./services/plannerHistory";
 import { getLearningEvents } from "./services/learningCore";
+import { getAllNotes } from "./services/noteStorage";
+import type { Note } from "./types/note";
+import { buildNextWeekRecommendations } from "./services/weeklyRecommendations";
 import "./weekly-reflection.css";
 
 const REFLECTION_KEY = "studyvault-weekly-reflections-v1";
@@ -83,11 +86,12 @@ function WeeklyReflectionForm({ weekKey }: { weekKey: string }) {
   );
 }
 
-export default function WeeklyReflection() {
+export default function WeeklyReflection({ subjects, onOpenPlanner }: { subjects: { id: number; name: string }[]; onOpenPlanner: () => void }) {
   const [anchor, setAnchor] = useState(() => Date.now());
   const [currentTime] = useState(() => Date.now());
   const [history, setHistory] = useState(() => readPlannerHistory());
   const [events, setEvents] = useState(() => getLearningEvents());
+  const [notes, setNotes] = useState<Note[]>([]);
   const bounds = useMemo(() => weekBounds(anchor), [anchor]);
   const summary = useMemo(
     () => summarizePlannerWeek(history, bounds.startAt, bounds.endAt),
