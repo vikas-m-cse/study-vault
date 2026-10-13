@@ -8,7 +8,7 @@ import {
     BrainCircuit,
     TrendingUp,
     CalendarDays,
-    Timer,\n    Timer,
+    Timer,
     Settings,
     Library,
 } from "lucide-react";
