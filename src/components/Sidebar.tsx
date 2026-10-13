@@ -74,6 +74,10 @@ const navigationItems = [
         icon: ChartNoAxesCombined,
     },
     {
+        label: "Learning Gaps",
+        icon: Target,
+    },
+    {
         label: "File Converter",
         icon: ArrowRightLeft,
     },
