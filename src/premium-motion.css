@@ -802,3 +802,287 @@ input:focus, textarea:focus, select:focus {
 .sidebar-footer strong { color: #292a25 !important; }
 .sidebar-footer span { color: #77786f !important; }
 .user-avatar { background: #e9ecdf !important; color: #414c37 !important; }
+
+
+/* ==========================================================================
+   STUDYVAULT DESIGN SYSTEM — WARM EDITORIAL (CANONICAL OVERRIDE)
+   Reconciles legacy dark/blue experiment styles across every workspace.
+   Visual-only: no component state, storage, or interaction logic is changed.
+========================================================================== */
+:root {
+  color-scheme: light;
+  --sv-paper: #F6F3EB;
+  --sv-porcelain: #FFFEFA;
+  --sv-ink: #292B26;
+  --sv-ink-soft: #55584F;
+  --sv-muted: #77786F;
+  --sv-olive: #59664B;
+  --sv-olive-dark: #46523A;
+  --sv-olive-tint: #EEF0E7;
+  --sv-brass: #C49A5A;
+  --sv-stone: #E7E2D7;
+  --sv-stone-soft: #F0ECE3;
+  --sv-line: #E7E2D7;
+  --sv-focus-ring: 0 0 0 3px rgba(89, 102, 75, .16);
+  --sv-shadow-soft: 0 5px 20px rgba(41, 43, 38, .045);
+  --sv-shadow-hover: 0 12px 28px rgba(41, 43, 38, .075);
+  --color-primary: #59664B;
+  --color-primary-hover: #46523A;
+  --color-accent: #C49A5A;
+  --color-background: #F6F3EB;
+  --color-surface: #FFFEFA;
+  --color-surface-muted: #F0ECE3;
+  --color-text: #292B26;
+  --color-text-secondary: #77786F;
+  --color-text-muted: #96958A;
+  --color-border: #E7E2D7;
+}
+html, body {
+  background: var(--sv-paper) !important;
+  color: var(--sv-ink) !important;
+}
+body {
+  background:
+    radial-gradient(ellipse at 92% 0%, rgba(196,154,90,.055), transparent 34rem),
+    var(--sv-paper) !important;
+}
+.app-layout, .main-content, .page-content, .dashboard, .subjects-page,
+.notes-page, .review-page, .resources-page, .favourites-page {
+  background: transparent !important;
+  color: var(--sv-ink) !important;
+}
+.page-content :where(h1,h2,h3,h4),
+.welcome-section h1, .subjects-heading h1,
+.notes-page-heading :where(h1,h2), .review-v2-header h1 {
+  color: var(--sv-ink) !important;
+}
+.page-content :where(p,small), .welcome-description,
+.subjects-heading .page-description {
+  color: var(--sv-muted);
+}
+.sidebar, .topbar {
+  background: var(--sv-porcelain) !important;
+  color: var(--sv-ink) !important;
+  border-color: var(--sv-stone) !important;
+  box-shadow: 0 3px 16px rgba(41,43,38,.025) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+.sidebar::after {
+  background: linear-gradient(180deg, rgba(196,154,90,.30), transparent 65%) !important;
+}
+.sidebar-orb { display: none !important; }
+.sidebar-brand { border-color: var(--sv-stone-soft) !important; }
+.brand-icon {
+  background: linear-gradient(145deg, #6C795D, var(--sv-olive) 68%, var(--sv-olive-dark)) !important;
+  color: #FFFEFA !important;
+  border: 1px solid rgba(89,102,75,.18) !important;
+  box-shadow: 0 4px 12px rgba(89,102,75,.14) !important;
+}
+.brand-text h2, .brand-text h2 span { color: var(--sv-ink) !important; }
+.brand-text > span, .sidebar-footer span, .sidebar-quick, .sidebar-label {
+  color: var(--sv-muted) !important;
+}
+.nav-item { color: #6E7067 !important; }
+.nav-item:hover:not(.active) { background: #F8F6F0 !important; color: var(--sv-ink) !important; }
+.nav-item.active {
+  background: var(--sv-olive-tint) !important;
+  color: var(--sv-olive-dark) !important;
+  box-shadow: inset 3px 0 0 var(--sv-brass) !important;
+}
+.nav-item.active::before { background: var(--sv-brass) !important; }
+.nav-pulse { background: var(--sv-brass) !important; }
+.user-avatar { background: #E8EBDD !important; color: var(--sv-olive-dark) !important; }
+
+/* Universal light surfaces: explicitly neutralize old dark-mode !important rules. */
+.content-card, .dashboard-grid .content-card, .stat-card, .subject-card,
+.resource-card, .notes-workspace, .review-card, .review-side-card,
+.review-v2-main .content-card, .review-v2-side-card,
+.notes-left-panel, .notes-list-panel, .notes-editor-panel,
+.notes-panel, .notes-editor, .notes-editor-empty {
+  background: var(--sv-porcelain) !important;
+  color: var(--sv-ink) !important;
+  border-color: var(--sv-stone) !important;
+  box-shadow: 0 2px 4px rgba(41,43,38,.018), 0 7px 22px rgba(41,43,38,.035) !important;
+}
+.content-card, .stat-card, .subject-card, .resource-card, .review-card,
+.review-side-card, .notes-workspace {
+  border-radius: 15px !important;
+}
+.content-card :where(h1,h2,h3,h4,strong), .stat-card :where(h1,h2,h3,strong),
+.subject-card :where(h1,h2,h3,strong), .resource-card :where(h1,h2,h3,strong),
+.review-card :where(h1,h2,h3,strong), .review-side-card :where(h1,h2,h3,strong) {
+  color: var(--sv-ink) !important;
+}
+.content-card :where(p,small), .stat-card :where(p,small),
+.subject-card :where(p,small), .resource-card :where(p,small),
+.review-card :where(p,small), .review-side-card :where(p,small) {
+  color: var(--sv-muted) !important;
+}
+.primary-button, .notes-review-button {
+  background: var(--sv-olive) !important;
+  color: #FFFEFA !important;
+  border-color: transparent !important;
+  box-shadow: 0 4px 10px rgba(89,102,75,.13) !important;
+}
+.primary-button:hover, .notes-review-button:hover {
+  background: var(--sv-olive-dark) !important;
+  box-shadow: 0 7px 16px rgba(89,102,75,.16) !important;
+}
+button, input, textarea, select { accent-color: var(--sv-olive); }
+:where(button,a,input,textarea,select):focus-visible {
+  outline: 2px solid rgba(89,102,75,.55) !important;
+  outline-offset: 3px;
+}
+:where(input,textarea,select):focus {
+  border-color: #9BA58D !important;
+  box-shadow: var(--sv-focus-ring) !important;
+}
+
+/* Notes is the screenshot's most inconsistent screen: make all three columns light. */
+.notes-workspace {
+  background: var(--sv-porcelain) !important;
+  border: 1px solid var(--sv-stone) !important;
+  border-radius: 16px !important;
+  overflow: hidden;
+}
+.notes-left-panel, .notes-list-panel, .notes-editor-panel {
+  background: var(--sv-porcelain) !important;
+  color: var(--sv-ink) !important;
+  border-color: var(--sv-stone) !important;
+  box-shadow: none !important;
+}
+.notes-panel-heading, .notes-list-header, .notes-editor-header,
+.notes-editor-footer {
+  background: #FAF8F2 !important;
+  color: var(--sv-ink) !important;
+  border-color: var(--sv-stone) !important;
+}
+.notes-panel-kicker, .notes-section-label { color: #89877C !important; }
+.notes-nav-list, .notes-folder-list, .notes-tag-list { color: #62645B !important; }
+.notes-nav-list :where(button,a), .notes-folder-list :where(button,a),
+.notes-tag-list :where(button,a) { color: #66685F !important; }
+.notes-nav-list :where(button:hover,a:hover),
+.notes-folder-list :where(button:hover,a:hover),
+.notes-tag-list :where(button:hover,a:hover) {
+  background: #F8F6F0 !important;
+  color: var(--sv-ink) !important;
+}
+.notes-nav-list :where(.active,[aria-current="page"]) {
+  background: var(--sv-olive-tint) !important;
+  color: var(--sv-olive-dark) !important;
+}
+.notes-search-field, .notes-search-field input,
+.notes-metadata-grid select, .notes-tags-field input,
+.notes-title-input, .notes-workspace input, .notes-workspace select {
+  background: #FFFEFA !important;
+  color: var(--sv-ink) !important;
+  border-color: var(--sv-stone) !important;
+}
+.notes-list-item {
+  background: #FFFEFA !important;
+  color: var(--sv-ink) !important;
+  border-color: var(--sv-stone-soft) !important;
+}
+.notes-list-item:hover { background: #FAF8F2 !important; }
+.notes-list-item.active {
+  background: #F0F1E8 !important;
+  border-color: #DDE2D2 !important;
+  box-shadow: inset 3px 0 0 var(--sv-brass) !important;
+}
+.notes-list-item-heading { color: var(--sv-ink) !important; }
+.notes-list-item-meta, .notes-list-item-tags { color: var(--sv-muted) !important; }
+.notes-list-item-tags span {
+  background: #F4F1E8 !important;
+  color: #696A5F !important;
+  border-color: var(--sv-stone) !important;
+}
+.notes-editor-scroll {
+  background: #FFFEFA !important;
+  color: var(--sv-ink) !important;
+}
+.notes-editor-scroll .ProseMirror { color: #3B3D35 !important; }
+.notes-editor-scroll .ProseMirror :where(h1,h2,h3,h4,strong) {
+  color: var(--sv-ink) !important;
+}
+.notes-editor-scroll .ProseMirror blockquote {
+  border-left-color: var(--sv-brass) !important;
+  color: #66685F !important;
+}
+.notes-editor-scroll .ProseMirror code {
+  background: #F1EEE5 !important;
+  color: #59664B !important;
+}
+.notes-editor-scroll .ProseMirror a { color: #59664B !important; }
+.notes-editor-breadcrumb, .notes-editor-header-actions,
+.notes-editor-footer, .notes-status-actions { color: var(--sv-muted) !important; }
+.notes-error, .notes-save-error, .notes-legacy-banner {
+  background: #FBF2E2 !important;
+  color: #795D32 !important;
+  border-color: #E8D5B4 !important;
+}
+.notes-workspace.is-fullscreen .notes-editor-panel,
+.notes-workspace.is-fullscreen .notes-editor-scroll {
+  background: #FFFEFA !important;
+}
+
+/* Subjects: warm, light cards; retain each subject's identifying accent softly. */
+.subjects-toolbar-v2 {
+  background: var(--sv-porcelain) !important;
+  border-color: var(--sv-stone) !important;
+  box-shadow: var(--sv-shadow-soft) !important;
+}
+.subjects-search-v2, .subjects-filter-button, .subjects-view-toggle {
+  background: #F8F6F0 !important;
+  border-color: var(--sv-stone) !important;
+  color: var(--sv-muted) !important;
+}
+.subjects-search-v2 input { color: var(--sv-ink) !important; }
+.subjects-filter-button:hover { background: #F0EEE5 !important; color: var(--sv-olive-dark) !important; }
+.subjects-view-toggle button.active { background: var(--sv-olive-tint) !important; color: var(--sv-olive-dark) !important; box-shadow: none !important; }
+.subject-card-v2 {
+  background: radial-gradient(240px 150px at 100% 0%, rgba(196,154,90,.075), transparent 75%), var(--sv-porcelain) !important;
+  border: 1px solid var(--sv-stone) !important;
+  box-shadow: 0 4px 18px rgba(41,43,38,.035) !important;
+}
+.subject-card-v2.blue, .subject-card-v2.violet, .subject-card-v2.green, .subject-card-v2.orange {
+  --subject-accent: #788568 !important;
+}
+.subject-card-v2 .subject-card-copy h2 { color: var(--sv-ink) !important; }
+.subject-card-v2 .subject-card-copy p { color: var(--sv-muted) !important; }
+.subject-card-stats { color: var(--sv-muted) !important; border-color: var(--sv-stone-soft) !important; }
+.subject-card-footer-v2 { background: #FAF8F2 !important; border-color: var(--sv-stone) !important; }
+.subject-card-footer-v2 button { color: #6E7067 !important; }
+.subject-card-footer-v2 button:hover { color: var(--sv-olive-dark) !important; }
+.subject-card-v2 .subject-action-button { background: #F8F6F0 !important; color: #6E7067 !important; border-color: var(--sv-stone) !important; }
+.subject-card-v2 .subject-open-button { background: var(--sv-olive-tint) !important; color: var(--sv-olive-dark) !important; border-color: #DDE2D2 !important; }
+.subject-card-art { opacity: .16 !important; }
+
+/* Resource and review views follow the same paper-and-ink rules. */
+.resource-row { color: var(--sv-ink) !important; border-color: var(--sv-stone-soft) !important; }
+.resource-row:hover { background: #FAF8F2 !important; }
+.review-v2-main .content-card, .review-v2-side-card {
+  background: var(--sv-porcelain) !important;
+  color: var(--sv-ink) !important;
+  border-color: var(--sv-stone) !important;
+}
+.review-v2-main :where(h1,h2,h3,strong), .review-v2-side-card :where(h1,h2,h3,strong) { color: var(--sv-ink) !important; }
+.review-v2-main :where(p,small,span), .review-v2-side-card :where(p,small,span) { color: var(--sv-muted); }
+.review-card::before { background: linear-gradient(90deg, var(--sv-brass), #9AA58C) !important; }
+
+/* The hero may be dark for hierarchy, but never blue; the working UI remains light. */
+.sv-home-hero {
+  background: radial-gradient(ellipse at 85% 18%, rgba(196,154,90,.15), transparent 36%), linear-gradient(125deg, #343A2E, #292D25 75%) !important;
+  border: 1px solid rgba(196,154,90,.2) !important;
+  box-shadow: 0 18px 42px rgba(41,43,38,.12) !important;
+}
+.sv-home-hero::after {
+  background-image: linear-gradient(rgba(255,255,255,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.025) 1px,transparent 1px) !important;
+}
+.sv-home-hero :where(h1,h2,h3) { color: #FFFEFA !important; }
+.sv-home-hero p { color: #D7D5CB !important; }
+.sv-hero-kicker, .sv-orbit-label { color: #D6BC8C !important; }
+.sv-hero-primary { background: var(--sv-brass) !important; color: #292B26 !important; }
+.sv-hero-primary:hover { background: #D2AE78 !important; }
+.sv-orbit { border-color: rgba(196,154,90,.2) !important; }
+.sv-core { background: rgba(196,154,90,.07) !important; border-color: rgba(196,154,90,.22) !important; }
