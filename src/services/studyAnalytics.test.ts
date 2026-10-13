@@ -16,7 +16,7 @@ const event = (conceptId: string, at: number, outcome: LearningEvent["outcome"])
 describe("study analytics", () => {
   it("summarizes completed sessions and weighted recall outcomes by week", () => {
     const result = buildStudyAnalytics(
-      [session("s1", now - day, 30), session("s2", now - 2 * day, 20)],
+      [session("s1", now - day, 30), session("s2", now - day, 20)],
       [event("a", now - day, "correct"), event("b", now - day, "partial"), event("c", now - day, "incorrect")],
       {}, now, 2,
     );
