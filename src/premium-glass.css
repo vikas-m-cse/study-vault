@@ -164,3 +164,56 @@ input:focus, textarea:focus, select:focus {
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration:.01ms !important; transition-duration:.01ms !important; scroll-behavior:auto !important; }
 }
+
+
+/* Subjects page correction: remove legacy dark subject-card treatment completely. */
+.subject-card-v2,
+.subject-card-v2:hover {
+  color: var(--glass-ink) !important;
+  background:
+    radial-gradient(260px 150px at 88% 24%, rgba(214,230,245,.34), transparent 72%),
+    linear-gradient(145deg, rgba(255,255,255,.96), rgba(246,249,252,.92)) !important;
+  border: 1px solid rgba(195,211,229,.82) !important;
+  box-shadow: 0 10px 26px rgba(33,63,96,.055), inset 0 1px 0 rgba(255,255,255,.95) !important;
+}
+.subject-card-v2 .subject-card-copy h2 { color: #203750 !important; }
+.subject-card-v2 .subject-card-copy p { color: #718197 !important; }
+.subject-card-v2 .subject-card-stats {
+  color: #75869a !important;
+  border-top-color: rgba(191,207,224,.6) !important;
+}
+.subject-card-v2 .subject-card-footer-v2 {
+  background: rgba(241,246,251,.82) !important;
+  border-top: 1px solid rgba(198,211,229,.64) !important;
+}
+.subject-card-v2 .subject-card-footer-v2 button { color: #61758c !important; }
+.subject-card-v2 .subject-card-footer-v2 button:hover { color: #285780 !important; }
+.subject-card-v2 .subject-open-button {
+  background: linear-gradient(145deg,#fff,#edf4fa) !important;
+  border-color: rgba(178,201,224,.8) !important;
+  color: #3c6e9f !important;
+}
+.subject-card-v2 .subject-large-icon {
+  background: linear-gradient(145deg,#f0f6fc,#e2edf7) !important;
+  border: 1px solid rgba(190,211,232,.72) !important;
+  color: #4b789f !important;
+}
+.subject-card-v2 .subject-action-button,
+.subject-card-v2 .subject-action-button:hover {
+  background: rgba(248,250,253,.92) !important;
+  border: 1px solid rgba(198,211,229,.8) !important;
+  color: #718197 !important;
+}
+.subject-card-v2 .subject-card-art { opacity: .24 !important; }
+.subject-card-v2 .subject-card-art .art-core,
+.subject-card-v2 .subject-card-art .art-orbit {
+  border-color: rgba(109,148,185,.2) !important;
+  background-color: rgba(218,232,245,.12) !important;
+}
+.subject-card-v2.blue { --subject-accent: #5d8fbd; }
+.subject-card-v2.violet { --subject-accent: #8d91b9; }
+.subject-card-v2.green { --subject-accent: #6e9e8b; }
+.subject-card-v2.orange { --subject-accent: #b99b70; }
+.subject-card-v2 .mini-stack {
+  box-shadow: 2px -2px 0 -1px #f2f6fa, 2px -2px 0 0 currentColor !important;
+}
