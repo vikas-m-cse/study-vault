@@ -146,8 +146,8 @@ export default function DailyPlanner({ subjects }: { subjects: { id: number; nam
   }, []);
 
   const candidates = useMemo(
-    () => makeCandidates(notes, subjects, Date.now()),
-    [notes, subjects],
+    () => makeCandidates(notes, subjects, now),
+    [notes, subjects, now],
   );
   const plan = useMemo(() => buildRevisionPlan({
     availableMinutes: normalizeAvailableMinutes(availableMinutes),
