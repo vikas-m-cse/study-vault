@@ -230,9 +230,12 @@ export default function DailyPlanner({ subjects }: { subjects: { id: number; nam
   }, [session, persist]);
 
   const saveForLater = useCallback(() => {
-    if (session && (session.status === "active" || session.status === "paused")) {
-      persist({ ...session, status: "planned" });
-    }
+    if (!session || (session.status !== "active" && session.status !== "paused")) return;
+    const stamp = Date.now();
+    const elapsedBeforePauseMs = session.status === "active"
+      ? (session.elapsedBeforePauseMs ?? 0) + Math.max(0, stamp - (session.resumedAt ?? session.startedAt ?? stamp))
+      : (session.elapsedBeforePauseMs ?? 0);
+    persist({ ...session, status: "planned", elapsedBeforePauseMs, resumedAt: undefined });
   }, [session, persist]);
 
   const restart = useCallback(() => {
