@@ -9954,3 +9954,61 @@ button:focus-visible,input:focus-visible,textarea:focus-visible{
   .mobile-bottom-nav { padding-inline: 4px; }
   .mobile-nav-item { font-size: 9px; }
 }
+
+@media (max-width: 760px) {
+  /* Notes has three desktop panes; on a phone, make it a focused single-column flow. */
+  .notes-workspace {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    height: auto !important;
+    min-height: 0 !important;
+    overflow: visible !important;
+    gap: 12px;
+  }
+  .notes-workspace .notes-panel {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    overflow: visible;
+    border-radius: 17px;
+  }
+  .notes-workspace.left-closed .notes-left-panel { display: none !important; }
+  .notes-left-panel { padding: 17px !important; }
+  .notes-panel-heading { gap: 10px; }
+  .notes-panel-heading h2 { font-size: 23px; }
+  .notes-nav-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 5px; }
+  .notes-nav-item { min-width: 0; min-height: 42px; gap: 7px; padding: 9px; }
+  .notes-nav-item span { min-width: 0; overflow-wrap: anywhere; }
+  .notes-nav-item small { margin-left: auto; }
+  .notes-left-section { margin-top: 15px; }
+  .notes-page-header, .notes-header, .notes-toolbar, .notes-page-top {
+    max-width: 100%;
+    min-width: 0;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .notes-workspace .notes-list-panel { min-height: 250px !important; }
+  .notes-list-header { flex-wrap: wrap; gap: 10px; padding: 13px; }
+  .notes-search-field { width: 100%; min-width: 0; }
+  .notes-list-summary { width: 100%; justify-content: space-between; }
+  .notes-list-scroll { max-height: min(40dvh, 360px); overflow-y: auto; overscroll-behavior: contain; }
+  .notes-empty-state { min-height: 190px; padding: 28px 16px; }
+  .notes-workspace .notes-editor-panel { min-height: 300px !important; }
+  .notes-editor-header { flex-wrap: wrap; gap: 8px; padding: 13px; }
+  .notes-editor-breadcrumb { min-width: 0; max-width: 100%; overflow-wrap: anywhere; }
+  .notes-editor-header-actions { display: flex; flex-wrap: wrap; gap: 6px; }
+  .notes-editor-header-actions button { min-height: 38px; }
+  .notes-editor-body, .notes-editor-content, .notes-editor-main { min-width: 0; max-width: 100%; padding-inline: 13px; }
+  .notes-metadata-grid { grid-template-columns: minmax(0, 1fr) !important; }
+  .notes-editor-footer { flex-wrap: wrap; gap: 8px; padding: 12px; }
+  .notes-status-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+  .notes-status-actions button { min-height: 40px; }
+  .notes-topbar-actions, .notes-page-actions { flex-wrap: wrap; gap: 8px; }
+  .notes-topbar-actions .primary-button, .notes-page-actions .primary-button { min-height: 44px; }
+}
