@@ -1,6 +1,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { Sidebar } from "./components/Sidebar";
+import { MobileNav } from "./components/MobileNav";
 import { Topbar } from "./components/Topbar";
 import { GlobalSearch } from "./components/GlobalSearch";
 import Dashboard from "./Dashboard";
@@ -354,6 +355,8 @@ function App() {
                     )}
                 </section>
             </main>
+
+            <MobileNav activePage={activePage} onNavigate={navigate} />
 
             {isAddResourceOpen && (
                 <AddResourceModal
