@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import {
   BrainCircuit,
+  BookOpen,
   CheckCircle2,
   ChevronRight,
   Clock3,
@@ -9,6 +10,9 @@ import {
   RotateCcw,
   Sparkles,
   Target,
+  SlidersHorizontal,
+  RefreshCw,
+  Lightbulb,
 } from "lucide-react";
 import { getAllNotes } from "./services/noteStorage";
 import type { Note, TipTapNode } from "./types/note";
@@ -51,6 +55,14 @@ type ReviewConcept = {
 };
 
 const STORAGE_KEY = "studyvault-review-v2";
+const REVISION_KEY = "studyvault-revision-recap-v1";
+type RevisionEntry = { conceptId: string; noteId: string; noteTitle: string; title: string; subjectName?: string; prompt: string; answer: string; reviewedAt: number; rating: Rating };
+function readRevisionEntries(): RevisionEntry[] {
+  try { const raw = localStorage.getItem(REVISION_KEY); return raw ? JSON.parse(raw) as RevisionEntry[] : []; } catch { return []; }
+}
+function writeRevisionEntries(entries: RevisionEntry[]) {
+  try { localStorage.setItem(REVISION_KEY, JSON.stringify(entries.slice(-100))); } catch { /* recap is supplemental; preserve core review data */ }
+}
 const INTERVALS_MS = [
   10 * 60 * 1000,
   24 * 60 * 60 * 1000,
@@ -226,9 +238,20 @@ export default function Review({ subjects, focusNoteId }: ReviewProps) {
   const [recall, setRecall] = useState("");
   const [revealed, setRevealed] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const [mode, setMode] = useState<"recall" | "questions">("recall");
-  const [confidence, setConfidence] = useState(0);
-  const [outcome, setOutcome] = useState<"correct" | "partial" | "incorrect" | null>(null);
+  const [questionMode, setQuestionMode] = useState<"recall" | "questions">("recall");
+  const [reviewMode, setReviewMode] = useState<"custom" | "due" | "smart">("custom");
+  const [subjectFilter, setSubjectFilter] = useState("all");
+  const [conceptFilter, setConceptFilter] = useState<"weak" | "all" | "new">("weak");
+  const [sessionSize, setSessionSize] = useState("10");
+  const [sessionReviewedIds, setSessionReviewedIds] = useState<string[]>([]);
+  const [revisionEntries, setRevisionEntries] = useState<RevisionEntry[]>(() => readRevisionEntries());
+  const [revisionActive, setRevisionActive] = useState(false);
+  const [now, setNow] = useState(() => Date.now());
+
+  useEffect(() => {
+    const timer = window.setInterval(() => setNow(Date.now()), 30_000);
+    return () => window.clearInterval(timer);
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -258,8 +281,6 @@ export default function Review({ subjects, focusNoteId }: ReviewProps) {
     [notes, subjects],
   );
 
-  const now = Date.now();
-
   const dueConcepts = useMemo(
     () => concepts
       .filter((concept) => {
@@ -277,20 +298,35 @@ export default function Review({ subjects, focusNoteId }: ReviewProps) {
         const bPriority = learningPriority(getMastery()[b.id], now);
         return bPriority - aPriority || aDue - bDue;
       }),
-    [concepts, reviewState, now],
+    [concepts, reviewState, now, focusNoteId],
   );
 
-  useEffect(() => {
-    if (!selectedId || !dueConcepts.some((concept) => concept.id === selectedId)) {
-      setSelectedId(dueConcepts[0]?.id ?? null);
-      setRecall("");
-      setRevealed(false);
-      setConfidence(0);
-      setOutcome(null);
-    }
-  }, [dueConcepts, selectedId]);
+  const availableConcepts = useMemo(() => {
+    const masteryById = getMastery();
+    const revisionIds = new Set(revisionEntries.filter((entry) => now - entry.reviewedAt < 24 * 60 * 60 * 1000).map((entry) => entry.conceptId));
+    const source = revisionActive ? concepts.filter((concept) => revisionIds.has(concept.id)) : reviewMode === "custom" ? concepts : dueConcepts;
+    return source
+      .filter((concept) => !sessionReviewedIds.includes(concept.id))
+      .filter((concept) => !focusNoteId || concept.noteId === focusNoteId)
+      .filter((concept) => subjectFilter === "all" || concept.subjectName === subjectFilter)
+      .filter((concept) => {
+        const record = masteryById[concept.id];
+        if (conceptFilter === "new") return !record || record.attempts === 0;
+        if (conceptFilter === "weak") {
+          if (!record || record.attempts === 0) return true;
+          return masteryPercent(record) < 70 || record.lastOutcome === "incorrect" || record.lastOutcome === "partial";
+        }
+        return true;
+      })
+      .sort((a, b) => {
+        if (reviewMode === "smart") return learningPriority(masteryById[b.id], now) - learningPriority(masteryById[a.id], now);
+        if (reviewMode === "due") return (reviewState[a.id]?.nextReviewAt ?? 0) - (reviewState[b.id]?.nextReviewAt ?? 0);
+        return a.noteTitle.localeCompare(b.noteTitle) || a.index - b.index;
+      })
+      .slice(0, sessionSize === "all" ? undefined : Number(sessionSize));
+  }, [concepts, dueConcepts, focusNoteId, subjectFilter, conceptFilter, reviewMode, reviewState, now, sessionSize, sessionReviewedIds, revisionEntries, revisionActive]);
 
-  const selected = dueConcepts.find((concept) => concept.id === selectedId) ?? null;
+  const selected = availableConcepts.find((concept) => concept.id === selectedId) ?? availableConcepts[0] ?? null;
   const currentState = selected ? reviewState[selected.id] : undefined;
 
   const reveal = () => {
@@ -300,7 +336,7 @@ export default function Review({ subjects, focusNoteId }: ReviewProps) {
 
   const selectedMastery = selected ? getMastery()[selected.id] : undefined;
   const adaptiveAction = selected ? getAdaptiveAction(selectedMastery) : null;
-  const questionType: QuestionType = mode === "questions" ? (adaptiveAction?.questionType ?? "recall") : "recall";
+  const questionType: QuestionType = questionMode === "questions" ? (adaptiveAction?.questionType ?? "recall") : "recall";
 
   const adaptivePrompt = selected && adaptiveAction
     ? adaptiveAction.questionType === "why"
@@ -317,15 +353,21 @@ export default function Review({ subjects, focusNoteId }: ReviewProps) {
     : selected?.prompt ?? "";
 
   const rate = (rating: Rating) => {
-    if (!selected || !revealed || !outcome || confidence === 0) return;
+    if (!selected || !revealed) return;
 
+    // One honest rating is enough: don't ask learners to classify the same attempt twice.
+    const outcome: "correct" | "partial" | "incorrect" =
+      rating === "again" ? "incorrect" : rating === "hard" ? "partial" : "correct";
+    const confidenceScore = rating === "again" ? 30 : rating === "hard" ? 55 : rating === "good" ? 80 : 95;
     const previous = reviewState[selected.id];
     const previousLevel = previous?.level ?? 0;
-    const timestamp = Date.now();
-    const interval = chooseNextInterval(outcome, confidence * 20, previousLevel);
-    const level = outcome === "incorrect"
+    const timestamp = now;
+    const interval = rating === "again"
+      ? INTERVALS_MS[0]
+      : chooseNextInterval(outcome, confidenceScore, previousLevel);
+    const level = rating === "again"
       ? 0
-      : outcome === "partial"
+      : rating === "hard"
         ? previousLevel
         : Math.min(previousLevel + (rating === "easy" ? 2 : 1), INTERVALS_MS.length - 1);
     const streak = outcome === "correct" ? (previous?.streak ?? 0) + 1 : 0;
@@ -343,18 +385,25 @@ export default function Review({ subjects, focusNoteId }: ReviewProps) {
 
     setReviewState(next);
     writeReviewState(next);
+    const recapEntry: RevisionEntry = {
+      conceptId: selected.id, noteId: selected.noteId, noteTitle: selected.noteTitle,
+      title: selected.title, subjectName: selected.subjectName, prompt: selected.prompt,
+      answer: selected.answer, reviewedAt: timestamp, rating,
+    };
+    const updatedRevisionEntries = [...readRevisionEntries().filter((entry) => entry.conceptId !== selected.id), recapEntry];
+    writeRevisionEntries(updatedRevisionEntries);
+    setRevisionEntries(updatedRevisionEntries);
     recordLearningEvent({
       conceptId: selected.id,
       questionType,
       outcome,
-      confidence: confidence * 20,
+      confidence: confidenceScore,
       at: timestamp,
     });
     recordMasteryLevel(selected.id, level);
     setRecall("");
     setRevealed(false);
-    setConfidence(0);
-    setOutcome(null);
+    setSessionReviewedIds((previousIds) => [...previousIds, selected.id]);
     setSelectedId(null);
   };
 
@@ -379,8 +428,8 @@ export default function Review({ subjects, focusNoteId }: ReviewProps) {
     <div className="review-page">
       <div className="review-v2-header">
         <div>
-          <p className="eyebrow">RETRIEVAL + SPACING WORKSPACE</p>
-          <h1>Review</h1>
+          <p className="eyebrow">STUDYVAULT / REVIEW</p>
+          <h1>Remember what <em>you learn.</em></h1>
           <p className="review-v2-subtitle">
             StudyVault turns long notes into small, retrievable concepts. Recall first, get feedback second,
             then revisit the same concept after a delay.
@@ -388,19 +437,19 @@ export default function Review({ subjects, focusNoteId }: ReviewProps) {
           <div className="review-mode-switch" role="tablist" aria-label="Review mode">
             <button
               type="button"
-              className={mode === "recall" ? "active" : ""}
-              onClick={() => { setMode("recall"); setRecall(""); setRevealed(false); }}
+              className={questionMode === "recall" ? "active" : ""}
+              onClick={() => { setQuestionMode("recall"); setRecall(""); setRevealed(false); }}
               role="tab"
-              aria-selected={mode === "recall"}
+              aria-selected={questionMode === "recall"}
             >
               Active recall
             </button>
             <button
               type="button"
-              className={mode === "questions" ? "active" : ""}
-              onClick={() => { setMode("questions"); setRecall(""); setRevealed(false); }}
+              className={questionMode === "questions" ? "active" : ""}
+              onClick={() => { setQuestionMode("questions"); setRecall(""); setRevealed(false); }}
               role="tab"
-              aria-selected={mode === "questions"}
+              aria-selected={questionMode === "questions"}
             >
               Questions
             </button>
@@ -414,15 +463,69 @@ export default function Review({ subjects, focusNoteId }: ReviewProps) {
         </div>
       </div>
 
+      <section className="review-selection" aria-label="Choose review topics">
+        <div className="review-selection-heading">
+          <div>
+            <span className="review-selection-kicker"><SlidersHorizontal size={14} /> SESSION SETUP</span>
+            <h2>What do you want to review?</h2>
+            <p>Choose a subject and focus. Your existing review history and spacing schedule stay intact.</p>
+          </div>
+          <span className="review-selection-count"><BookOpen size={15} /> {availableConcepts.length} in this session</span>
+        </div>
+        <div className="review-selection-controls">
+          <label><span>Review mode</span>
+            <select value={reviewMode} onChange={(event) => { setRevisionActive(false); setReviewMode(event.target.value as "custom" | "due" | "smart"); setSelectedId(null); setRecall(""); setRevealed(false); setSessionReviewedIds([]); }}>
+              <option value="custom">My topics</option><option value="due">Due for review</option><option value="smart">Smart review</option>
+            </select>
+          </label>
+          <label><span>Subject</span>
+            <select value={subjectFilter} onChange={(event) => { setRevisionActive(false); setSubjectFilter(event.target.value); setSelectedId(null); setRecall(""); setRevealed(false); setSessionReviewedIds([]); }}>
+              <option value="all">All subjects</option>
+              {subjects.map((subject) => <option key={subject.id} value={subject.name}>{subject.name}</option>)}
+            </select>
+          </label>
+          <label><span>Concepts</span>
+            <select value={conceptFilter} onChange={(event) => { setRevisionActive(false); setConceptFilter(event.target.value as "weak" | "all" | "new"); setSelectedId(null); setRecall(""); setRevealed(false); setSessionReviewedIds([]); }}>
+              <option value="weak">Weak / missed</option><option value="all">All concepts</option><option value="new">Not reviewed yet</option>
+            </select>
+          </label>
+          <label><span>Session size</span>
+            <select value={sessionSize} onChange={(event) => { setRevisionActive(false); setSessionSize(event.target.value); setSelectedId(null); setRecall(""); setRevealed(false); setSessionReviewedIds([]); }}>
+              <option value="5">5 concepts</option><option value="10">10 concepts</option><option value="20">20 concepts</option><option value="all">All matching</option>
+            </select>
+          </label>
+        </div>
+        {availableConcepts.length === 0 && <p className="review-selection-empty">No concepts match these filters. Try “All concepts” or choose another subject.</p>}
+      </section>
+
+      {revisionEntries.some((entry) => now - entry.reviewedAt < 24 * 60 * 60 * 1000) && (
+        <section className="review-revision-checkpoint" aria-label="Revision checkpoint">
+          <div className="review-revision-icon"><RefreshCw size={19} /></div>
+          <div className="review-revision-copy">
+            <span className="review-revision-kicker">REVISION CHECKPOINT</span>
+            <h2>Before you move on, revisit what you studied.</h2>
+            <p>Your recent session is saved on this device. Refresh the important ideas, then try recalling them without looking.</p>
+            <div className="review-revision-keypoints">
+              {revisionEntries.filter((entry) => now - entry.reviewedAt < 24 * 60 * 60 * 1000).slice(-3).reverse().map((entry) => (
+                <div key={entry.conceptId}><Lightbulb size={14} /><span><strong>{entry.title}</strong><small>{entry.answer.split(/(?<=[.!?])\s+/).slice(0, 2).join(" ").slice(0, 180)}{entry.answer.length > 180 ? "…" : ""}</small></span></div>
+              ))}
+            </div>
+          </div>
+          <button type="button" className="review-revision-start" onClick={() => {
+            setRevisionActive(true); setReviewMode("custom"); setSubjectFilter("all"); setConceptFilter("all"); setSessionSize("all");
+            setSessionReviewedIds([]); setSelectedId(null); setRecall(""); setRevealed(false);
+          }}>Start revision <ChevronRight size={15} /></button>
+        </section>
+      )}
       <div className="review-v2-layout">
         <section className="review-v2-main">
           {!selected ? (
             <div className="review-v2-empty">
               <div className="review-v2-empty-icon"><CheckCircle2 size={26} /></div>
-              <h2>{concepts.length ? "You're caught up 🎉" : "Your review system is ready"}</h2>
+              <h2>{concepts.length ? "No concepts in this session" : "Your review system is ready"}</h2>
               <p>
                 {concepts.length
-                  ? "Nothing is due right now. Spacing deliberately gives your memory time to work between retrieval sessions."
+                  ? "No concepts match the current selection. Try “All concepts” or choose another subject in Session Setup above."
                   : "Create an active note first. StudyVault will automatically turn its sections into reviewable concepts."}
               </p>
             </div>
@@ -434,7 +537,7 @@ export default function Review({ subjects, focusNoteId }: ReviewProps) {
                   <strong>{selected.noteTitle}</strong>
                 </div>
                 <div className="review-v2-progress">
-                  Concept {selected.index} of {selected.totalInNote}
+                  Reviewed {sessionReviewedIds.length} this session · {availableConcepts.length} queued · {selected.index}/{selected.totalInNote} in note
                 </div>
               </div>
 
@@ -465,10 +568,10 @@ export default function Review({ subjects, focusNoteId }: ReviewProps) {
 
                 <div className="review-v2-question">
                   <strong>
-                    {mode === "questions" ? adaptivePrompt : selected.prompt}
+                    {questionMode === "questions" ? adaptivePrompt : selected.prompt}
                   </strong>
                   <p>
-                    {mode === "questions"
+                    {questionMode === "questions"
                       ? "Answer from memory. Start with the definition or core idea, then add key points, steps, relationships, or an example."
                       : "Try to reconstruct the idea from memory. Don't copy the note and don't worry about exact wording."}
                   </p>
@@ -483,30 +586,6 @@ export default function Review({ subjects, focusNoteId }: ReviewProps) {
                   disabled={revealed}
                 />
 
-                <div className="review-v2-confidence">
-                  <div>
-                    <strong>How confident were you before seeing the reference?</strong>
-                    <span>This measures calibration, not intelligence.</span>
-                  </div>
-                  <div className="review-v2-confidence-buttons">
-                    {[1, 2, 3, 4, 5].map((value) => (
-                      <button key={value} type="button" className={confidence === value ? "selected" : ""} onClick={() => setConfidence(value)}>
-                        {value}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {revealed && (
-                  <div className="review-v2-outcome">
-                    <strong>After comparing, how did the retrieval go?</strong>
-                    <div>
-                      <button type="button" className={outcome === "incorrect" ? "selected" : ""} onClick={() => setOutcome("incorrect")}>Missed it</button>
-                      <button type="button" className={outcome === "partial" ? "selected" : ""} onClick={() => setOutcome("partial")}>Partly knew it</button>
-                      <button type="button" className={outcome === "correct" ? "selected" : ""} onClick={() => setOutcome("correct")}>Got it</button>
-                    </div>
-                  </div>
-                )}
 
                 <div className="review-v2-controls">
                   <button
@@ -552,17 +631,17 @@ export default function Review({ subjects, focusNoteId }: ReviewProps) {
                   <span>Rate your memory, not your writing quality.</span>
                 </div>
                 <div className="review-v2-rating-buttons">
-                  <button type="button" disabled={!revealed || !outcome || confidence === 0} onClick={() => rate("again")}>
-                    <span>Again</span><small>10 min</small>
+                  <button type="button" disabled={!revealed} onClick={() => rate("again")} aria-label="Again: I could not recall the idea; review it again soon">
+                    <span>Again</span><small>Forgot it · 10 min</small>
                   </button>
-                  <button type="button" disabled={!revealed || !outcome || confidence === 0} onClick={() => rate("hard")}>
-                    <span>Hard</span><small>{formatInterval(INTERVALS_MS[Math.min(currentState?.level ?? 0, INTERVALS_MS.length - 1)])}</small>
+                  <button type="button" disabled={!revealed} onClick={() => rate("hard")} aria-label="Hard: I recalled only part of the idea or needed significant effort">
+                    <span>Hard</span><small>Struggled · repeat sooner</small>
                   </button>
-                  <button type="button" className="good" disabled={!revealed || !outcome || confidence === 0} onClick={() => rate("good")}>
-                    <span>Good</span><small>next interval</small>
+                  <button type="button" className="good" disabled={!revealed} onClick={() => rate("good")} aria-label="Good: I recalled the main idea correctly">
+                    <span>Good</span><small>Recalled it · normal interval</small>
                   </button>
-                  <button type="button" disabled={!revealed || !outcome || confidence === 0} onClick={() => rate("easy")}>
-                    <span>Easy</span><small>skip ahead</small>
+                  <button type="button" disabled={!revealed} onClick={() => rate("easy")} aria-label="Easy: I recalled it clearly and confidently">
+                    <span>Easy</span><small>Clear recall · longer interval</small>
                   </button>
                 </div>
               </div>

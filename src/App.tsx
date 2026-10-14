@@ -11,6 +11,8 @@ import type { Resource } from "./types/resource";
 import type { SearchResult } from "./services/search";
 import Subjects, { type Subject } from "./Subjects";
 import Review from "./Review";
+import Progress from "./Progress";
+import DailyTimetable from "./DailyTimetable";
 import {
     isStorageAvailable,
     loadResources,
@@ -292,6 +294,7 @@ function App() {
                             resources={resources}
                             subjects={subjects}
                             onAddResource={handleAddResource}
+                            onOpenReview={() => { setReviewNoteId(null); navigate("Review"); }}
                         />
                     ) : activePage === "Subjects" ? (
                         <Subjects
@@ -299,6 +302,8 @@ function App() {
                             setSubjects={handleSetSubjects}
                             resources={resources}
                             focusSubjectId={subjectTargetId}
+                            onOpenResource={(id) => { setResourceTargetId(id); navigate("My Resources"); }}
+                            onOpenNote={(id) => { setNotesTarget({ noteId: id }); navigate("Notes"); }}
                         />
                     ) : activePage === "My Resources" ? (
                         <Resources
@@ -311,6 +316,7 @@ function App() {
                         />
                     ) : activePage === "Notes" ? (
                         <Notes
+                            key="notes"
                             resources={resources}
                             subjects={subjects}
                             openNoteId={notesTarget?.noteId}
@@ -322,10 +328,15 @@ function App() {
                         />
                     ) : activePage === "Favourites" ? (
                         <Notes
+                            key="favourites"
                             resources={resources}
                             subjects={subjects}
                             initialFilter="favourites"
                         />
+                     ) : activePage === "Progress" ? (
+                        <Progress subjects={subjects} onOpenReview={() => navigate("Review")} />
+                    ) : activePage === "Timetable" ? (
+                        <DailyTimetable />
                     ) : activePage === "Review" ? (
                         <Review
                             resources={resources}

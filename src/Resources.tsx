@@ -9,6 +9,8 @@ import {
     Trash2,
     Image as ImageIcon,
     Link as LinkIcon,
+    ChevronDown,
+    Check,
 } from "lucide-react";
 
 import { useCallback, useEffect, useState } from "react";
@@ -48,6 +50,8 @@ export default function Resources({
 }: ResourcesProps) {
     const [search, setSearch] = useState("");
     const [selectedSubject, setSelectedSubject] = useState("All");
+    const [subjectMenuOpen, setSubjectMenuOpen] = useState(false);
+    const [selectedType, setSelectedType] = useState("All");
     const [viewingNote, setViewingNote] = useState<Resource | null>(null);
     const [actionError, setActionError] = useState<string | null>(null);
 
@@ -59,7 +63,13 @@ export default function Resources({
             selectedSubject === "All" ||
             resource.subjectId === Number(selectedSubject);
 
-        return matchesSearch && matchesSubject;
+        const normalizedType = resource.type.toLowerCase();
+        const matchesType = selectedType === "All" ||
+            (selectedType === "Document" ? ["document", "doc", "docx"].includes(normalizedType) :
+             selectedType === "Other" ? !["note", "pdf", "document", "doc", "docx", "image", "link", "video"].includes(normalizedType) :
+             normalizedType === selectedType.toLowerCase());
+
+        return matchesSearch && matchesSubject && matchesType;
     });
 
     const openResource = useCallback((resource: Resource) => {
@@ -114,10 +124,10 @@ export default function Resources({
         <div className="resources-page">
             <div className="page-heading">
                 <div>
-                    <p className="eyebrow">YOUR KNOWLEDGE LIBRARY</p>
-                    <h1>My Resources</h1>
+                    <p className="eyebrow">STUDYVAULT / RESOURCES</p>
+                    <h1>Make space for <em>what you learn.</em></h1>
                     <p className="page-description">
-                        All your learning materials, organised in one place.
+                        All your learning materials, thoughtfully organised in one place.
                     </p>
                 </div>
 
@@ -140,26 +150,101 @@ export default function Resources({
                         />
                     </div>
 
-                    <select
-                        value={selectedSubject}
-                        onChange={(event) =>
-                            setSelectedSubject(event.target.value)
-                        }
-                    >
-                        <option value="All">All subjects</option>
-                        {subjects.map((subject) => (
-                            <option key={subject.id} value={subject.id}>
-                                {subject.name}
-                            </option>
-                        ))}
-                    </select>
+                    <div className="resource-subject-filter">
+                        <button
+                            type="button"
+                            className="resource-subject-trigger"
+                            aria-haspopup="listbox"
+                            aria-expanded={subjectMenuOpen}
+                            onClick={() => setSubjectMenuOpen((open) => !open)}
+                            onKeyDown={(event) => {
+                                if (event.key === "Escape") setSubjectMenuOpen(false);
+                            }}
+                        >
+                            <span>{selectedSubject === "All" ? "All subjects" : subjects.find((subject) => String(subject.id) === selectedSubject)?.name ?? "All subjects"}</span>
+                            <ChevronDown size={16} className={subjectMenuOpen ? "is-open" : ""} />
+                        </button>
+                        {subjectMenuOpen && (
+                            <>
+                                <button
+                                    type="button"
+                                    className="resource-subject-dismiss"
+                                    aria-label="Close subject filter"
+                                    tabIndex={-1}
+                                    onClick={() => setSubjectMenuOpen(false)}
+                                />
+                                <div className="resource-subject-menu" role="listbox" aria-label="Filter resources by subject">
+                                    <p className="resource-subject-menu-label">FILTER BY SUBJECT</p>
+                                    <button
+                                        type="button"
+                                        role="option"
+                                        aria-selected={selectedSubject === "All"}
+                                        className={`resource-subject-option ${selectedSubject === "All" ? "selected" : ""}`}
+                                        onClick={() => { setSelectedSubject("All"); setSubjectMenuOpen(false); }}
+                                    >
+                                        <span className="resource-subject-option-mark"><BookOpen size={15} /></span>
+                                        <span className="resource-subject-option-copy"><strong>All subjects</strong><small>Show every resource</small></span>
+                                        {selectedSubject === "All" && <Check size={16} className="resource-subject-check" />}
+                                    </button>
+                                    {subjects.map((subject) => {
+                                        const value = String(subject.id);
+                                        const active = selectedSubject === value;
+                                        const count = resources.filter((resource) => resource.subjectId === subject.id).length;
+                                        return (
+                                            <button
+                                                key={subject.id}
+                                                type="button"
+                                                role="option"
+                                                aria-selected={active}
+                                                className={`resource-subject-option ${active ? "selected" : ""}`}
+                                                onClick={() => { setSelectedSubject(value); setSubjectMenuOpen(false); }}
+                                            >
+                                                <span className="resource-subject-option-mark"><BookOpen size={15} /></span>
+                                                <span className="resource-subject-option-copy"><strong>{subject.name}</strong><small>{count} {count === 1 ? "resource" : "resources"}</small></span>
+                                                {active && <Check size={16} className="resource-subject-check" />}
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                            </>
+                        )}
+                    </div>
                 </div>
 
-                <p className="resources-count">
-                    {filteredResources.length} resource
-                    {filteredResources.length !== 1 ? "s" : ""} found
-                </p>
+                <div className="resource-type-filters" aria-label="Filter resources by type">
+                    {[
+                        { value: "All", label: "All" },
+                        { value: "Note", label: "Notes" },
+                        { value: "PDF", label: "PDF" },
+                        { value: "Document", label: "Docs" },
+                        { value: "Image", label: "Images" },
+                        { value: "Link", label: "Links" },
+                        { value: "Video", label: "Videos" },
+                        { value: "Other", label: "Others" },
+                    ].map((filter) => (
+                        <button
+                            key={filter.value}
+                            type="button"
+                            className={`resource-type-chip ${selectedType === filter.value ? "active" : ""}`}
+                            aria-pressed={selectedType === filter.value}
+                            onClick={() => setSelectedType(filter.value)}
+                        >
+                            {filter.label}
+                            {filter.value === "All" && <span className="resource-type-chip-count">{resources.length}</span>}
+                        </button>
+                    ))}
+                </div>
 
+                <div className="resources-results-bar">
+                    <p className="resources-count">
+                        {filteredResources.length} {filteredResources.length === 1 ? "resource" : "resources"} found
+                    </p>
+                    {(search || selectedSubject !== "All" || selectedType !== "All") && (
+                        <button type="button" className="resources-clear-filters" onClick={() => { setSearch(""); setSelectedSubject("All"); setSelectedType("All"); }}>
+                            Clear filters
+                        </button>
+                    )}
+                </div>
                 {filteredResources.length === 0 ? (
                     <div className="empty-resources">
                         <FileText size={32} />
