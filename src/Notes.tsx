@@ -88,7 +88,7 @@ export default function Notes({ resources, subjects, openNoteId, openFolderId, i
     const [saveStates, setSaveStates] = useState<Record<string, SaveState>>({});
     const [saveErrors, setSaveErrors] = useState<Record<string, string>>({});
     const [isLoading, setIsLoading] = useState(true);
-    const [leftOpen, setLeftOpen] = useState(true);
+    const [leftOpen, setLeftOpen] = useState(() => typeof window === "undefined" ? true : !window.matchMedia("(max-width: 760px)").matches);
     const [rightOpen, setRightOpen] = useState(true);
     const [isFolderFormOpen, setIsFolderFormOpen] = useState(false);
     const [folderName, setFolderName] = useState("");
