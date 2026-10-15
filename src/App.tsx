@@ -13,6 +13,7 @@ import Subjects, { type Subject } from "./Subjects";
 import Review from "./Review";
 import Progress from "./Progress";
 import DailyTimetable from "./DailyTimetable";
+import FocusCockpit from "./FocusCockpit";
 import {
     isStorageAvailable,
     loadResources,
@@ -23,6 +24,7 @@ import {
 } from "./services/storage";
 import "./App.css";
 import "./premium-motion.css";
+import "./focus-cockpit.css";
 
 // ---------------------------------------------------------------------------
 // Default subjects shown on first launch (before any user data is saved)
@@ -335,6 +337,8 @@ function App() {
                         />
                      ) : activePage === "Progress" ? (
                         <Progress subjects={subjects} onOpenReview={() => navigate("Review")} />
+                    ) : activePage === "Focus Cockpit" ? (
+                        <FocusCockpit subjects={subjects} onOpenReview={() => navigate("Review")} />
                     ) : activePage === "Timetable" ? (
                         <DailyTimetable />
                     ) : activePage === "Review" ? (
