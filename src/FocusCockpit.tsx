@@ -1,14 +1,21 @@
-import { useEffect, useMemo, useState, type CSSProperties } from "react";
-import { Activity, ArrowDownRight, ArrowRight, BookOpen, Check, CirclePause, CirclePlay, Coffee, RotateCcw, ShieldCheck, Timer, Waves } from "lucide-react";
+import { useEffect, useMemo, useRef, useState, type CSSProperties, type PointerEvent as ReactPointerEvent } from "react";
+import { Activity, ArrowDownRight, ArrowRight, BookOpen, Check, CirclePause, CirclePlay, Coffee, Maximize2, Minimize2, Move, RotateCcw, ShieldCheck, Timer, Waves, X } from "lucide-react";
 import type { Subject } from "./Subjects";
 
-type Props = { subjects: Subject[]; onOpenReview: () => void };
+type Props = { subjects: Subject[]; onOpenReview: () => void; isActive?: boolean };
 type Mode = "steady" | "deep" | "sprint";
 type RunState = "idle" | "running" | "paused" | "complete";
 type SavedRun = { id: string; date: string; subject: string; topic: string; plannedMinutes: number; actualSeconds: number; interruptions: number; completed: boolean; endedAt: number };
 type Persisted = { mode: Mode; state: RunState; endsAt: number | null; remainingMs: number; subject: string; topic: string; interruptions: number; activeElapsedMs: number; startedAt: number | null; phase: "focus" | "break" };
 const STATE_KEY = "studyvault-focus-cockpit-v1";
 const HISTORY_KEY = "studyvault-focus-history-v1";
+const FLOATING_KEY = "studyvault-floating-timer-v1";
+const POSITION_KEY = "studyvault-floating-timer-position-v1";
+type FloatingPosition = { x: number; y: number };
+function readFloatingPosition(): FloatingPosition {
+  try { const saved = localStorage.getItem(POSITION_KEY); if (saved) return JSON.parse(saved) as FloatingPosition; } catch { /* Use the default position. */ }
+  return { x: typeof window === "undefined" ? 24 : Math.max(12, window.innerWidth - 244), y: typeof window === "undefined" ? 120 : Math.max(12, window.innerHeight - 150) };
+}
 const MODES: Record<Mode, { label: string; focus: number; rest: number; note: string }> = {
   steady: { label: "Steady", focus: 25, rest: 5, note: "A classic focus cycle with a short reset." },
   deep: { label: "Deep work", focus: 50, rest: 10, note: "For problem-solving, coding and difficult concepts." },
@@ -32,11 +39,14 @@ function formatDuration(seconds: number) {
   return mins < 60 ? mins + " min" : Math.floor(mins / 60) + "h " + (mins % 60 ? mins % 60 + "m" : "");
 }
 
-export default function FocusCockpit({ subjects, onOpenReview }: Props) {
+export default function FocusCockpit({ subjects, onOpenReview, isActive = true }: Props) {
   const [session, setSession] = useState<Persisted>(readState);
   const [history, setHistory] = useState<SavedRun[]>(readHistory);
   const [now, setNow] = useState(() => Date.now());
   const [savedNotice, setSavedNotice] = useState(false);
+  const [floatingOpen, setFloatingOpen] = useState(() => { try { return localStorage.getItem(FLOATING_KEY) === "true"; } catch { return false; } });
+  const [floatingPosition, setFloatingPosition] = useState<FloatingPosition>(readFloatingPosition);
+  const dragOrigin = useRef<{ pointerX: number; pointerY: number; x: number; y: number } | null>(null);
   const mode = MODES[session.mode] ?? MODES.steady;
   const remaining = session.state === "running" && session.endsAt !== null ? Math.max(0, session.endsAt - now) : session.remainingMs;
   const totalMs = (session.phase === "focus" ? mode.focus : mode.rest) * 60_000;
@@ -48,6 +58,34 @@ export default function FocusCockpit({ subjects, onOpenReview }: Props) {
   useEffect(() => {
     try { localStorage.setItem(STATE_KEY, JSON.stringify(session)); } catch { /* Timer remains usable for this visit. */ }
   }, [session]);
+
+  useEffect(() => {
+    try { localStorage.setItem(FLOATING_KEY, String(floatingOpen)); } catch { /* Floating timer still works for this visit. */ }
+  }, [floatingOpen]);
+
+  useEffect(() => {
+    try { localStorage.setItem(POSITION_KEY, JSON.stringify(floatingPosition)); } catch { /* Position still works for this visit. */ }
+  }, [floatingPosition]);
+
+  useEffect(() => {
+    const move = (event: PointerEvent) => {
+      if (!dragOrigin.current) return;
+      const nextX = dragOrigin.current.x + event.clientX - dragOrigin.current.pointerX;
+      const nextY = dragOrigin.current.y + event.clientY - dragOrigin.current.pointerY;
+      setFloatingPosition({ x: Math.min(Math.max(8, nextX), Math.max(8, window.innerWidth - 224)), y: Math.min(Math.max(8, nextY), Math.max(8, window.innerHeight - 112)) });
+    };
+    const stop = () => { dragOrigin.current = null; };
+    window.addEventListener("pointermove", move);
+    window.addEventListener("pointerup", stop);
+    window.addEventListener("pointercancel", stop);
+    return () => { window.removeEventListener("pointermove", move); window.removeEventListener("pointerup", stop); window.removeEventListener("pointercancel", stop); };
+  }, []);
+
+  const beginFloatingDrag = (event: ReactPointerEvent<HTMLDivElement>) => {
+    if ((event.target as HTMLElement).closest("button")) return;
+    event.preventDefault();
+    dragOrigin.current = { pointerX: event.clientX, pointerY: event.clientY, x: floatingPosition.x, y: floatingPosition.y };
+  };
 
   useEffect(() => {
     if (session.state !== "running") return;
@@ -113,10 +151,10 @@ export default function FocusCockpit({ subjects, onOpenReview }: Props) {
   const canEdit = session.state !== "running";
 
   return (
-    <div className="focus-cockpit">
+    <div className={"focus-cockpit" + (isActive ? " focus-page-active" : " focus-page-inactive")}>
       <header className="focus-page-heading">
         <div><p className="focus-eyebrow"><span /> YOUR PERSONAL LEARNING OS</p><h1>Focus <em>Cockpit.</em></h1><p className="focus-intro">One session. One clear target. Your attention, intentionally spent.</p></div>
-        <div className="focus-private"><ShieldCheck size={15} /> Stored on this device</div>
+        <div className="focus-heading-actions"><button className="focus-popout-button" type="button" onClick={() => setFloatingOpen(true)}><Move size={15} /> {floatingOpen ? "Timer is floating" : "Float timer"}</button><div className="focus-private"><ShieldCheck size={15} /> Stored on this device</div></div>
       </header>
 
       <section className="focus-main-grid">
@@ -164,6 +202,15 @@ export default function FocusCockpit({ subjects, onOpenReview }: Props) {
         </div>
       </section>
       <footer className="focus-footer"><span>FOCUS IS A PRACTICE, NOT A PERSONALITY TEST.</span><button type="button" onClick={onOpenReview}>Go to revision <ArrowRight size={15} /></button></footer>
+      {floatingOpen && <div className={"focus-floating-timer" + (session.state === "running" ? " is-running" : "")} style={{ left: floatingPosition.x, top: floatingPosition.y }} role="region" aria-label="Movable focus timer">
+        <div className="focus-floating-header" onPointerDown={beginFloatingDrag} title="Drag to move the timer anywhere on screen">
+          <span className="focus-floating-grip"><Move size={13} /> DRAG TO MOVE</span>
+          <div className="focus-floating-window-actions"><button type="button" aria-label="Hide floating timer" title="Hide timer" onClick={() => setFloatingOpen(false)}><Minimize2 size={14} /></button><button type="button" aria-label="Close floating timer" title="Close timer" onClick={() => setFloatingOpen(false)}><X size={14} /></button></div>
+        </div>
+        <div className="focus-floating-body"><div className="focus-floating-time"><span>{session.phase === "focus" ? "FOCUS" : "BREAK"} · {mode.label.toUpperCase()}</span><strong>{formatTime(remaining)}</strong><small>{session.state === "running" ? "Session in progress" : session.state === "paused" ? "Paused" : session.state === "complete" ? "Session complete" : "Ready when you are"}</small></div>
+          <div className="focus-floating-controls">{session.state === "running" ? <button type="button" aria-label="Pause timer" title="Pause" onClick={pause}><CirclePause size={18} /></button> : <button type="button" aria-label="Start or resume timer" title="Start or resume" onClick={start}><CirclePlay size={18} /></button>}<button type="button" aria-label="Reset timer" title="Reset" onClick={reset}><RotateCcw size={16} /></button></div>
+        </div>
+      </div>}
     </div>
   );
 }
