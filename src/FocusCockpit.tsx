@@ -35,7 +35,7 @@ function formatDuration(seconds: number) {
 export default function FocusCockpit({ subjects, onOpenReview }: Props) {
   const [session, setSession] = useState<Persisted>(readState);
   const [history, setHistory] = useState<SavedRun[]>(readHistory);
-  const [now, setNow] = useState(Date.now());
+  const [now, setNow] = useState(() => Date.now());
   const [savedNotice, setSavedNotice] = useState(false);
   const mode = MODES[session.mode] ?? MODES.steady;
   const remaining = session.state === "running" && session.endsAt !== null ? Math.max(0, session.endsAt - now) : session.remainingMs;
@@ -51,29 +51,29 @@ export default function FocusCockpit({ subjects, onOpenReview }: Props) {
 
   useEffect(() => {
     if (session.state !== "running") return;
-    const tick = window.setInterval(() => setNow(Date.now()), 250);
-    return () => window.clearInterval(tick);
-  }, [session.state, session.endsAt]);
-
-  useEffect(() => {
-    if (session.state !== "running" || session.endsAt === null || now < session.endsAt) return;
-    const finishedFocus = session.phase === "focus";
-    if (finishedFocus && session.startedAt !== null) {
-      const run: SavedRun = {
-        id: String(session.startedAt), date: todayKey(new Date(session.startedAt)), subject: session.subject || "Unassigned",
-        topic: session.topic.trim() || "Focused study", plannedMinutes: mode.focus,
-        actualSeconds: Math.max(0, Math.round((session.activeElapsedMs + session.remainingMs) / 1000)),
-        interruptions: session.interruptions, completed: true, endedAt: now
-      };
-      setHistory(previous => {
-        const next = [...previous.filter(item => item.id !== run.id), run].slice(-300);
-        try { localStorage.setItem(HISTORY_KEY, JSON.stringify(next)); } catch { /* Session can finish even if history cannot persist. */ }
-        return next;
-      });
-      setSavedNotice(true);
-    }
-    setSession(previous => ({ ...previous, state: "complete", endsAt: null, remainingMs: 0 }));
-  }, [now, session.state, session.endsAt, session.phase, session.startedAt, session.subject, session.topic, session.interruptions, mode.focus]);
+    const tick = () => {
+      const currentNow = Date.now();
+      setNow(currentNow);
+      if (session.endsAt === null || currentNow < session.endsAt) return;
+      if (session.phase === "focus" && session.startedAt !== null) {
+        const run: SavedRun = {
+          id: String(session.startedAt), date: todayKey(new Date(session.startedAt)), subject: session.subject || "Unassigned",
+          topic: session.topic.trim() || "Focused study", plannedMinutes: mode.focus,
+          actualSeconds: Math.max(0, Math.round((session.activeElapsedMs + session.remainingMs) / 1000)),
+          interruptions: session.interruptions, completed: true, endedAt: currentNow
+        };
+        setHistory(previous => {
+          const next = [...previous.filter(item => item.id !== run.id), run].slice(-300);
+          try { localStorage.setItem(HISTORY_KEY, JSON.stringify(next)); } catch { /* Session can finish even if history cannot persist. */ }
+          return next;
+        });
+        setSavedNotice(true);
+      }
+      setSession(previous => previous.state !== "running" ? previous : ({ ...previous, state: "complete", endsAt: null, remainingMs: 0 }));
+    };
+    const timer = window.setInterval(tick, 250);
+    return () => window.clearInterval(timer);
+  }, [session.state, session.endsAt, session.phase, session.startedAt, session.subject, session.topic, session.interruptions, session.activeElapsedMs, session.remainingMs, mode.focus]);
 
   const chooseMode = (nextMode: Mode) => {
     if (session.state === "running") return;
