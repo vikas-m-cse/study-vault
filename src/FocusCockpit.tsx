@@ -6,7 +6,7 @@ type Props = { subjects: Subject[]; onOpenReview: () => void };
 type Mode = "steady" | "deep" | "sprint";
 type RunState = "idle" | "running" | "paused" | "complete";
 type SavedRun = { id: string; date: string; subject: string; topic: string; plannedMinutes: number; actualSeconds: number; interruptions: number; completed: boolean; endedAt: number };
-type Persisted = { mode: Mode; state: RunState; endsAt: number | null; remainingMs: number; subject: string; topic: string; interruptions: number; startedAt: number | null; phase: "focus" | "break" };
+type Persisted = { mode: Mode; state: RunState; endsAt: number | null; remainingMs: number; subject: string; topic: string; interruptions: number; activeElapsedMs: number; startedAt: number | null; phase: "focus" | "break" };
 const STATE_KEY = "studyvault-focus-cockpit-v1";
 const HISTORY_KEY = "studyvault-focus-history-v1";
 const MODES: Record<Mode, { label: string; focus: number; rest: number; note: string }> = {
@@ -14,7 +14,7 @@ const MODES: Record<Mode, { label: string; focus: number; rest: number; note: st
   deep: { label: "Deep work", focus: 50, rest: 10, note: "For problem-solving, coding and difficult concepts." },
   sprint: { label: "Sprint", focus: 15, rest: 3, note: "A small start when getting going feels hard." },
 };
-const freshState = (): Persisted => ({ mode: "steady", state: "idle", endsAt: null, remainingMs: 25 * 60_000, subject: "", topic: "", interruptions: 0, startedAt: null, phase: "focus" });
+const freshState = (): Persisted => ({ mode: "steady", state: "idle", endsAt: null, remainingMs: 25 * 60_000, subject: "", topic: "", interruptions: 0, activeElapsedMs: 0, startedAt: null, phase: "focus" });
 function readState(): Persisted {
   try { const raw = localStorage.getItem(STATE_KEY); if (raw) return { ...freshState(), ...JSON.parse(raw) as Persisted }; } catch { /* Keep safe defaults when storage is unavailable. */ }
   return freshState();
@@ -62,7 +62,7 @@ export default function FocusCockpit({ subjects, onOpenReview }: Props) {
       const run: SavedRun = {
         id: String(session.startedAt), date: todayKey(new Date(session.startedAt)), subject: session.subject || "Unassigned",
         topic: session.topic.trim() || "Focused study", plannedMinutes: mode.focus,
-        actualSeconds: Math.max(0, Math.round((session.endsAt - session.startedAt) / 1000)),
+        actualSeconds: Math.max(0, Math.round((session.activeElapsedMs + session.remainingMs) / 1000)),
         interruptions: session.interruptions, completed: true, endedAt: now
       };
       setHistory(previous => {
@@ -84,13 +84,13 @@ export default function FocusCockpit({ subjects, onOpenReview }: Props) {
     const duration = session.remainingMs > 0 ? session.remainingMs : mode.focus * 60_000;
     const timestamp = Date.now();
     setNow(timestamp);
-    setSession(previous => ({ ...previous, state: "running", endsAt: timestamp + duration, remainingMs: duration, startedAt: previous.startedAt ?? timestamp, phase: "focus" }));
+    setSession(previous => ({ ...previous, state: "running", endsAt: timestamp + duration, remainingMs: duration, startedAt: previous.startedAt ?? timestamp }));
     setSavedNotice(false);
   };
   const pause = () => {
     const left = session.endsAt === null ? session.remainingMs : Math.max(0, session.endsAt - Date.now());
     setNow(Date.now());
-    setSession(previous => ({ ...previous, state: "paused", endsAt: null, remainingMs: left }));
+    setSession(previous => ({ ...previous, state: "paused", endsAt: null, activeElapsedMs: previous.activeElapsedMs + Math.max(0, previous.remainingMs - left), remainingMs: left }));
   };
   const reset = () => {
     if (session.startedAt !== null && session.state !== "complete") {
@@ -106,7 +106,7 @@ export default function FocusCockpit({ subjects, onOpenReview }: Props) {
   const changePhase = () => {
     const nextPhase = session.phase === "focus" ? "break" : "focus";
     const duration = (nextPhase === "focus" ? mode.focus : mode.rest) * 60_000;
-    setSession(previous => ({ ...previous, phase: nextPhase, state: "idle", endsAt: null, remainingMs: duration, startedAt: null, interruptions: 0 }));
+    setSession(previous => ({ ...previous, phase: nextPhase, state: "idle", endsAt: null, remainingMs: duration, startedAt: null, interruptions: 0, activeElapsedMs: 0 }));
     setSavedNotice(false);
   };
   const canEdit = session.state !== "running";
