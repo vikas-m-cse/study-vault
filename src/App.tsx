@@ -203,6 +203,27 @@ function App() {
         setEditingResource(null);
     }, []);
 
+    const handleOpenTimetableResource = useCallback((id: string) => {
+        const resource = resources?.find((item) => item.id === id);
+        if (!resource) return;
+
+        // Open files and external links directly in the user gesture so the
+        // browser does not treat the new tab as a popup. Notes open in-app.
+        if (resource.type !== "Note" && resource.file) {
+            const fileUrl = URL.createObjectURL(resource.file);
+            window.open(fileUrl, "_blank", "noopener,noreferrer");
+            window.setTimeout(() => URL.revokeObjectURL(fileUrl), 60_000);
+            return;
+        }
+        if (resource.type !== "Note" && resource.url) {
+            window.open(resource.url, "_blank", "noopener,noreferrer");
+            return;
+        }
+
+        setResourceTargetId(id);
+        navigate("My Resources");
+    }, [resources, navigate]);
+
     const handleDeleteResource = useCallback(async (id: string) => {
         if (!isStorageAvailable()) {
             throw new Error("IndexedDB is unavailable. This resource was not deleted.");
@@ -340,7 +361,7 @@ function App() {
                     ) : activePage === "Focus Cockpit" ? (
                         <div className="focus-cockpit-placeholder" />
                     ) : activePage === "Timetable" ? (
-                        <DailyTimetable />
+                        <DailyTimetable resources={resources} subjects={subjects} onOpenResource={handleOpenTimetableResource} />
                     ) : activePage === "Review" ? (
                         <Review
                             resources={resources}
