@@ -210,7 +210,7 @@ export default function FocusCockpit({ subjects, onOpenReview, isActive = true }
         <div className="focus-floating-body"><div className="focus-floating-time"><span>{session.phase === "focus" ? "FOCUS" : "BREAK"} · {mode.label.toUpperCase()}</span><strong>{formatTime(remaining)}</strong><small>{session.state === "running" ? "Session in progress" : session.state === "paused" ? "Paused" : session.state === "complete" ? "Session complete" : "Ready when you are"}</small></div>
           <div className="focus-floating-controls">{session.state === "running" ? <button type="button" aria-label="Pause timer" title="Pause" onClick={pause}><CirclePause size={18} /></button> : <button type="button" aria-label="Start or resume timer" title="Start or resume" onClick={start}><CirclePlay size={18} /></button>}<button type="button" aria-label="Reset timer" title="Reset" onClick={reset}><RotateCcw size={16} /></button></div>
         </div>
-      </div>}
+      </div>, document.body)}
     </div>
   );
 }
