@@ -77,7 +77,7 @@ export default function FocusCockpit({ subjects, onOpenReview }: Props) {
 
   const chooseMode = (nextMode: Mode) => {
     if (session.state === "running") return;
-    setSession(previous => ({ ...previous, mode: nextMode, state: "idle", endsAt: null, remainingMs: MODES[nextMode].focus * 60_000, startedAt: null, interruptions: 0, phase: "focus" }));
+    setSession(previous => ({ ...previous, mode: nextMode, state: "idle", endsAt: null, remainingMs: MODES[nextMode].focus * 60_000, startedAt: null, interruptions: 0, activeElapsedMs: 0, phase: "focus" }));
     setSavedNotice(false);
   };
   const start = () => {
