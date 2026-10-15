@@ -94,7 +94,7 @@ export default function FocusCockpit({ subjects, onOpenReview }: Props) {
   };
   const reset = () => {
     if (session.startedAt !== null && session.state !== "complete") {
-      const elapsed = Math.max(0, Math.round((Date.now() - session.startedAt) / 1000));
+      const elapsedMs = session.state === "running" && session.endsAt !== null ? session.activeElapsedMs + Math.max(0, session.remainingMs - (session.endsAt - Date.now())) : session.activeElapsedMs;\n      const elapsed = Math.max(0, Math.round(elapsedMs / 1000));
       if (elapsed >= 60) {
         const run: SavedRun = { id: String(session.startedAt), date: todayKey(new Date(session.startedAt)), subject: session.subject || "Unassigned", topic: session.topic.trim() || "Focused study", plannedMinutes: mode.focus, actualSeconds: elapsed, interruptions: session.interruptions, completed: false, endedAt: Date.now() };
         setHistory(previous => { const next = [...previous.filter(item => item.id !== run.id), run].slice(-300); try { localStorage.setItem(HISTORY_KEY, JSON.stringify(next)); } catch { /* Keep the current UI usable. */ } return next; });
