@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, type CSSProperties, type PointerEvent as ReactPointerEvent } from "react";
+import { useEffect, useMemo, useRef, useState, type CSSProperties, type PointerEvent as ReactPointerEvent } from "react";\nimport { createPortal } from "react-dom";
 import { Activity, ArrowDownRight, ArrowRight, BookOpen, Check, CirclePause, CirclePlay, Coffee, Maximize2, Minimize2, Move, RotateCcw, ShieldCheck, Timer, Waves, X } from "lucide-react";
 import type { Subject } from "./Subjects";
 
@@ -202,7 +202,7 @@ export default function FocusCockpit({ subjects, onOpenReview, isActive = true }
         </div>
       </section>
       <footer className="focus-footer"><span>FOCUS IS A PRACTICE, NOT A PERSONALITY TEST.</span><button type="button" onClick={onOpenReview}>Go to revision <ArrowRight size={15} /></button></footer>
-      {floatingOpen && <div className={"focus-floating-timer" + (session.state === "running" ? " is-running" : "")} style={{ left: floatingPosition.x, top: floatingPosition.y }} role="region" aria-label="Movable focus timer">
+      {floatingOpen && createPortal(<div className={"focus-floating-timer" + (session.state === "running" ? " is-running" : "")} style={{ left: floatingPosition.x, top: floatingPosition.y }} role="region" aria-label="Movable focus timer">
         <div className="focus-floating-header" onPointerDown={beginFloatingDrag} title="Drag to move the timer anywhere on screen">
           <span className="focus-floating-grip"><Move size={13} /> DRAG TO MOVE</span>
           <div className="focus-floating-window-actions"><button type="button" aria-label="Hide floating timer" title="Hide timer" onClick={() => setFloatingOpen(false)}><Minimize2 size={14} /></button><button type="button" aria-label="Close floating timer" title="Close timer" onClick={() => setFloatingOpen(false)}><X size={14} /></button></div>
