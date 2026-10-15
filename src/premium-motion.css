@@ -2643,3 +2643,28 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-
   .tt2-resource-link{gap:6px;padding:7px 8px}
   .tt2-resource-link strong{max-width:38vw}
 }
+
+.tt2-focus-open{
+  display:inline-flex;
+  align-items:center;
+  gap:7px;
+  max-width:100%;
+  margin-top:9px;
+  padding:7px 10px;
+  border:1px solid #d5ddc9;
+  border-radius:8px;
+  background:#f3f6ed;
+  color:#536b45;
+  font-size:11px;
+  font-weight:700;
+  text-align:left;
+}
+.tt2-focus-open:hover{background:#e7eedc;border-color:#b8c8a7}
+.tt2-focus-open strong{
+  overflow:hidden;
+  max-width:min(240px,35vw);
+  color:#303c2d;
+  font-weight:600;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
