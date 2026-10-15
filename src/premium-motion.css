@@ -2581,3 +2581,65 @@ select option { background: #FFFFFF !important; color: var(--sv-ink) !important;
 button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible {
   outline: 2px solid rgba(86,100,72,.55) !important; outline-offset: 2px !important;
 }
+
+
+/* TIMETABLE RESOURCE ACCESS — direct, low-friction entry to scheduled work. */
+.tt2-resource-link{
+  display:flex;
+  align-items:center;
+  gap:7px;
+  width:fit-content;
+  max-width:100%;
+  margin-top:9px;
+  padding:7px 10px;
+  border:1px solid #d9dfcf;
+  border-radius:8px;
+  background:#f4f6ef;
+  color:#536b45;
+  text-align:left;
+  transition:background .16s ease,border-color .16s ease,transform .16s ease;
+}
+.tt2-resource-link:hover{
+  background:#eaf0e1;
+  border-color:#b8c8a7;
+  transform:translateY(-1px);
+}
+.tt2-resource-link span{
+  flex:0 0 auto;
+  font-size:11px;
+  font-weight:700;
+}
+.tt2-resource-link strong{
+  overflow:hidden;
+  max-width:min(330px,45vw);
+  color:#303c2d;
+  font-size:11px;
+  font-weight:600;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+.tt2-resource-missing{
+  display:block;
+  margin-top:8px;
+  color:#9a6b36;
+  font-size:11px;
+}
+.tt2-resource-hint{
+  display:flex;
+  align-items:flex-start;
+  gap:7px;
+  margin:2px 0 0;
+  color:#7a8173;
+  font-size:12px;
+  line-height:1.5;
+}
+.tt2-resource-hint svg{
+  flex:0 0 auto;
+  margin-top:2px;
+  color:#74845e;
+}
+.tt2-resource-hint strong{color:#4d6241}
+@media(max-width:620px){
+  .tt2-resource-link{gap:6px;padding:7px 8px}
+  .tt2-resource-link strong{max-width:38vw}
+}
