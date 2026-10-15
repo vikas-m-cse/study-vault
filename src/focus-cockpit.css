@@ -86,3 +86,31 @@
 @media(max-width:1000px){.focus-main-grid{grid-template-columns:minmax(0,1.2fr) minmax(260px,.8fr)}.focus-intention-panel{padding:20px}.focus-timer-panel{padding:22px}.focus-private{font-size:10px}}
 @media(max-width:760px){.focus-page-heading{align-items:flex-start;flex-direction:column;margin-bottom:20px}.focus-private{align-self:flex-start}.focus-main-grid,.focus-bottom-grid{grid-template-columns:1fr}.focus-intention-panel{min-height:0}.focus-clock-area{padding:16px 0}.focus-progress-ring{width:min(270px,72vw)}.focus-controls{display:grid;grid-template-columns:1fr 1fr}.focus-primary-button{grid-column:1/-1}.focus-bottom-grid{gap:12px}.focus-summary-panel,.focus-recent-panel{padding:19px}.focus-footer{align-items:flex-start;flex-direction:column}.focus-stat-grid{gap:5px}.focus-stat-grid>div+div{padding-left:9px}}
 @media(prefers-reduced-motion:reduce){.focus-cockpit *{transition:none!important;animation:none!important}}
+
+
+/* Movable mini timer: fixed to the viewport and available while navigating StudyVault. */
+.focus-heading-actions{display:flex;align-items:center;justify-content:flex-end;gap:10px;flex-wrap:wrap}
+.focus-popout-button{display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:9px 12px;border:1px solid var(--fc-line);border-radius:999px;background:var(--fc-surface);color:var(--fc-ink);font-size:11px;font-weight:700;white-space:nowrap;transition:background .16s,border-color .16s}
+.focus-popout-button:hover{background:var(--fc-paper);border-color:#c9c4b7}
+.focus-cockpit-placeholder{display:none}
+.focus-cockpit.focus-page-inactive{display:contents}
+.focus-cockpit.focus-page-inactive>:not(.focus-floating-timer){display:none!important}
+.focus-cockpit.focus-page-inactive .focus-floating-timer{display:block!important}
+.focus-floating-timer{position:fixed;z-index:10000;width:216px;max-width:calc(100vw - 16px);border:1px solid #d9d5ca;border-radius:15px;background:#fffefa;color:#292b26;box-shadow:0 12px 36px #25271d24;overflow:hidden;touch-action:pan-y;user-select:none}
+.focus-floating-timer.is-running{border-color:#9da991}
+.focus-floating-header{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:9px 10px;background:#f6f4ee;border-bottom:1px solid #e6e2d8;cursor:grab;touch-action:none}
+.focus-floating-header:active{cursor:grabbing}
+.focus-floating-grip{display:flex;align-items:center;gap:6px;color:#77786f;font-size:8px;letter-spacing:.12em;font-weight:800}
+.focus-floating-window-actions{display:flex;align-items:center;gap:3px}
+.focus-floating-window-actions button,.focus-floating-controls button{display:grid;place-items:center;border:1px solid #e6e2d8;background:#fffefa;color:#292b26;border-radius:7px;cursor:pointer}
+.focus-floating-window-actions button{width:25px;height:24px}
+.focus-floating-window-actions button:hover,.focus-floating-controls button:hover{background:#eef0e8;border-color:#c6cdbb}
+.focus-floating-body{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:12px}
+.focus-floating-time{display:flex;flex-direction:column;gap:3px;min-width:0}
+.focus-floating-time>span{font-size:8px;font-weight:800;letter-spacing:.1em;color:#59664b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.focus-floating-time strong{font-family:Georgia,"Times New Roman",serif;font-size:31px;line-height:1.1;font-weight:400;letter-spacing:-.04em;font-variant-numeric:tabular-nums}
+.focus-floating-time small{font-size:9px;color:#77786f;white-space:nowrap}
+.focus-floating-controls{display:flex;flex-direction:column;gap:6px;flex-shrink:0}
+.focus-floating-controls button{width:32px;height:31px}
+@media(max-width:760px){.focus-heading-actions{justify-content:flex-start;align-items:flex-start;flex-direction:column}.focus-floating-timer{width:204px}.focus-floating-time strong{font-size:29px}}
+@media(prefers-reduced-motion:reduce){.focus-popout-button{transition:none}}
