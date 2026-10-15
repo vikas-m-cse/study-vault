@@ -14,6 +14,7 @@ import Review from "./Review";
 import Progress from "./Progress";
 import DailyTimetable from "./DailyTimetable";
 import FocusCockpit from "./FocusCockpit";
+import StudyVaultToolbar from "./components/StudyVaultToolbar";
 import {
     isStorageAvailable,
     loadResources,
@@ -389,6 +390,13 @@ function App() {
                     initialResource={editingResource ?? undefined}
                 />
             )}
+
+            <StudyVaultToolbar
+                activePage={activePage}
+                onNavigate={navigate}
+                onAddResource={handleAddResource}
+                onOpenSearch={() => setIsSearchOpen(true)}
+            />
 
             <GlobalSearch
                 isOpen={isSearchOpen}
