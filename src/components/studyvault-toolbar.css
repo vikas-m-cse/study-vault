@@ -31,7 +31,10 @@
 .sv-toolbar-mark { display: grid; place-items: center; width: 34px; height: 34px; border-radius: 12px; color: #fffefa; background: #59664b; }
 .sv-toolbar-grip { position: absolute; right: 3px; bottom: 3px; color: #8a806f; }
 .sv-toolbar-panel {
-    width: min(282px, calc(100vw - 28px));
+    position: absolute;
+    right: calc(100% + 12px);
+    top: 0;
+    width: min(300px, calc(100vw - 88px));
     padding: 14px;
     border: 1px solid #e7e2d7;
     border-radius: 20px;
@@ -49,16 +52,16 @@
 .sv-toolbar-panel-head strong { font-family: Georgia, serif; font-size: 18px; font-weight: 600; }
 .sv-toolbar-close { display: grid; place-items: center; width: 30px; height: 30px; border: 1px solid #e7e2d7; border-radius: 10px; color: #55574e; background: #fffefa; }
 .sv-toolbar-grid { display: grid; gap: 5px; padding-top: 10px; }
-.sv-toolbar-action { display: grid; grid-template-columns: 31px minmax(0,1fr) 14px; align-items: center; gap: 9px; width: 100%; min-height: 41px; padding: 5px 8px; border: 1px solid transparent; border-radius: 11px; color: #42443c; background: transparent; text-align: left; cursor: pointer; }
+.sv-toolbar-action { display: grid; grid-template-columns: 31px minmax(0,1fr) 14px; align-items: center; gap: 9px; width: 100%; min-height: 49px; padding: 6px 8px; border: 1px solid transparent; border-radius: 11px; color: #42443c; background: transparent; text-align: left; cursor: pointer; }
 .sv-toolbar-action:hover, .sv-toolbar-action.is-active { border-color: #e7e2d7; background: #f6f3eb; }
 .sv-toolbar-action > span { display: grid; place-items: center; width: 30px; height: 30px; border-radius: 9px; color: #59664b; background: #eeefe7; }
-.sv-toolbar-action strong { font-size: 12px; font-weight: 650; }
+.sv-toolbar-action-copy { display: grid; min-width: 0; gap: 3px; }\n.sv-toolbar-action strong { font-size: 12px; font-weight: 650; }\n.sv-toolbar-action small { color: #898476; font-size: 10px; line-height: 1.3; }
 .sv-toolbar-action > svg { color: #9a9385; }
 .sv-toolbar-hint { margin: 11px 2px 0; color: #858174; font-size: 10px; }
 .sv-floating-toolbar.is-dragging .sv-toolbar-handle { cursor: grabbing; transform: scale(1.03); }
 @keyframes sv-toolbar-in { from { opacity: 0; transform: translateY(5px) scale(.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
 @media (max-width: 520px) {
     .sv-toolbar-handle { width: 54px; height: 54px; border-radius: 17px; }
-    .sv-toolbar-panel { padding: 12px; }
+    .sv-toolbar-panel { padding: 12px; width: min(286px, calc(100vw - 82px)); }
 }
 @media (prefers-reduced-motion: reduce) { .sv-toolbar-panel { animation: none; } .sv-toolbar-handle { transition: none; } }
