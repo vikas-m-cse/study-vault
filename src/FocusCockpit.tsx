@@ -45,7 +45,13 @@ export default function FocusCockpit({ subjects, onOpenReview, isActive = true }
   const [session, setSession] = useState<Persisted>(readState);
   const [history, setHistory] = useState<SavedRun[]>(readHistory);
   const [now, setNow] = useState(() => Date.now());
-  const [savedNotice, setSavedNotice] = useState(false);\n  const [phoneAway, setPhoneAway] = useState(false);\n  const [recallNotes, setRecallNotes] = useState("");\n  const [teachBack, setTeachBack] = useState("");\n  const [selfTest, setSelfTest] = useState("");\n  const [reviewWhen, setReviewWhen] = useState("tomorrow");\n  const [learningSaved, setLearningSaved] = useState(false);
+  const [savedNotice, setSavedNotice] = useState(false);
+  const [phoneAway, setPhoneAway] = useState(false);
+  const [recallNotes, setRecallNotes] = useState("");
+  const [teachBack, setTeachBack] = useState("");
+  const [selfTest, setSelfTest] = useState("");
+  const [reviewWhen, setReviewWhen] = useState("tomorrow");
+  const [learningSaved, setLearningSaved] = useState(false);
   const [floatingOpen, setFloatingOpen] = useState(() => { try { return localStorage.getItem(FLOATING_KEY) === "true"; } catch { return false; } });
   const [floatingPosition, setFloatingPosition] = useState<FloatingPosition>(readFloatingPosition);
   const dragOrigin = useRef<{ pointerX: number; pointerY: number; x: number; y: number } | null>(null);
