@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState, type CSSProperties, type PointerEvent as ReactPointerEvent } from "react";
 import { createPortal } from "react-dom";
-import { Activity, ArrowDownRight, ArrowRight, BookOpen, Check, CirclePause, CirclePlay, Coffee, Minimize2, Move, RotateCcw, ShieldCheck, Timer, Waves, X } from "lucide-react";
+import { Activity, ArrowDownRight, ArrowRight, BookOpen, Brain, Check, CirclePause, CirclePlay, Coffee, ClipboardCheck, Minimize2, Move, RotateCcw, ShieldCheck, Smartphone, Sparkles, Timer, Waves, X } from "lucide-react";
 import type { Subject } from "./Subjects";
 
 type Props = { subjects: Subject[]; onOpenReview: () => void; isActive?: boolean };
@@ -44,7 +44,7 @@ export default function FocusCockpit({ subjects, onOpenReview, isActive = true }
   const [session, setSession] = useState<Persisted>(readState);
   const [history, setHistory] = useState<SavedRun[]>(readHistory);
   const [now, setNow] = useState(() => Date.now());
-  const [savedNotice, setSavedNotice] = useState(false);
+  const [savedNotice, setSavedNotice] = useState(false);\n  const [phoneAway, setPhoneAway] = useState(false);\n  const [recallNotes, setRecallNotes] = useState("");\n  const [teachBack, setTeachBack] = useState("");\n  const [selfTest, setSelfTest] = useState("");\n  const [reviewWhen, setReviewWhen] = useState("tomorrow");\n  const [learningSaved, setLearningSaved] = useState(false);
   const [floatingOpen, setFloatingOpen] = useState(() => { try { return localStorage.getItem(FLOATING_KEY) === "true"; } catch { return false; } });
   const [floatingPosition, setFloatingPosition] = useState<FloatingPosition>(readFloatingPosition);
   const dragOrigin = useRef<{ pointerX: number; pointerY: number; x: number; y: number } | null>(null);
@@ -191,6 +191,27 @@ export default function FocusCockpit({ subjects, onOpenReview, isActive = true }
           {savedNotice && <div className="focus-saved-note" role="status"><Check size={16} /> Completed session saved to your local history.</div>}
           {session.state === "complete" && <button className="focus-review-link" type="button" onClick={onOpenReview}>Review what you learned <ArrowRight size={15} /></button>}
         </aside>
+      </section>
+
+      <section className="guided-learning-panel" aria-labelledby="guided-learning-title">
+        <div className="guided-learning-heading">
+          <div><span className="focus-overline"><Sparkles size={13} /> THE LEARNING LOOP</span><h2 id="guided-learning-title">Turn focus into lasting learning.</h2><p>Use the last few minutes to retrieve, explain and test what you studied.</p></div>
+          <span className="guided-learning-badge"><Brain size={14} /> Active learning</span>
+        </div>
+        <div className="guided-learning-prep">
+          <label className={"guided-phone-check" + (phoneAway ? " checked" : "")}><input type="checkbox" checked={phoneAway} onChange={event => setPhoneAway(event.target.checked)} /><span className="guided-check-icon">{phoneAway ? <Check size={15} /> : <Smartphone size={15} />}</span><span><strong>Distraction shield</strong><small>{phoneAway ? "Phone away — protect this block." : "Put your phone out of reach before starting."}</small></span></label>
+          <div className="guided-block-note"><Timer size={15} /><span><strong>One target at a time</strong><small>Steady 25 min · Deep work 50 min · Sprint 15 min</small></span></div>
+        </div>
+        <div className="guided-learning-grid">
+          <label className="guided-learning-step"><span className="guided-step-number">01</span><span className="guided-step-title"><Brain size={16} /> Recall from memory</span><small>Close your material first. Write what you remember.</small><textarea rows={4} value={recallNotes} onChange={event => setRecallNotes(event.target.value)} placeholder="What were the key ideas? Can you draw the diagram or list the steps?" /></label>
+          <label className="guided-learning-step"><span className="guided-step-number">02</span><span className="guided-step-title"><BookOpen size={16} /> Teach it simply</span><small>Explain it like you're teaching a friend.</small><textarea rows={4} value={teachBack} onChange={event => setTeachBack(event.target.value)} placeholder="The main idea is… It works because… For example…" /></label>
+          <label className="guided-learning-step"><span className="guided-step-number">03</span><span className="guided-step-title"><ClipboardCheck size={16} /> Test yourself</span><small>Answer without notes, then check for gaps.</small><textarea rows={4} value={selfTest} onChange={event => setSelfTest(event.target.value)} placeholder="Question I tested myself on… My answer… What I need to correct…" /></label>
+        </div>
+        <div className="guided-learning-footer">
+          <label className="guided-review-select"><span>Next review</span><select value={reviewWhen} onChange={event => setReviewWhen(event.target.value)}><option value="tonight">Later today</option><option value="tomorrow">Tomorrow</option><option value="3days">In 3 days</option><option value="7days">In 7 days</option></select></label>
+          <p><ShieldCheck size={14} /> Your learning notes are saved on this device automatically.</p>
+          <button type="button" className="guided-save-button" onClick={() => { setLearningSaved(true); window.setTimeout(() => setLearningSaved(false), 2200); }}><Check size={15} /> {learningSaved ? "Learning log saved" : "Finish learning loop"}</button>
+        </div>
       </section>
 
       <section className="focus-bottom-grid">
