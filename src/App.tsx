@@ -338,7 +338,7 @@ function App() {
                      ) : activePage === "Progress" ? (
                         <Progress subjects={subjects} onOpenReview={() => navigate("Review")} />
                     ) : activePage === "Focus Cockpit" ? (
-                        <FocusCockpit subjects={subjects} onOpenReview={() => navigate("Review")} />
+                        <div className="focus-cockpit-placeholder" />
                     ) : activePage === "Timetable" ? (
                         <DailyTimetable />
                     ) : activePage === "Review" ? (
@@ -358,6 +358,8 @@ function App() {
                     )}
                 </section>
             </main>
+
+            <FocusCockpit subjects={subjects} onOpenReview={() => navigate("Review")} isActive={activePage === "Focus Cockpit"} />
 
             {isAddResourceOpen && (
                 <AddResourceModal
