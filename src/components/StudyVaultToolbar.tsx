@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import {
-    BookOpen, CalendarDays, FilePlus2, FolderOpen, Grip, LayoutDashboard,
-    Search, BrainCircuit, Timer, X, ChevronRight, StickyNote,
+    BookOpen, CalendarDays, FilePlus2, Grip, Search, Timer, X, ChevronRight, StickyNote,
 } from "lucide-react";
 import "./studyvault-toolbar.css";
 
@@ -16,15 +15,11 @@ type Position = { x: number; y: number };
 
 const STORAGE_KEY = "studyvault-floating-toolbar-position-v1";
 const shortcuts = [
-    { label: "Dashboard", icon: LayoutDashboard, page: "Dashboard" },
-    { label: "My Resources", icon: FolderOpen, page: "My Resources" },
-    { label: "Add resource", icon: FilePlus2, action: "add" },
-    { label: "Search", icon: Search, action: "search" },
-    { label: "Notes", icon: StickyNote, page: "Notes" },
-    { label: "Timetable", icon: CalendarDays, page: "Timetable" },
-    { label: "Focus Cockpit", icon: Timer, page: "Focus Cockpit" },
-    { label: "Review", icon: BrainCircuit, page: "Review" },
-    { label: "Subjects", icon: BookOpen, page: "Subjects" },
+    { label: "Search anything", icon: Search, action: "search", detail: "Find notes, resources and subjects" },
+    { label: "Add a resource", icon: FilePlus2, action: "add", detail: "Save a file or Drive link" },
+    { label: "Open notes", icon: StickyNote, page: "Notes", detail: "Return to your writing" },
+    { label: "Start a focus session", icon: Timer, page: "Focus Cockpit", detail: "Get into deep work" },
+    { label: "Open today's plan", icon: CalendarDays, page: "Timetable", detail: "See what to work on next" },
 ];
 
 function clampPosition(position: Position): Position {
@@ -98,7 +93,7 @@ export default function StudyVaultToolbar({ activePage, onNavigate, onAddResourc
             {expanded && (
                 <div className="sv-toolbar-panel" role="menu" aria-label="StudyVault quick access">
                     <div className="sv-toolbar-panel-head">
-                        <div><span>STUDYVAULT</span><strong>Quick access</strong></div>
+                        <div><span>STUDYVAULT / TOOLS</span><strong>Quick tools</strong></div>
                         <button type="button" className="sv-toolbar-close" onClick={() => setExpanded(false)} aria-label="Close quick access"><X size={16}/></button>
                     </div>
                     <div className="sv-toolbar-grid">
@@ -107,12 +102,12 @@ export default function StudyVaultToolbar({ activePage, onNavigate, onAddResourc
                             const selected = item.page === activePage;
                             return (
                                 <button type="button" role="menuitem" key={item.label} className={`sv-toolbar-action ${selected ? "is-active" : ""}`} onClick={() => runShortcut(item)}>
-                                    <span><Icon size={17}/></span><strong>{item.label}</strong><ChevronRight size={13}/>
+                                    <span><Icon size={17}/></span><div className="sv-toolbar-action-copy"><strong>{item.label}</strong><small>{item.detail}</small></div><ChevronRight size={13}/>
                                 </button>
                             );
                         })}
                     </div>
-                    <p className="sv-toolbar-hint">Drag the grip to move this toolbar.</p>
+                    <p className="sv-toolbar-hint">A small tool dock for your workflow. Drag the book grip to move it.</p>
                 </div>
             )}
             <button
