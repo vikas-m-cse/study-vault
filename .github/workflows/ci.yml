@@ -5,6 +5,7 @@ on:
     branches:
       - main
       - design/studyvault-premium-visuals
+      - feature/focus-cockpit-timer
   pull_request:
     branches:
       - main
