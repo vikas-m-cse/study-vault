@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState, type CSSProperties, type PointerEvent as ReactPointerEvent } from "react";
 import { createPortal } from "react-dom";
-import { Activity, ArrowDownRight, ArrowRight, BookOpen, Check, CirclePause, CirclePlay, Coffee, Maximize2, Minimize2, Move, RotateCcw, ShieldCheck, Timer, Waves, X } from "lucide-react";
+import { Activity, ArrowDownRight, ArrowRight, BookOpen, Check, CirclePause, CirclePlay, Coffee, Minimize2, Move, RotateCcw, ShieldCheck, Timer, Waves, X } from "lucide-react";
 import type { Subject } from "./Subjects";
 
 type Props = { subjects: Subject[]; onOpenReview: () => void; isActive?: boolean };
