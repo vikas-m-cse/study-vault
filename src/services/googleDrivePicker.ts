@@ -32,7 +32,7 @@ type GooglePickerBuilder = {
 
 type GooglePickerApi = {
     PickerBuilder: new () => GooglePickerBuilder;
-    ViewId: { DOCS: string };
+    ViewId: { DOCS: string; FOLDERS: string };
     Action: { PICKED: string; CANCEL: string };
     Response: { DOCUMENTS: string };
 };
@@ -100,7 +100,7 @@ async function loadGoogleLibraries(): Promise<void> {
     });
 }
 
-export async function chooseGoogleDriveFile(): Promise<DrivePickerSelection | null> {
+async function chooseGoogleDriveItem(kind: "file" | "folder"): Promise<DrivePickerSelection | null> {
     const apiKey = import.meta.env.VITE_GOOGLE_PICKER_API_KEY?.trim();
     const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID?.trim();
     const appId = import.meta.env.VITE_GOOGLE_APP_ID?.trim();
@@ -134,7 +134,7 @@ export async function chooseGoogleDriveFile(): Promise<DrivePickerSelection | nu
 
                 try {
                     const picker = new pickerApi.PickerBuilder()
-                        .addView(pickerApi.ViewId.DOCS)
+                        .addView(kind === "folder" ? pickerApi.ViewId.FOLDERS : pickerApi.ViewId.DOCS)
                         .setOAuthToken(response.access_token)
                         .setDeveloperKey(apiKey)
                         .setAppId(appId)
@@ -157,9 +157,9 @@ export async function chooseGoogleDriveFile(): Promise<DrivePickerSelection | nu
                             settled = true;
                             resolve({
                                 id: document.id,
-                                name: document.name?.trim() || "Google Drive resource",
+                                name: document.name?.trim() || (kind === "folder" ? "Google Drive folder" : "Google Drive resource"),
                                 mimeType: document.mimeType,
-                                url: document.url || `https://drive.google.com/open?id=${encodeURIComponent(document.id)}`,
+                                url: document.url || (kind === "folder" ? `https://drive.google.com/drive/folders/${encodeURIComponent(document.id)}` : `https://drive.google.com/open?id=${encodeURIComponent(document.id)}`),
                             });
                         })
                         .build();
@@ -173,4 +173,14 @@ export async function chooseGoogleDriveFile(): Promise<DrivePickerSelection | nu
 
         tokenClient.requestAccessToken({ prompt: "consent" });
     });
+}
+
+
+/** Opens Google Picker in folder-selection mode; saves a link to the folder, not a copy of its contents. */
+export function chooseGoogleDriveFolder(): Promise<DrivePickerSelection | null> {
+    return chooseGoogleDriveItem("folder");
+}
+
+export function chooseGoogleDriveFile(): Promise<DrivePickerSelection | null> {
+    return chooseGoogleDriveItem("file");
 }
