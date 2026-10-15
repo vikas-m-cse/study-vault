@@ -356,10 +356,9 @@ function App() {
                             </p>
                         </div>
                     )}
+                    <FocusCockpit subjects={subjects} onOpenReview={() => navigate("Review")} isActive={activePage === "Focus Cockpit"} />
                 </section>
             </main>
-
-            <FocusCockpit subjects={subjects} onOpenReview={() => navigate("Review")} isActive={activePage === "Focus Cockpit"} />
 
             {isAddResourceOpen && (
                 <AddResourceModal
