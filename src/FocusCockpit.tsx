@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState, type CSSProperties, type PointerE
 import { createPortal } from "react-dom";
 import { Activity, ArrowDownRight, ArrowRight, BookOpen, Brain, Check, CirclePause, CirclePlay, Coffee, ClipboardCheck, Minimize2, Move, RotateCcw, ShieldCheck, Smartphone, Sparkles, Timer, Waves, X } from "lucide-react";
 import type { Subject } from "./Subjects";
+import FocusReviewQueue from "./FocusReviewQueue";
 
 type Props = { subjects: Subject[]; onOpenReview: () => void; isActive?: boolean };
 type Mode = "steady" | "deep" | "sprint";
@@ -213,6 +214,8 @@ export default function FocusCockpit({ subjects, onOpenReview, isActive = true }
           <button type="button" className="guided-save-button" onClick={() => { setLearningSaved(true); window.setTimeout(() => setLearningSaved(false), 2200); }}><Check size={15} /> {learningSaved ? "Learning log saved" : "Finish learning loop"}</button>
         </div>
       </section>
+
+      <FocusReviewQueue subject={session.subject} topic={session.topic} recallNotes={recallNotes} selfTest={selfTest} reviewWhen={reviewWhen} />
 
       <section className="focus-bottom-grid">
         <div className="focus-summary-panel">
