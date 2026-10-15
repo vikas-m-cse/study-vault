@@ -1,6 +1,6 @@
 import { fireEvent, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { beforeEach, describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import DailyTimetable from "./DailyTimetable";
 
 describe("DailyTimetable", () => {
@@ -56,6 +56,39 @@ describe("DailyTimetable", () => {
     await user.click(screen.getByRole("button", { name: /reset plan/i }));
     const savedAfterReset = JSON.parse(localStorage.getItem("studyvault-timetable-completions-v1") ?? "{}");
     expect(Object.values(savedAfterReset).flat()).toContain("starter-morning");
+  });
+
+  it("links a scheduled block to a saved resource and opens it directly", async () => {
+    const user = userEvent.setup();
+    const onOpenResource = vi.fn();
+    const resources = [{
+      id: "os-pdf",
+      title: "Operating Systems Module 1",
+      description: "VTU notes",
+      type: "PDF" as const,
+      subjectId: 1,
+      createdAt: "2026-10-01T00:00:00.000Z",
+      url: "https://example.com/os-module-1.pdf",
+    }];
+    const subjects = [{ id: 1, name: "Operating Systems", description: "OS concepts", color: "olive" }];
+    render(<DailyTimetable resources={resources} subjects={subjects} onOpenResource={onOpenResource} />);
+
+    await user.click(screen.getByRole("button", { name: /add a block/i }));
+    await user.type(screen.getByPlaceholderText("e.g. Java problem-solving"), "Revise OS Module 1");
+    fireEvent.change(screen.getByLabelText("Starts"), { target: { value: "18:15" } });
+    fireEvent.change(screen.getByLabelText("Ends"), { target: { value: "19:00" } });
+    await user.selectOptions(screen.getByLabelText("Subject (optional)"), "1");
+    await user.selectOptions(screen.getByLabelText("Study resource (optional)"), "os-pdf");
+    await user.click(screen.getByRole("button", { name: /add to my day/i }));
+
+    const openWork = screen.getByRole("button", { name: /open work/i });
+    expect(openWork.textContent).toContain("Operating Systems Module 1");
+    await user.click(openWork);
+    expect(onOpenResource).toHaveBeenCalledWith("os-pdf");
+    const saved = JSON.parse(localStorage.getItem("studyvault-daily-timetable-v1") ?? "[]");
+    expect(saved.some((block: { title: string; resourceId?: string; subjectId?: number }) =>
+      block.title === "Revise OS Module 1" && block.resourceId === "os-pdf" && block.subjectId === 1
+    )).toBe(true);
   });
 
   it("does not accept an end time before or equal to the start time", async () => {
