@@ -100,7 +100,7 @@ export default function FocusCockpit({ subjects, onOpenReview }: Props) {
         setHistory(previous => { const next = [...previous.filter(item => item.id !== run.id), run].slice(-300); try { localStorage.setItem(HISTORY_KEY, JSON.stringify(next)); } catch { /* Keep the current UI usable. */ } return next; });
       }
     }
-    setSession(previous => ({ ...previous, state: "idle", endsAt: null, remainingMs: MODES[previous.mode].focus * 60_000, startedAt: null, interruptions: 0, phase: "focus" }));
+    setSession(previous => ({ ...previous, state: "idle", endsAt: null, remainingMs: MODES[previous.mode].focus * 60_000, startedAt: null, interruptions: 0, activeElapsedMs: 0, phase: "focus" }));
     setSavedNotice(false);
   };
   const changePhase = () => {
