@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type CSSProperties } from "react";
 import { Activity, ArrowDownRight, ArrowRight, BookOpen, Check, CirclePause, CirclePlay, Coffee, RotateCcw, ShieldCheck, Timer, Waves } from "lucide-react";
 import type { Subject } from "./Subjects";
 
@@ -125,7 +125,7 @@ export default function FocusCockpit({ subjects, onOpenReview }: Props) {
             {(Object.keys(MODES) as Mode[]).map(key => <button key={key} type="button" className={session.mode === key ? "selected" : ""} onClick={() => chooseMode(key)} disabled={!canEdit}><strong>{MODES[key].label}</strong><span>{MODES[key].focus} min</span></button>)}
           </div>
           <div className="focus-clock-area">
-            <div className="focus-progress-ring" style={{ "--focus-progress": String(progress) } as React.CSSProperties} aria-label={Math.round(progress * 100) + "% complete"}>
+            <div className="focus-progress-ring" style={{ "--focus-progress": String(progress) } as CSSProperties} aria-label={Math.round(progress * 100) + "% complete"}>
               <div className="focus-clock-inner"><span className="focus-clock-caption">{session.phase === "focus" ? "TIME REMAINING" : "BREAK REMAINING"}</span><strong aria-live="off">{formatTime(remaining)}</strong><span className="focus-clock-sub">{session.state === "running" ? "Protect this block" : session.state === "paused" ? "Paused — resume when ready" : session.state === "complete" ? "You showed up. That counts." : mode.note}</span></div>
             </div>
           </div>
