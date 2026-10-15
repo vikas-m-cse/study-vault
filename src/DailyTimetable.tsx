@@ -6,7 +6,7 @@ import type { Subject } from "./Subjects";
 type Category = "class" | "study" | "break" | "meal" | "personal";
 type Repeat = "everyday" | "weekdays" | "weekend";
 type TimeBlock = { id: string; title: string; start: string; end: string; category: Category; days: Repeat; subjectId?: number; resourceId?: string };
-type DailyTimetableProps = { resources: Resource[]; subjects: Subject[]; onOpenResource: (resourceId: string) => void };
+type DailyTimetableProps = { resources?: Resource[]; subjects?: Subject[]; onOpenResource?: (resourceId: string) => void };
 type CompletionMap = Record<string, string[]>;
 const PLAN_KEY = "studyvault-daily-timetable-v1";
 const COMPLETION_KEY = "studyvault-timetable-completions-v1";
@@ -30,7 +30,7 @@ const repeatsOnSameDay=(a:Repeat,b:Repeat)=>a==="everyday"||b==="everyday"||a===
 function loadPlan():TimeBlock[]{try{const v=localStorage.getItem(PLAN_KEY);if(v){const p:unknown=JSON.parse(v);if(Array.isArray(p))return p as TimeBlock[];}}catch { /* Keep the in-memory defaults when browser storage is unavailable. */ }return starterPlan;}
 function loadDone():CompletionMap{try{const v=localStorage.getItem(COMPLETION_KEY);if(v)return JSON.parse(v) as CompletionMap;}catch { /* Keep the in-memory defaults when browser storage is unavailable. */ }return {};}
 
-export default function DailyTimetable({ resources, subjects, onOpenResource }: DailyTimetableProps){
+export default function DailyTimetable({ resources = [], subjects = [], onOpenResource = () => {} }: DailyTimetableProps){
  const [blocks,setBlocks]=useState<TimeBlock[]>(loadPlan);
  const [doneByDate,setDoneByDate]=useState<CompletionMap>(loadDone);
  const [selectedDate,setSelectedDate]=useState(()=>dateKey(new Date()));
