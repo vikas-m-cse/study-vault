@@ -1,0 +1,64 @@
+.sv-floating-toolbar {
+    position: fixed;
+    z-index: 1200;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 10px;
+    touch-action: none;
+    font-family: inherit;
+}
+.sv-toolbar-handle {
+    width: 58px;
+    height: 58px;
+    border: 1px solid rgba(196,154,90,.48);
+    border-radius: 19px;
+    padding: 0;
+    display: grid;
+    place-items: center;
+    position: relative;
+    color: #292b26;
+    background: rgba(255,254,250,.96);
+    box-shadow: 0 8px 26px rgba(41,43,38,.18), inset 0 0 0 3px rgba(255,255,255,.72);
+    cursor: grab;
+    touch-action: none;
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    transition: box-shadow .18s ease, transform .18s ease;
+}
+.sv-toolbar-handle:hover { box-shadow: 0 11px 30px rgba(41,43,38,.23); transform: translateY(-1px); }
+.sv-toolbar-handle:active { cursor: grabbing; }
+.sv-toolbar-mark { display: grid; place-items: center; width: 34px; height: 34px; border-radius: 12px; color: #fffefa; background: #59664b; }
+.sv-toolbar-grip { position: absolute; right: 3px; bottom: 3px; color: #8a806f; }
+.sv-toolbar-panel {
+    width: min(282px, calc(100vw - 28px));
+    padding: 14px;
+    border: 1px solid #e7e2d7;
+    border-radius: 20px;
+    color: #292b26;
+    background: rgba(255,254,250,.98);
+    box-shadow: 0 18px 54px rgba(41,43,38,.2);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    touch-action: pan-y;
+    animation: sv-toolbar-in .16s ease-out;
+}
+.sv-toolbar-panel-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 1px 2px 12px; border-bottom: 1px solid #eee9df; }
+.sv-toolbar-panel-head div { display: grid; gap: 3px; }
+.sv-toolbar-panel-head span { font-size: 9px; letter-spacing: .16em; font-weight: 800; color: #78806b; }
+.sv-toolbar-panel-head strong { font-family: Georgia, serif; font-size: 18px; font-weight: 600; }
+.sv-toolbar-close { display: grid; place-items: center; width: 30px; height: 30px; border: 1px solid #e7e2d7; border-radius: 10px; color: #55574e; background: #fffefa; }
+.sv-toolbar-grid { display: grid; gap: 5px; padding-top: 10px; }
+.sv-toolbar-action { display: grid; grid-template-columns: 31px minmax(0,1fr) 14px; align-items: center; gap: 9px; width: 100%; min-height: 41px; padding: 5px 8px; border: 1px solid transparent; border-radius: 11px; color: #42443c; background: transparent; text-align: left; cursor: pointer; }
+.sv-toolbar-action:hover, .sv-toolbar-action.is-active { border-color: #e7e2d7; background: #f6f3eb; }
+.sv-toolbar-action > span { display: grid; place-items: center; width: 30px; height: 30px; border-radius: 9px; color: #59664b; background: #eeefe7; }
+.sv-toolbar-action strong { font-size: 12px; font-weight: 650; }
+.sv-toolbar-action > svg { color: #9a9385; }
+.sv-toolbar-hint { margin: 11px 2px 0; color: #858174; font-size: 10px; }
+.sv-floating-toolbar.is-dragging .sv-toolbar-handle { cursor: grabbing; transform: scale(1.03); }
+@keyframes sv-toolbar-in { from { opacity: 0; transform: translateY(5px) scale(.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
+@media (max-width: 520px) {
+    .sv-toolbar-handle { width: 54px; height: 54px; border-radius: 17px; }
+    .sv-toolbar-panel { padding: 12px; }
+}
+@media (prefers-reduced-motion: reduce) { .sv-toolbar-panel { animation: none; } .sv-toolbar-handle { transition: none; } }
