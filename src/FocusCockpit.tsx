@@ -45,7 +45,7 @@ export default function FocusCockpit({ subjects, onOpenReview, isActive = true }
   const [session, setSession] = useState<Persisted>(readState);
   const [history, setHistory] = useState<SavedRun[]>(readHistory);
   const [now, setNow] = useState(() => Date.now());
-  const [savedNotice, setSavedNotice] = useState(false);
+  // Keep each hook declaration on its own physical line for TypeScript parsing.\n  const [savedNotice, setSavedNotice] = useState(false);
   const [phoneAway, setPhoneAway] = useState(false);
   const [recallNotes, setRecallNotes] = useState("");
   const [teachBack, setTeachBack] = useState("");
