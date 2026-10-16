@@ -114,3 +114,41 @@
 .focus-floating-controls button{width:32px;height:31px}
 @media(max-width:760px){.focus-heading-actions{justify-content:flex-start;align-items:flex-start;flex-direction:column}.focus-floating-timer{width:204px}.focus-floating-time strong{font-size:29px}}
 @media(prefers-reduced-motion:reduce){.focus-popout-button{transition:none}}
+
+
+/* Guided active-learning loop — recall, teach-back and self-testing. */
+.guided-learning-panel{margin-top:18px;padding:clamp(18px,2.4vw,28px);border:1px solid var(--fc-line);border-radius:22px;background:linear-gradient(145deg,#fffefa,#f8f7f1);box-shadow:0 10px 32px #292b2608;color:var(--fc-ink)}
+.guided-learning-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:18px;margin-bottom:20px}
+.guided-learning-heading .focus-overline{display:inline-flex;align-items:center;gap:6px}
+.guided-learning-heading h2{margin:8px 0 6px;font-family:Georgia,"Times New Roman",serif;font-size:clamp(23px,2.5vw,30px);font-weight:400;letter-spacing:-.035em}
+.guided-learning-heading p{margin:0;color:var(--fc-muted);font-size:12px;line-height:1.6}
+.guided-learning-badge{display:inline-flex;align-items:center;gap:7px;flex-shrink:0;padding:8px 11px;border:1px solid #e2e3d8;border-radius:999px;background:#f2f3ec;color:#56644b;font-size:10px;font-weight:750}
+.guided-learning-prep{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:18px}
+.guided-phone-check,.guided-block-note{display:flex;align-items:center;gap:11px;min-width:0;padding:13px;border:1px solid #e8e5db;border-radius:13px;background:#fff}
+.guided-phone-check{cursor:pointer}
+.guided-phone-check input{position:absolute;width:1px;height:1px;opacity:0}
+.guided-check-icon{display:grid;place-items:center;flex-shrink:0;width:34px;height:34px;border-radius:10px;background:#f4f1e8;color:#73775f}
+.guided-phone-check.checked .guided-check-icon{background:#e9efe4;color:#4d714e}
+.guided-phone-check>span:last-child,.guided-block-note>span{display:flex;flex-direction:column;gap:4px;min-width:0}
+.guided-phone-check strong,.guided-block-note strong{font-size:11px}
+.guided-phone-check small,.guided-block-note small{font-size:10px;line-height:1.45;color:var(--fc-muted)}
+.guided-block-note>svg{flex-shrink:0;color:#8b795b}
+.guided-learning-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.guided-learning-step{display:flex;flex-direction:column;align-items:flex-start;min-width:0;padding:15px;border:1px solid #e9e6dd;border-radius:15px;background:#fff}
+.guided-step-number{display:grid;place-items:center;width:27px;height:27px;border-radius:9px;background:#f2f0e7;color:#73775f;font-size:10px;font-weight:800}
+.guided-step-title{display:flex;align-items:center;gap:7px;margin-top:12px;font-size:12px;font-weight:750}
+.guided-step-title svg{color:#71795f}
+.guided-learning-step>small{min-height:31px;margin-top:6px;color:var(--fc-muted);font-size:10px;line-height:1.5}
+.guided-learning-step textarea{width:100%;min-height:96px;margin-top:12px;padding:11px;border:1px solid #e8e5db;border-radius:10px;background:#fdfcf9;color:var(--fc-ink);font:inherit;font-size:11px;line-height:1.6;resize:vertical}
+.guided-learning-step textarea::placeholder{color:#9a9b91}
+.guided-learning-step textarea:focus{outline:2px solid #b7c1a9;outline-offset:1px;border-color:#aeb99f}
+.guided-learning-footer{display:flex;align-items:center;gap:15px;flex-wrap:wrap;margin-top:17px;padding-top:16px;border-top:1px solid #e9e6dd}
+.guided-review-select{display:flex;align-items:center;gap:8px;font-size:10px;font-weight:700;color:var(--fc-muted)}
+.guided-review-select select{max-width:150px;padding:8px 10px;border:1px solid #e3e0d6;border-radius:9px;background:#fffefa;color:var(--fc-ink);font-size:10px}
+.guided-learning-footer p{display:flex;align-items:center;gap:6px;flex:1;min-width:160px;margin:0;color:var(--fc-muted);font-size:10px}
+.guided-learning-footer p svg{flex-shrink:0;color:#778568}
+.guided-save-button{display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:10px 13px;border:1px solid #59684b;border-radius:10px;background:#59684b;color:#fff;font-size:10px;font-weight:750;cursor:pointer}
+.guided-save-button:hover{background:#48563c}
+.guided-phone-check:focus-within{outline:2px solid #b7c1a9;outline-offset:2px}
+@media(max-width:900px){.guided-learning-grid{grid-template-columns:1fr}.guided-learning-step>small{min-height:0}.guided-learning-step textarea{min-height:80px}}
+@media(max-width:600px){.guided-learning-heading{flex-direction:column}.guided-learning-prep{grid-template-columns:1fr}.guided-learning-footer{align-items:stretch;flex-direction:column}.guided-review-select{justify-content:space-between}.guided-review-select select{flex:1;max-width:none}.guided-save-button{width:100%}}

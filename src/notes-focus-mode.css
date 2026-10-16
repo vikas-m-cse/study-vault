@@ -1,0 +1,105 @@
+/* Immersive Notes mode: use the whole viewport while keeping the floating toolbar above it. */
+.notes-workspace.is-fullscreen {
+    position: fixed !important;
+    inset: 0 !important;
+    z-index: 1100 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    height: 100dvh !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: auto !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    background: #fbfaf6 !important;
+    overscroll-behavior: contain;
+}
+.notes-workspace.is-fullscreen .notes-panel {
+    min-height: 0 !important;
+    max-height: none !important;
+}
+.notes-workspace.is-fullscreen .notes-left-panel,
+.notes-workspace.is-fullscreen .notes-list-panel,
+.notes-workspace.is-fullscreen .notes-editor-panel {
+    background: #fbfaf6 !important;
+}
+.notes-workspace.is-fullscreen .notes-editor-panel {
+    min-height: 0 !important;
+    height: 100% !important;
+}
+.notes-workspace.is-fullscreen .notes-editor-scroll {
+    min-height: 0 !important;
+    overflow: auto !important;
+    padding: 28px clamp(18px, 4vw, 64px) 100px !important;
+}
+.notes-workspace.is-fullscreen .notes-editor-content .ProseMirror {
+    max-width: 980px;
+    margin: 0 auto;
+    font-size: 17px !important;
+    line-height: 1.85 !important;
+}
+.notes-workspace.is-fullscreen .notes-title-row,
+.notes-workspace.is-fullscreen .notes-metadata-grid,
+.notes-workspace.is-fullscreen .notes-tags-field {
+    max-width: 980px;
+    margin-left: auto;
+    margin-right: auto;
+}
+.notes-workspace.is-fullscreen .notes-title-input {
+    font-size: clamp(27px, 3vw, 40px) !important;
+}
+.notes-workspace.is-fullscreen .notes-editor-header {
+    position: sticky;
+    top: 0;
+    z-index: 3;
+    background: #fbfaf6 !important;
+}
+.notes-workspace.is-fullscreen .notes-editor-footer {
+    position: sticky;
+    bottom: 0;
+    z-index: 2;
+    background: #fbfaf6 !important;
+}
+.notes-workspace.is-fullscreen.left-closed {
+    grid-template-columns: 0 minmax(0, 0.9fr) minmax(0, 1.55fr) !important;
+}
+.notes-workspace.is-fullscreen.right-closed {
+    grid-template-columns: 244px minmax(0, 1fr) 0 !important;
+}
+.notes-workspace.is-fullscreen.left-closed.right-closed {
+    grid-template-columns: 0 minmax(0, 1fr) 0 !important;
+}
+@media (max-width: 980px) {
+    .notes-workspace.is-fullscreen,
+    .notes-workspace.is-fullscreen.left-closed,
+    .notes-workspace.is-fullscreen.right-closed,
+    .notes-workspace.is-fullscreen.left-closed.right-closed {
+        grid-template-columns: minmax(0, 1fr) !important;
+        display: flex !important;
+        flex-direction: column !important;
+    }
+    .notes-workspace.is-fullscreen .notes-left-panel,
+    .notes-workspace.is-fullscreen .notes-list-panel,
+    .notes-workspace.is-fullscreen .notes-editor-panel {
+        flex: 0 0 auto;
+        width: 100%;
+    }
+    .notes-workspace.is-fullscreen .notes-left-panel {
+        max-height: 28dvh !important;
+        overflow: auto !important;
+    }
+    .notes-workspace.is-fullscreen .notes-list-panel {
+        max-height: 30dvh !important;
+        overflow: auto !important;
+    }
+    .notes-workspace.is-fullscreen .notes-editor-panel {
+        min-height: 65dvh !important;
+        flex: 1 0 65dvh;
+    }
+    .notes-workspace.is-fullscreen .notes-editor-content .ProseMirror {
+        font-size: 16px !important;
+    }
+}

@@ -14,6 +14,7 @@ import Review from "./Review";
 import Progress from "./Progress";
 import DailyTimetable from "./DailyTimetable";
 import FocusCockpit from "./FocusCockpit";
+import StudyVaultToolbar from "./components/StudyVaultToolbar";
 import {
     isStorageAvailable,
     loadResources,
@@ -203,6 +204,27 @@ function App() {
         setEditingResource(null);
     }, []);
 
+    const handleOpenTimetableResource = useCallback((id: string) => {
+        const resource = resources?.find((item) => item.id === id);
+        if (!resource) return;
+
+        // Open files and external links directly in the user gesture so the
+        // browser does not treat the new tab as a popup. Notes open in-app.
+        if (resource.type !== "Note" && resource.file) {
+            const fileUrl = URL.createObjectURL(resource.file);
+            window.open(fileUrl, "_blank", "noopener,noreferrer");
+            window.setTimeout(() => URL.revokeObjectURL(fileUrl), 60_000);
+            return;
+        }
+        if (resource.type !== "Note" && resource.url) {
+            window.open(resource.url, "_blank", "noopener,noreferrer");
+            return;
+        }
+
+        setResourceTargetId(id);
+        navigate("My Resources");
+    }, [resources, navigate]);
+
     const handleDeleteResource = useCallback(async (id: string) => {
         if (!isStorageAvailable()) {
             throw new Error("IndexedDB is unavailable. This resource was not deleted.");
@@ -338,9 +360,9 @@ function App() {
                      ) : activePage === "Progress" ? (
                         <Progress subjects={subjects} onOpenReview={() => navigate("Review")} />
                     ) : activePage === "Focus Cockpit" ? (
-                        <div className="focus-cockpit-placeholder" />
+                        <FocusCockpit subjects={subjects} onOpenReview={() => navigate("Review")} isActive />
                     ) : activePage === "Timetable" ? (
-                        <DailyTimetable />
+                        <DailyTimetable resources={resources} subjects={subjects} onOpenResource={handleOpenTimetableResource} />
                     ) : activePage === "Review" ? (
                         <Review
                             resources={resources}
@@ -368,6 +390,13 @@ function App() {
                     initialResource={editingResource ?? undefined}
                 />
             )}
+
+            <StudyVaultToolbar
+                activePage={activePage}
+                onNavigate={navigate}
+                onAddResource={handleAddResource}
+                onOpenSearch={() => setIsSearchOpen(true)}
+            />
 
             <GlobalSearch
                 isOpen={isSearchOpen}

@@ -37,6 +37,7 @@ import {
 } from "./services/noteStorage";
 import { legacyResourceToNote } from "./services/legacyNoteAdapter";
 import { plainTextToTipTapDocument } from "./services/noteSerialization";
+import "./notes-focus-mode.css";
 
 type NotesProps = {
     resources: Resource[];
@@ -107,20 +108,20 @@ export default function Notes({ resources, subjects, openNoteId, openFolderId, i
     }, []);
 
 
-    const toggleNotesFullscreen = useCallback(async () => {
-        const workspace = workspaceRef.current;
-        if (!workspace) return;
-
-        try {
-            if (document.fullscreenElement === workspace) {
-                await document.exitFullscreen();
-            } else {
-                await workspace.requestFullscreen();
-            }
-        } catch (error) {
-            console.error("[StudyVault] Notes fullscreen unavailable:", error);
-        }
+    // Use an in-page focus layout rather than browser Fullscreen API.
+    // This keeps the floating StudyVault toolbar available above the notes.
+    const toggleNotesFullscreen = useCallback(() => {
+        setIsNotesFullscreen((current) => !current);
     }, []);
+
+    useEffect(() => {
+        if (!isNotesFullscreen) return;
+        const handleEscape = (event: KeyboardEvent) => {
+            if (event.key === "Escape") setIsNotesFullscreen(false);
+        };
+        window.addEventListener("keydown", handleEscape);
+        return () => window.removeEventListener("keydown", handleEscape);
+    }, [isNotesFullscreen]);
 
     useEffect(() => {
         const handleFullscreenChange = () => {
