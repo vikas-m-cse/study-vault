@@ -360,7 +360,7 @@ function App() {
                      ) : activePage === "Progress" ? (
                         <Progress subjects={subjects} onOpenReview={() => navigate("Review")} />
                     ) : activePage === "Focus Cockpit" ? (
-                        <div className="focus-cockpit-placeholder" />
+                        <FocusCockpit subjects={subjects} onOpenReview={() => navigate("Review")} isActive />
                     ) : activePage === "Timetable" ? (
                         <DailyTimetable resources={resources} subjects={subjects} onOpenResource={handleOpenTimetableResource} />
                     ) : activePage === "Review" ? (
