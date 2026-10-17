@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { ArrowRight, BookOpen, Brain, CalendarClock, CheckCircle2, Clock3, Flame, Sparkles, Target } from "lucide-react";
+import { ArrowRight, BookOpen, Brain, CalendarClock, CheckCircle2, Clock3, Sparkles, Target } from "lucide-react";
 import { getAllNotes } from "./services/noteStorage";
 import type { Note } from "./types/note";
 import type { Subject } from "./Subjects";
