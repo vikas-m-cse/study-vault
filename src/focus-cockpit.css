@@ -152,3 +152,10 @@
 .guided-phone-check:focus-within{outline:2px solid #b7c1a9;outline-offset:2px}
 @media(max-width:900px){.guided-learning-grid{grid-template-columns:1fr}.guided-learning-step>small{min-height:0}.guided-learning-step textarea{min-height:80px}}
 @media(max-width:600px){.guided-learning-heading{flex-direction:column}.guided-learning-prep{grid-template-columns:1fr}.guided-learning-footer{align-items:stretch;flex-direction:column}.guided-review-select{justify-content:space-between}.guided-review-select select{flex:1;max-width:none}.guided-save-button{width:100%}}
+
+
+/* Always-available launcher when the floating timer is minimized/closed. */
+.focus-floating-launcher{position:fixed;right:18px;bottom:20px;z-index:9998;display:flex;align-items:center;gap:8px;padding:12px 16px;border:1px solid #d9d6cb;border-radius:999px;background:#fffefa;color:#292b26;box-shadow:0 8px 28px #292b261c;font-family:inherit;font-size:12px;font-weight:650;line-height:1.2;cursor:pointer;transition:transform .16s ease,box-shadow .16s ease}
+.focus-floating-launcher:hover{transform:translateY(-2px);box-shadow:0 12px 32px #292b2626}
+.focus-floating-launcher:focus-visible{outline:3px solid #b48a4e;outline-offset:3px}
+@media(max-width:600px){.focus-floating-launcher{right:12px;bottom:12px}}
