@@ -379,7 +379,7 @@ function App() {
                             </p>
                         </div>
                     )}
-                    <FocusCockpit subjects={subjects} onOpenReview={() => navigate("Review")} isActive={activePage === "Focus Cockpit"} />
+                    <FocusCockpit subjects={subjects} onOpenReview={() => navigate("Review")} onOpenFocus={() => navigate("Focus Cockpit")} isActive={activePage === "Focus Cockpit"} />
                 </section>
             </main>
 
