@@ -87,11 +87,12 @@ function validateBackup(value: unknown): asserts value is Backup {
 export async function downloadStudyVaultBackup(): Promise<void> {
   const db = await openStudyVaultDB();
   const tx = db.transaction([...STORE_NAMES], "readonly");
+  const completed = transactionResult(tx);
   const storeEntries = await Promise.all(STORE_NAMES.map(async (name) => {
     const records = await requestResult<unknown[]>(tx.objectStore(name).getAll());
     return [name, await Promise.all(records.map(encodeRecord))] as const;
   }));
-  await transactionResult(tx);
+  await completed;
 
   const localState: Record<string, string> = {};
   for (let i = 0; i < localStorage.length; i += 1) {
@@ -138,12 +139,13 @@ export async function restoreStudyVaultBackup(file: File): Promise<void> {
 
   const db = await openStudyVaultDB();
   const tx = db.transaction([...STORE_NAMES], "readwrite");
+  const completed = transactionResult(tx);
   for (const name of STORE_NAMES) {
     const store = tx.objectStore(name);
     store.clear();
     for (const record of decoded.get(name) ?? []) store.put(record);
   }
-  await transactionResult(tx);
+  await completed;
 
   // Keep unrelated localStorage keys intact; replace only StudyVault-owned state.
   const keysToRemove: string[] = [];
