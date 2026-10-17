@@ -4,7 +4,7 @@ import { Activity, ArrowDownRight, ArrowRight, BookOpen, Brain, Check, CirclePau
 import type { Subject } from "./Subjects";
 import FocusReviewQueue from "./FocusReviewQueue";
 
-type Props = { subjects: Subject[]; onOpenReview: () => void; isActive?: boolean };
+type Props = { subjects: Subject[]; onOpenReview: () => void; onOpenFocus: () => void; isActive?: boolean };
 type Mode = "steady" | "deep" | "sprint";
 type RunState = "idle" | "running" | "paused" | "complete";
 type SavedRun = { id: string; date: string; subject: string; topic: string; plannedMinutes: number; actualSeconds: number; interruptions: number; completed: boolean; endedAt: number };
@@ -41,7 +41,7 @@ function formatDuration(seconds: number) {
   return mins < 60 ? mins + " min" : Math.floor(mins / 60) + "h " + (mins % 60 ? mins % 60 + "m" : "");
 }
 
-export default function FocusCockpit({ subjects, onOpenReview, isActive = true }: Props) {
+export default function FocusCockpit({ subjects, onOpenReview, onOpenFocus, isActive = true }: Props) {
   const [session, setSession] = useState<Persisted>(readState);
   const [history, setHistory] = useState<SavedRun[]>(readHistory);
   const [now, setNow] = useState(() => Date.now());
@@ -124,11 +124,12 @@ export default function FocusCockpit({ subjects, onOpenReview, isActive = true }
 
   const chooseMode = (nextMode: Mode) => {
     if (session.state === "running") return;
-    setSession(previous => ({ ...previous, mode: nextMode, state: "idle", endsAt: null, remainingMs: MODES[nextMode].focus * 60_000, startedAt: null, interruptions: 0, activeElapsedMs: 0, phase: "focus" }));
+    setSession(previous => ({ ...previous, mode: nextMode, state: "idle", endsAt: null, remainingMs: (previous.phase === "focus" ? MODES[nextMode].focus : MODES[nextMode].rest) * 60_000, startedAt: null, interruptions: 0, activeElapsedMs: 0 }));
     setSavedNotice(false);
   };
   const start = () => {
-    const duration = session.remainingMs > 0 ? session.remainingMs : mode.focus * 60_000;
+    const phaseDuration = (session.phase === "focus" ? mode.focus : mode.rest) * 60_000;
+    const duration = session.remainingMs > 0 ? session.remainingMs : phaseDuration;
     const timestamp = Date.now();
     setNow(timestamp);
     setSession(previous => ({ ...previous, state: "running", endsAt: timestamp + duration, remainingMs: duration, startedAt: previous.startedAt ?? timestamp }));
@@ -148,7 +149,7 @@ export default function FocusCockpit({ subjects, onOpenReview, isActive = true }
         setHistory(previous => { const next = [...previous.filter(item => item.id !== run.id), run].slice(-300); try { localStorage.setItem(HISTORY_KEY, JSON.stringify(next)); } catch { /* Keep the current UI usable. */ } return next; });
       }
     }
-    setSession(previous => ({ ...previous, state: "idle", endsAt: null, remainingMs: MODES[previous.mode].focus * 60_000, startedAt: null, interruptions: 0, activeElapsedMs: 0, phase: "focus" }));
+    setSession(previous => ({ ...previous, state: "idle", endsAt: null, remainingMs: (previous.phase === "focus" ? MODES[previous.mode].focus : MODES[previous.mode].rest) * 60_000, startedAt: null, interruptions: 0, activeElapsedMs: 0 }));
     setSavedNotice(false);
   };
   const changePhase = () => {
@@ -180,7 +181,7 @@ export default function FocusCockpit({ subjects, onOpenReview, isActive = true }
           <div className="focus-controls">
             {session.state === "running" ? <button className="focus-primary-button" type="button" onClick={pause}><CirclePause size={19} /> Pause session</button> : <button className="focus-primary-button" type="button" onClick={start}><CirclePlay size={19} /> {session.state === "paused" ? "Resume focus" : session.state === "complete" ? "Start another" : "Start focus"}</button>}
             <button className="focus-secondary-button" type="button" onClick={reset}><RotateCcw size={16} /> Reset</button>
-            <button className="focus-secondary-button" type="button" onClick={changePhase}><Coffee size={16} /> {session.phase === "focus" ? "Take a break" : "Back to focus"}</button>
+            <button className="focus-secondary-button" type="button" onClick={changePhase} disabled={session.state === "running"} title={session.state === "running" ? "Pause or finish this session before changing phase" : undefined}><Coffee size={16} /> {session.phase === "focus" ? "Take a break" : "Back to focus"}</button>
           </div>
           <p className="focus-timer-footnote"><Waves size={14} /> No pressure to be perfect. If focus slips, return to the next small action.</p>
         </div>
@@ -239,7 +240,7 @@ export default function FocusCockpit({ subjects, onOpenReview, isActive = true }
           <span className="focus-floating-grip"><Move size={13} /> DRAG TO MOVE</span>
           <div className="focus-floating-window-actions"><button type="button" aria-label="Hide floating timer" title="Hide timer" onClick={() => setFloatingOpen(false)}><Minimize2 size={14} /></button><button type="button" aria-label="Close floating timer" title="Close timer" onClick={() => setFloatingOpen(false)}><X size={14} /></button></div>
         </div>
-        <div className="focus-floating-body"><div className="focus-floating-time"><span>{session.phase === "focus" ? "FOCUS" : "BREAK"} · {mode.label.toUpperCase()}</span><strong>{formatTime(remaining)}</strong><small>{session.state === "running" ? "Session in progress" : session.state === "paused" ? "Paused" : session.state === "complete" ? "Session complete" : "Ready when you are"}</small></div>
+        <div className="focus-floating-body"><button type="button" className="focus-floating-time focus-floating-expand" onClick={onOpenFocus} title="Open the full Focus Cockpit" aria-label="Expand timer to Focus Cockpit"><span>{session.phase === "focus" ? "FOCUS" : "BREAK"} · {mode.label.toUpperCase()}</span><strong>{formatTime(remaining)}</strong><small>{session.state === "running" ? "Session in progress · Open cockpit ↗" : session.state === "paused" ? "Paused · Open cockpit ↗" : session.state === "complete" ? "Session complete · Open cockpit ↗" : "Ready · Open cockpit ↗"}</small></button>
           <div className="focus-floating-controls">{session.state === "running" ? <button type="button" aria-label="Pause timer" title="Pause" onClick={pause}><CirclePause size={18} /></button> : <button type="button" aria-label="Start or resume timer" title="Start or resume" onClick={start}><CirclePlay size={18} /></button>}<button type="button" aria-label="Reset timer" title="Reset" onClick={reset}><RotateCcw size={16} /></button></div>
         </div>
       </div> : <button type="button" className="focus-floating-launcher" onClick={() => setFloatingOpen(true)} aria-label="Open focus timer"><Timer size={16} /><span>Focus</span></button>, document.body)}
