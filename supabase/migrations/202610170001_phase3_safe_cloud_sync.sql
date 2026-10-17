@@ -42,6 +42,11 @@ create policy "Users can delete their StudyVault sync records"
   to authenticated
   using (auth.uid() = user_id);
 
+-- Make API privileges explicit. RLS decides which rows a user can access;
+-- SQL grants decide which operations the API role may attempt at all.
+revoke all on table public.studyvault_sync_records from anon;
+grant select, insert, update, delete on table public.studyvault_sync_records to authenticated;
+
 -- Attachments live in Supabase Storage, not JSON. Store only metadata in this table.
 create table if not exists public.studyvault_sync_attachments (
   user_id uuid not null references auth.users(id) on delete cascade,
@@ -77,6 +82,9 @@ drop policy if exists "Users can delete their StudyVault attachment metadata" on
 create policy "Users can delete their StudyVault attachment metadata"
   on public.studyvault_sync_attachments for delete
   to authenticated using (auth.uid() = user_id);
+
+revoke all on table public.studyvault_sync_attachments from anon;
+grant select, insert, update, delete on table public.studyvault_sync_attachments to authenticated;
 
 -- Private bucket. Object paths must begin with the authenticated user's UUID.
 insert into storage.buckets (id, name, public, file_size_limit)
