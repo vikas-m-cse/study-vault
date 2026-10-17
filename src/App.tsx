@@ -359,9 +359,7 @@ function App() {
                         />
                      ) : activePage === "Progress" ? (
                         <Progress subjects={subjects} onOpenReview={() => navigate("Review")} />
-                    ) : activePage === "Focus Cockpit" ? (
-                        <FocusCockpit subjects={subjects} onOpenReview={() => navigate("Review")} isActive />
-                    ) : activePage === "Timetable" ? (
+                    ) : activePage === "Focus Cockpit" ? null : activePage === "Timetable" ? (
                         <DailyTimetable resources={resources} subjects={subjects} onOpenResource={handleOpenTimetableResource} />
                     ) : activePage === "Review" ? (
                         <Review
