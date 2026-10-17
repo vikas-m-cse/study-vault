@@ -4,10 +4,12 @@ import {
     Bell,
     Plus,
     Command,
+    ShieldCheck,
 } from "lucide-react";
 
 type TopbarProps = {
     onAddResource: () => void;
+    onOpenBackup: () => void;
     onOpenSearch: () => void;
     searchQuery: string;
     onSearchQueryChange: (query: string) => void;
@@ -15,6 +17,7 @@ type TopbarProps = {
 
 export function Topbar({
     onAddResource,
+    onOpenBackup,
     onOpenSearch,
     searchQuery,
     onSearchQueryChange,
@@ -48,6 +51,10 @@ export function Topbar({
                     <span className="topbar-system-dot" />
                     <span>LOCAL ENGINE</span>
                 </div>
+
+                <button className="icon-button" aria-label="Backup and restore" title="Backup and restore" onClick={onOpenBackup}>
+                    <ShieldCheck size={19} />
+                </button>
 
                 <button
                     className="icon-button"
