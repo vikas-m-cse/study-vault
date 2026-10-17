@@ -53,7 +53,7 @@ export default function TodayPlan({ subjects, onOpenReview, onStartFocus }: Prop
   const [refresh, setRefresh] = useState(0);
   const [review] = useState(readReviewState);
   const [mastery] = useState(getMastery);
-  const [now] = useState(() => Date.now());
+  const [now, setNow] = useState(() => Date.now());
 
   useEffect(() => {
     let cancelled = false;
@@ -75,6 +75,11 @@ export default function TodayPlan({ subjects, onOpenReview, onStartFocus }: Prop
       window.removeEventListener("studyvault:review-updated", update);
       window.removeEventListener("storage", update);
     };
+  }, []);
+
+  useEffect(() => {
+    const timer = window.setInterval(() => setNow(Date.now()), 60_000);
+    return () => window.clearInterval(timer);
   }, []);
 
   const recommendations = useMemo(() => {
