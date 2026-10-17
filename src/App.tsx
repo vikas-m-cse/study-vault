@@ -322,6 +322,10 @@ function App() {
                             subjects={subjects}
                             onAddResource={handleAddResource}
                             onOpenReview={() => { setReviewNoteId(null); navigate("Review"); }}
+                            onStartFocus={(subject, topic) => {
+                                window.dispatchEvent(new CustomEvent("studyvault:start-focus", { detail: { subject, topic } }));
+                                navigate("Focus Cockpit");
+                            }}
                         />
                     ) : activePage === "Subjects" ? (
                         <Subjects
