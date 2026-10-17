@@ -155,7 +155,7 @@
 
 
 /* Always-available launcher when the floating timer is minimized/closed. */
-.focus-floating-launcher{position:fixed;right:18px;bottom:20px;z-index:9998;display:flex;align-items:center;gap:8px;padding:12px 16px;border:1px solid #d9d6cb;border-radius:999px;background:#fffefa;color:#292b26;box-shadow:0 8px 28px #292b261c;font:650 12px/1.2 inherit;cursor:pointer;transition:transform .16s ease,box-shadow .16s ease}
+.focus-floating-launcher{position:fixed;right:18px;bottom:20px;z-index:9998;display:flex;align-items:center;gap:8px;padding:12px 16px;border:1px solid #d9d6cb;border-radius:999px;background:#fffefa;color:#292b26;box-shadow:0 8px 28px #292b261c;font-family:inherit;font-size:12px;font-weight:650;line-height:1.2;cursor:pointer;transition:transform .16s ease,box-shadow .16s ease}
 .focus-floating-launcher:hover{transform:translateY(-2px);box-shadow:0 12px 32px #292b2626}
 .focus-floating-launcher:focus-visible{outline:3px solid #b48a4e;outline-offset:3px}
 @media(max-width:600px){.focus-floating-launcher{right:12px;bottom:12px}}
