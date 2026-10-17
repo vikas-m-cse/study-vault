@@ -107,6 +107,12 @@
 .focus-floating-window-actions button:hover,.focus-floating-controls button:hover{background:#eef0e8;border-color:#c6cdbb}
 .focus-floating-body{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:12px}
 .focus-floating-time{display:flex;flex-direction:column;gap:3px;min-width:0}
+.focus-floating-expand{flex:1;width:100%;padding:0;border:0;background:transparent;color:inherit;text-align:left;cursor:pointer;border-radius:8px}
+.focus-floating-expand:hover .focus-floating-time strong,.focus-floating-expand:hover strong{color:#59664b}
+.focus-floating-expand:focus-visible{outline:2px solid #b48a4e;outline-offset:3px}
+.focus-floating-expand small{display:block;max-width:132px;line-height:1.35}
+.focus-secondary-button:disabled{opacity:.5;cursor:not-allowed;transform:none}
+
 .focus-floating-time>span{font-size:8px;font-weight:800;letter-spacing:.1em;color:#59664b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .focus-floating-time strong{font-family:Georgia,"Times New Roman",serif;font-size:31px;line-height:1.1;font-weight:400;letter-spacing:-.04em;font-variant-numeric:tabular-nums}
 .focus-floating-time small{font-size:9px;color:#77786f;white-space:nowrap}
