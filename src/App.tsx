@@ -14,6 +14,7 @@ import Review from "./Review";
 import Progress from "./Progress";
 import DailyTimetable from "./DailyTimetable";
 import FocusCockpit from "./FocusCockpit";
+import BackupCenter from "./components/BackupCenter";
 import StudyVaultToolbar from "./components/StudyVaultToolbar";
 import {
     isStorageAvailable,
@@ -76,6 +77,7 @@ function App() {
         }
     }, [activePage]);
     const [isSearchOpen, setIsSearchOpen] = useState(false);
+    const [isBackupOpen, setIsBackupOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
     const [notesTarget, setNotesTarget] = useState<{ noteId?: string; folderId?: string } | null>(null);
     const [reviewNoteId, setReviewNoteId] = useState<string | null>(null);
@@ -301,6 +303,7 @@ function App() {
             <main className="main-content">
                 <Topbar
                     onAddResource={handleAddResource}
+                    onOpenBackup={() => setIsBackupOpen(true)}
                     onOpenSearch={() => setIsSearchOpen(true)}
                     searchQuery={searchQuery}
                     onSearchQueryChange={setSearchQuery}
@@ -388,6 +391,8 @@ function App() {
                     initialResource={editingResource ?? undefined}
                 />
             )}
+
+            {isBackupOpen && <BackupCenter onClose={() => setIsBackupOpen(false)} />}
 
             <StudyVaultToolbar
                 activePage={activePage}
