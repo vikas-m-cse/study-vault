@@ -385,6 +385,7 @@ export default function Review({ subjects, focusNoteId }: ReviewProps) {
 
     setReviewState(next);
     writeReviewState(next);
+    window.dispatchEvent(new CustomEvent("studyvault:review-updated"));
     const recapEntry: RevisionEntry = {
       conceptId: selected.id, noteId: selected.noteId, noteTitle: selected.noteTitle,
       title: selected.title, subjectName: selected.subjectName, prompt: selected.prompt,

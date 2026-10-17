@@ -43,6 +43,32 @@ function formatDuration(seconds: number) {
 
 export default function FocusCockpit({ subjects, onOpenReview, isActive = true }: Props) {
   const [session, setSession] = useState<Persisted>(readState);
+  useEffect(() => {
+    const startRecommendedSession = (event: Event) => {
+      const detail = (event as CustomEvent<{ subject?: string; topic?: string }>).detail;
+      if (!detail?.topic) return;
+      const timestamp = Date.now();
+      const duration = MODES.steady.focus * 60_000;
+      setNow(timestamp);
+      setSession(previous => ({
+        ...previous,
+        mode: "steady",
+        state: "running",
+        endsAt: timestamp + duration,
+        remainingMs: duration,
+        subject: detail.subject ?? "",
+        topic: detail.topic ?? "",
+        interruptions: 0,
+        activeElapsedMs: 0,
+        startedAt: timestamp,
+        phase: "focus",
+      }));
+      setSavedNotice(false);
+    };
+    window.addEventListener("studyvault:start-focus", startRecommendedSession);
+    return () => window.removeEventListener("studyvault:start-focus", startRecommendedSession);
+  }, []);
+
   const [history, setHistory] = useState<SavedRun[]>(readHistory);
   const [now, setNow] = useState(() => Date.now());
   // Keep each hook declaration on its own physical line for TypeScript parsing.

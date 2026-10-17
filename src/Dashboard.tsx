@@ -14,12 +14,15 @@ import { useState } from "react";
 import type { Resource } from "./types/resource";
 import type { Subject } from "./Subjects";
 import { NoteViewer } from "./components/NoteViewer";
+import TodayPlan from "./TodayPlan";
+import "./today-plan.css";
 
 type DashboardProps = {
     resources: Resource[];
     subjects: Subject[];
     onAddResource: () => void;
     onOpenReview: () => void;
+    onStartFocus: (subject: string, topic: string) => void;
 };
 
 type RevisionEntry = {
@@ -46,6 +49,7 @@ export default function Dashboard({
     subjects,
     onAddResource,
     onOpenReview,
+    onStartFocus,
 }: DashboardProps) {
 
     const recentResources = resources.slice(0, 5);
@@ -102,6 +106,8 @@ export default function Dashboard({
                     <span className="sv-orbit-label label-c">TRANSFER</span>
                 </div>
             </section>
+
+            <TodayPlan subjects={subjects} onOpenReview={onOpenReview} onStartFocus={onStartFocus} />
 
             {revisionEntries.length > 0 && (
                 <section className="review-revision-checkpoint dashboard-revision-checkpoint" aria-label="Today's revision reminder">
