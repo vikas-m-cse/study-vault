@@ -53,7 +53,7 @@ export default function FocusCockpit({ subjects, onOpenReview, isActive = true }
   const [selfTest, setSelfTest] = useState("");
   const [reviewWhen, setReviewWhen] = useState("tomorrow");
   const [learningSaved, setLearningSaved] = useState(false);
-  const [floatingOpen, setFloatingOpen] = useState(() => { try { return localStorage.getItem(FLOATING_KEY) === "true"; } catch { return false; } });
+  const [floatingOpen, setFloatingOpen] = useState(() => { try { return localStorage.getItem(FLOATING_KEY) !== "false"; } catch { return true; } });
   const [floatingPosition, setFloatingPosition] = useState<FloatingPosition>(readFloatingPosition);
   const dragOrigin = useRef<{ pointerX: number; pointerY: number; x: number; y: number } | null>(null);
   const mode = MODES[session.mode] ?? MODES.steady;
@@ -234,7 +234,7 @@ export default function FocusCockpit({ subjects, onOpenReview, isActive = true }
         </div>
       </section>
       <footer className="focus-footer"><span>FOCUS IS A PRACTICE, NOT A PERSONALITY TEST.</span><button type="button" onClick={onOpenReview}>Go to revision <ArrowRight size={15} /></button></footer>
-      {floatingOpen && createPortal(<div className={"focus-floating-timer" + (session.state === "running" ? " is-running" : "")} style={{ left: floatingPosition.x, top: floatingPosition.y }} role="region" aria-label="Movable focus timer">
+      {createPortal(floatingOpen ? <div className={"focus-floating-timer" + (session.state === "running" ? " is-running" : "")} style={{ left: floatingPosition.x, top: floatingPosition.y }} role="region" aria-label="Movable focus timer">
         <div className="focus-floating-header" onPointerDown={beginFloatingDrag} title="Drag to move the timer anywhere on screen">
           <span className="focus-floating-grip"><Move size={13} /> DRAG TO MOVE</span>
           <div className="focus-floating-window-actions"><button type="button" aria-label="Hide floating timer" title="Hide timer" onClick={() => setFloatingOpen(false)}><Minimize2 size={14} /></button><button type="button" aria-label="Close floating timer" title="Close timer" onClick={() => setFloatingOpen(false)}><X size={14} /></button></div>
@@ -242,7 +242,7 @@ export default function FocusCockpit({ subjects, onOpenReview, isActive = true }
         <div className="focus-floating-body"><div className="focus-floating-time"><span>{session.phase === "focus" ? "FOCUS" : "BREAK"} · {mode.label.toUpperCase()}</span><strong>{formatTime(remaining)}</strong><small>{session.state === "running" ? "Session in progress" : session.state === "paused" ? "Paused" : session.state === "complete" ? "Session complete" : "Ready when you are"}</small></div>
           <div className="focus-floating-controls">{session.state === "running" ? <button type="button" aria-label="Pause timer" title="Pause" onClick={pause}><CirclePause size={18} /></button> : <button type="button" aria-label="Start or resume timer" title="Start or resume" onClick={start}><CirclePlay size={18} /></button>}<button type="button" aria-label="Reset timer" title="Reset" onClick={reset}><RotateCcw size={16} /></button></div>
         </div>
-      </div>, document.body)}
+      </div> : <button type="button" className="focus-floating-launcher" onClick={() => setFloatingOpen(true)} aria-label="Open focus timer"><Timer size={16} /><span>Focus</span></button>, document.body)}
     </div>
   );
 }
