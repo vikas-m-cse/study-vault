@@ -60,14 +60,6 @@ function idbGetAll<T>(store: IDBObjectStore): Promise<T[]> {
     });
 }
 
-function idbGet<T>(store: IDBObjectStore, key: IDBValidKey): Promise<T | undefined> {
-    return new Promise((resolve, reject) => {
-        const req = store.get(key);
-        req.onsuccess = () => resolve(req.result as T | undefined);
-        req.onerror = () => reject(req.error);
-    });
-}
-
 function idbPut(store: IDBObjectStore, value: unknown): Promise<void> {
     return new Promise((resolve, reject) => {
         const req = store.put(value);
