@@ -65,8 +65,15 @@ function decodeBlob(value: unknown): unknown {
     throw new Error("This backup contains an invalid attachment.");
   }
   const comma = encoded.dataUrl.indexOf(",");
-  if (comma < 0) throw new Error("This backup contains a malformed attachment.");
-  const binary = atob(encoded.dataUrl.slice(comma + 1));
+  if (comma < 0 || !/^data:[^,]*;base64,/i.test(encoded.dataUrl)) {
+    throw new Error("This backup contains a malformed attachment.");
+  }
+  let binary: string;
+  try {
+    binary = atob(encoded.dataUrl.slice(comma + 1));
+  } catch {
+    throw new Error("This backup contains an invalid attachment encoding.");
+  }
   const bytes = new Uint8Array(binary.length);
   for (let i = 0; i < binary.length; i += 1) bytes[i] = binary.charCodeAt(i);
   return new Blob([bytes], { type: encoded.type });
@@ -81,7 +88,12 @@ function validateBackup(value: unknown): asserts value is Backup {
   for (const name of STORE_NAMES) {
     if (!Array.isArray(backup.stores[name])) throw new Error(`Backup is missing the "${name}" data store.`);
   }
-  if (!backup.localState || typeof backup.localState !== "object") throw new Error("Backup is missing local study settings.");
+  if (!backup.localState || typeof backup.localState !== "object" || Array.isArray(backup.localState)) {
+    throw new Error("Backup is missing local study settings.");
+  }
+  if (Object.values(backup.localState).some((entry) => typeof entry !== "string")) {
+    throw new Error("Backup contains invalid local study settings.");
+  }
 }
 
 export async function downloadStudyVaultBackup(): Promise<void> {
@@ -147,14 +159,39 @@ export async function restoreStudyVaultBackup(file: File): Promise<void> {
   }
   await completed;
 
-  // Keep unrelated localStorage keys intact; replace only StudyVault-owned state.
-  const keysToRemove: string[] = [];
+  // Keep unrelated localStorage keys intact. If applying settings fails, make a best-effort
+  // rollback of StudyVault-owned settings so an interrupted restore is not left half-applied.
+  const previousLocalState: Record<string, string> = {};
   for (let i = 0; i < localStorage.length; i += 1) {
     const key = localStorage.key(i);
-    if (key?.startsWith("studyvault-")) keysToRemove.push(key);
+    if (key?.startsWith("studyvault-")) {
+      const value = localStorage.getItem(key);
+      if (value !== null) previousLocalState[key] = value;
+    }
   }
-  keysToRemove.forEach((key) => localStorage.removeItem(key));
-  for (const [key, value] of Object.entries(parsed.localState)) {
-    if (key.startsWith("studyvault-") && typeof value === "string") localStorage.setItem(key, value);
+
+  try {
+    const keysToRemove = Object.keys(previousLocalState);
+    keysToRemove.forEach((key) => localStorage.removeItem(key));
+    for (const [key, value] of Object.entries(parsed.localState)) {
+      if (key.startsWith("studyvault-")) localStorage.setItem(key, value);
+    }
+  } catch (error) {
+    try {
+      for (let i = localStorage.length - 1; i >= 0; i -= 1) {
+        const key = localStorage.key(i);
+        if (key?.startsWith("studyvault-")) localStorage.removeItem(key);
+      }
+      for (const [key, value] of Object.entries(previousLocalState)) {
+        localStorage.setItem(key, value);
+      }
+    } catch {
+      // Preserve the original restore error if browser storage itself remains unavailable.
+    }
+    throw new Error(
+      error instanceof Error
+        ? `Study data was restored, but settings could not be applied: ${error.message}`
+        : "Study data was restored, but settings could not be applied.",
+    );
   }
 }
