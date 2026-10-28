@@ -1,4 +1,4 @@
-/**
+/** 
  * StudyVault — IndexedDB Storage Service
  *
  * Schema (v2):
@@ -117,6 +117,7 @@ export async function saveSubjects(subjects: Subject[]): Promise<void> {
     return new Promise((resolve, reject) => {
         tx.oncomplete = () => resolve();
         tx.onerror = () => reject(tx.error);
+        tx.onabort = () => reject(tx.error ?? new Error("Saving subjects was aborted."));
     });
 }
 
@@ -134,41 +135,71 @@ export async function loadSubjects(): Promise<Subject[]> {
 /**
  * Persist a single resource (upsert).
  * The File object, if present, is stored separately in the files store.
+ *
+ * All writes are queued synchronously from the IndexedDB request callback.
+ * This keeps the transaction active and ensures resource metadata and its
+ * attachment blob are committed atomically.
  */
 export async function saveResource(resource: Resource): Promise<void> {
     const db = await openStudyVaultDB();
-
     const { file, ...metadata } = resource;
     const tx = db.transaction([STORE_RESOURCES, STORE_FILES], "readwrite");
     const resourceStore = tx.objectStore(STORE_RESOURCES);
     const fileStore = tx.objectStore(STORE_FILES);
-    const existing = await idbGet<StoredResource>(resourceStore, resource.id);
-    const fileForStorage = supportsAttachment(resource.type) ? file : undefined;
-    const preserveExistingFile = supportsAttachment(resource.type)
-        && !fileForStorage
-        && existing?.hasFile === true;
-    const storedResource: StoredResource = {
-        ...metadata,
-        hasFile: Boolean(fileForStorage) || preserveExistingFile,
-    };
-
-    await idbPut(resourceStore, storedResource);
-
-    if (fileForStorage) {
-        const storedFile: StoredFile = {
-            id: resource.id,
-            blob: fileForStorage,
-            name: fileForStorage.name,
-            mimeType: fileForStorage.type,
-        };
-        await idbPut(fileStore, storedFile);
-    } else if (!preserveExistingFile) {
-        await idbDelete(fileStore, resource.id);
-    }
 
     return new Promise((resolve, reject) => {
-        tx.oncomplete = () => resolve();
-        tx.onerror = () => reject(tx.error);
+        let settled = false;
+        const fail = (error: DOMException | Error | null) => {
+            if (settled) return;
+            settled = true;
+            reject(error ?? new Error("Could not save this resource."));
+        };
+
+        tx.oncomplete = () => {
+            if (settled) return;
+            settled = true;
+            resolve();
+        };
+        tx.onerror = () => fail(tx.error);
+        tx.onabort = () => fail(tx.error ?? new Error("Saving the resource was aborted."));
+
+        const existingRequest = resourceStore.get(resource.id);
+        existingRequest.onerror = () => fail(existingRequest.error);
+        existingRequest.onsuccess = () => {
+            if (settled) return;
+            try {
+                const existing = existingRequest.result as StoredResource | undefined;
+                const fileForStorage = supportsAttachment(resource.type) ? file : undefined;
+                const preserveExistingFile = supportsAttachment(resource.type)
+                    && !fileForStorage
+                    && existing?.hasFile === true;
+                const storedResource: StoredResource = {
+                    ...metadata,
+                    hasFile: Boolean(fileForStorage) || preserveExistingFile,
+                };
+
+                resourceStore.put(storedResource);
+
+                if (fileForStorage) {
+                    const storedFile: StoredFile = {
+                        id: resource.id,
+                        blob: fileForStorage,
+                        name: fileForStorage.name,
+                        mimeType: fileForStorage.type,
+                    };
+                    fileStore.put(storedFile);
+                } else if (!preserveExistingFile) {
+                    fileStore.delete(resource.id);
+                }
+            } catch (error) {
+                try {
+                    tx.abort();
+                } catch {
+                    // The transaction may already be aborting.
+                }
+                fail(error instanceof Error ? error : new Error("Could not save this resource."));
+            }
+        };
     });
 }
 
@@ -185,6 +216,7 @@ export async function deleteResource(id: string): Promise<void> {
     return new Promise((resolve, reject) => {
         tx.oncomplete = () => resolve();
         tx.onerror = () => reject(tx.error);
+        tx.onabort = () => reject(tx.error ?? new Error("Deleting the resource was aborted."));
     });
 }
 
