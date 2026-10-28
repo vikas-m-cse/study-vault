@@ -9,8 +9,6 @@ import {
 } from "./database";
 import { restoreStudyVaultBackup } from "./backup";
 
-const STORE_NAMES = [STORE_SUBJECTS, STORE_RESOURCES, STORE_FILES, STORE_NOTES, STORE_FOLDERS];
-
 function fileWithText(text: string): File {
   const file = new File([text], "studyvault-backup.json", { type: "application/json" });
   Object.defineProperty(file, "text", { value: async () => text });
