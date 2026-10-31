@@ -11,6 +11,19 @@ import { getAllNotes } from "../services/noteStorage";
 import type { Resource } from "../types/resource";
 import type { Subject } from "../Subjects";
 
+const mockSession = vi.hoisted(() => ({ user: { id: "test-user", email: "student@example.com" } }));
+
+vi.mock("../lib/supabase", () => ({
+    isSupabaseConfigured: true,
+    supabase: {
+        auth: {
+            onAuthStateChange: vi.fn(() => ({ data: { subscription: { unsubscribe: vi.fn() } } })),
+            getSession: vi.fn(async () => ({ data: { session: mockSession }, error: null })),
+            signOut: vi.fn(async () => ({ error: null })),
+        },
+    },
+}));
+
 const subjects: Subject[] = [{
     id: 1,
     name: "Operating Systems",
