@@ -71,17 +71,14 @@ const DEFAULT_SUBJECTS: Subject[] = [
 
 function App() {
     const [session, setSession] = useState<Session | null>(null);
-    const [authLoading, setAuthLoading] = useState(true);
+    const [authLoading, setAuthLoading] = useState(Boolean(supabase));
     const [migrationBusy, setMigrationBusy] = useState(false);
     const [migrationMessage, setMigrationMessage] = useState<string | null>(null);
     const [shouldPersistSubjects, setShouldPersistSubjects] = useState(false);
     const previousSubjectsRef = useRef<Subject[]>([]);
 
     useEffect(() => {
-        if (!supabase) {
-            setAuthLoading(false);
-            return;
-        }
+        if (!supabase) return;
 
         let active = true;
         const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, nextSession) => {
