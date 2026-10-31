@@ -37,6 +37,7 @@ import {
 } from "./services/noteStorage";
 import { legacyResourceToNote } from "./services/legacyNoteAdapter";
 import { plainTextToTipTapDocument } from "./services/noteSerialization";
+import { syncNote, syncNoteDeletion, syncFolder } from "./services/cloudAutoSync";
 import "./notes-focus-mode.css";
 
 type NotesProps = {
@@ -249,6 +250,7 @@ export default function Notes({ resources, subjects, openNoteId, openFolderId, i
         saveTimers.current[note.id] = window.setTimeout(async () => {
             try {
                 await updateNote(note);
+                try { await syncNote(note); } catch (syncError) { console.error("[StudyVault] Note saved locally; cloud sync failed:", syncError); }
                 if (saveVersions.current[note.id] !== nextVersion) return;
                 if (!mountedRef.current) return;
                 setNotes((current) => current.map((item) => item.id === note.id ? note : item));
@@ -305,6 +307,7 @@ export default function Notes({ resources, subjects, openNoteId, openFolderId, i
 
         try {
             await createNote(note);
+            try { await syncNote(note); } catch (syncError) { console.error("[StudyVault] Note created locally; cloud sync failed:", syncError); }
             setNotes((current) => [note, ...current]);
             selectNote(note.id);
             setFilter("all");
@@ -327,6 +330,7 @@ export default function Notes({ resources, subjects, openNoteId, openFolderId, i
 
         try {
             await createFolder(folder);
+            try { await syncFolder(folder); } catch (syncError) { console.error("[StudyVault] Folder created locally; cloud sync failed:", syncError); }
             setFolders((current) => [...current, folder].sort((a, b) => a.name.localeCompare(b.name)));
             setFilter(`folder:${folder.id}`);
             setFolderName("");
@@ -346,6 +350,7 @@ export default function Notes({ resources, subjects, openNoteId, openFolderId, i
 
         try {
             await createNote(converted);
+            try { await syncNote(converted); } catch (syncError) { console.error("[StudyVault] Note created locally; cloud sync failed:", syncError); }
             setNotes((current) => [converted, ...current]);
             selectNote(converted.id);
             setLoadError(null);
@@ -754,6 +759,7 @@ export default function Notes({ resources, subjects, openNoteId, openFolderId, i
                                                         if (!window.confirm(`Delete "${selectedNote.title}" permanently?`)) return;
                                                         try {
                                                             await deleteNote(selectedNote.id);
+                                                            try { await syncNoteDeletion(selectedNote.id); } catch (syncError) { console.error("[StudyVault] Note deleted locally; cloud deletion sync failed:", syncError); }
                                                             setNotes((current) => current.filter((note) => note.id !== selectedNote.id));
                                                             setSelectedId(null);
                                                         } catch {
