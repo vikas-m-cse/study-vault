@@ -120,11 +120,26 @@ export async function migrateLocalWorkspaceToCloud(): Promise<MigrationSummary> 
     const cloudSnapshots = await Promise.all(collections.map((collection) =>
         pullWorkspaceCollection(collection)
     ));
-    const existingCloudRecords = cloudSnapshots.reduce((sum, records) => sum + records.length, 0);
-    if (existingCloudRecords > 0) {
-        throw new Error(
-            "This account already has cloud workspace records. Automatic migration was stopped to prevent overwriting or mixing data."
-        );
+    const localByKey = new Map(localRecords.map((record) => [
+        `${record.collection}:${record.id}`,
+        record,
+    ]));
+    const existingCloudKeys = new Set<string>();
+
+    // Allow a retry after an interrupted first migration only when every
+    // existing cloud row exactly matches a corresponding local record.
+    // Any unrelated/different cloud data stops the operation safely.
+    for (const records of cloudSnapshots) {
+        for (const remote of records) {
+            const key = `${remote.collection}:${remote.record_id}`;
+            const local = localByKey.get(key);
+            if (!local || JSON.stringify(local.data) !== JSON.stringify(remote.data)) {
+                throw new Error(
+                    "This account already has different cloud workspace data. Migration stopped to prevent overwriting or mixing data."
+                );
+            }
+            existingCloudKeys.add(key);
+        }
     }
 
     const uploaded: Record<WorkspaceCollection, number> = {
@@ -137,6 +152,8 @@ export async function migrateLocalWorkspaceToCloud(): Promise<MigrationSummary> 
     };
 
     for (const record of localRecords) {
+        const key = `${record.collection}:${record.id}`;
+        if (existingCloudKeys.has(key)) continue;
         await pushWorkspaceRecord(
             record.collection,
             record.id,
