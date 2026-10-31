@@ -2,6 +2,7 @@ import type { Resource } from "../types/resource";
 import type { Subject } from "../Subjects";
 import type { Note, Folder } from "../types/note";
 import { loadResources, loadSubjects } from "./storage";
+import { uploadResourceAttachment } from "./attachmentSync";
 import { getAllNotes, getAllFolders } from "./noteStorage";
 import {
     pullWorkspaceCollection,
@@ -15,7 +16,7 @@ const TIMETABLE_COMPLETION_KEY = "studyvault-timetable-completions-v1";
 export type MigrationSummary = {
     uploaded: Record<WorkspaceCollection, number>;
     skipped: number;
-    attachmentsNotUploaded: number;
+    attachmentsUploaded: number;
 };
 
 type LocalRecord = {
@@ -79,19 +80,26 @@ export async function migrateLocalWorkspaceToCloud(): Promise<MigrationSummary> 
     const plan = parseLocalJson(TIMETABLE_PLAN_KEY);
     const completions = parseLocalJson(TIMETABLE_COMPLETION_KEY);
 
+    let attachmentsUploaded = 0;
     const localRecords: LocalRecord[] = [
         ...recordsFromArray<Subject>("subjects", subjects),
         ...recordsFromArray<Folder>("folders", folders),
         ...recordsFromArray<Note>("notes", notes),
-        ...resources.map((resource: Resource) => {
+        ...await Promise.all(resources.map(async (resource: Resource) => {
             const { file, ...metadata } = resource;
+            const cloudFilePath = file
+                ? await uploadResourceAttachment(resource.id, file).then((path) => {
+                    attachmentsUploaded += 1;
+                    return path;
+                })
+                : resource.cloudFilePath;
             return {
                 collection: "resources" as const,
                 id: resource.id,
-                data: metadata,
+                data: { ...metadata, ...(cloudFilePath ? { cloudFilePath } : {}) },
                 updatedAt: timestampOf(resource),
             };
-        }),
+        })),
     ];
 
     if (Array.isArray(plan)) {
@@ -166,6 +174,6 @@ export async function migrateLocalWorkspaceToCloud(): Promise<MigrationSummary> 
     return {
         uploaded,
         skipped: 0,
-        attachmentsNotUploaded: resources.filter((resource) => Boolean(resource.file)).length,
+        attachmentsUploaded,
     };
 }
