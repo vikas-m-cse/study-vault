@@ -101,7 +101,7 @@ function App() {
 
     const handleCloudMigration = useCallback(async () => {
         const confirmed = window.confirm(
-            "Upload this browser’s existing StudyVault subjects, notes, folders, resources and timetable to the signed-in account? Local data will not be deleted. Existing cloud data will cause the migration to stop. Uploaded file attachments are not included yet."
+            "Upload this browser’s existing StudyVault subjects, notes, folders, resources and timetable to the signed-in account? Local data will not be deleted. Existing cloud data will cause the migration to stop unless it matches a previous interrupted migration. Resource file attachments will also be uploaded."
         );
         if (!confirmed) return;
 
@@ -111,7 +111,7 @@ function App() {
             const summary: MigrationSummary = await migrateLocalWorkspaceToCloud();
             const total = Object.values(summary.uploaded).reduce((sum, count) => sum + count, 0);
             setMigrationMessage(
-                `Uploaded ${total} records. ${summary.attachmentsNotUploaded} file attachments still need a separate upload step.`
+                `Uploaded ${total} records, including ${summary.attachmentsUploaded} file attachments.`
             );
         } catch (error) {
             setMigrationMessage(error instanceof Error ? error.message : "Cloud migration failed. Local data remains unchanged.");
