@@ -65,10 +65,10 @@ function recordsFromArray<T extends { id: string | number }>(
  *
  * Safety rules:
  * - Never clears or modifies IndexedDB/localStorage.
- * - Refuses to run if the account already has any cloud records.
+ * - Refuses conflicting cloud data; matching records from an interrupted
+ *   migration can be safely resumed.
  * - Does not download/merge cloud records or start background sync.
- * - Resource File blobs are deliberately excluded; attachment migration is a
- *   separate step so metadata is not falsely reported as a synced file.
+ * - Checks all cloud collections before uploading any attachment or record.
  */
 export async function migrateLocalWorkspaceToCloud(): Promise<MigrationSummary> {
     const [subjects, resources, notes, folders] = await Promise.all([
