@@ -24,6 +24,17 @@ vi.mock("../lib/supabase", () => ({
     },
 }));
 
+vi.mock("../services/cloudAutoSync", () => ({
+    syncSubjectChanges: vi.fn(async () => undefined),
+    syncResource: vi.fn(async () => undefined),
+    syncResourceDeletion: vi.fn(async () => undefined),
+    syncNote: vi.fn(async () => undefined),
+    syncNoteDeletion: vi.fn(async () => undefined),
+    syncFolder: vi.fn(async () => undefined),
+    syncFolderDeletion: vi.fn(async () => undefined),
+    syncTimetable: vi.fn(async () => undefined),
+}));
+
 const subjects: Subject[] = [{
     id: 1,
     name: "Operating Systems",
@@ -249,7 +260,7 @@ describe("Notes and application regression", () => {
         fireEvent.keyDown(window, { key: "k", ctrlKey: true });
         expect(await screen.findByRole("dialog", { name: "Search your knowledge" })).toBeTruthy();
         await user.type(screen.getByRole("textbox", { name: "Search your knowledge" }), "Operating Systems");
-        await user.click(await screen.findByRole("option"));
+        await user.click(await screen.findByRole("option", { name: /Operating Systems.*Subject/ }));
         expect(await screen.findByRole("heading", { name: /Build your.*learning world\./i })).toBeTruthy();
     });
 
