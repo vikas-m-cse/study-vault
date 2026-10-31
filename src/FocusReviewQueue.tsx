@@ -39,11 +39,16 @@ export default function FocusReviewQueue({ subject, topic, recallNotes, selfTest
   const [activeId, setActiveId] = useState<string | null>(null);
   const [revealed, setRevealed] = useState(false);
   const [feedback, setFeedback] = useState("");
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    const timer = window.setInterval(() => setNow(Date.now()), 60_000);
+    return () => window.clearInterval(timer);
+  }, []);
   useEffect(() => {
     try { localStorage.setItem(KEY, JSON.stringify(items)); } catch { /* Keep the queue usable for this visit. */ }
   }, [items]);
 
-  const dueItems = useMemo(() => items.filter(item => item.status === "due" && item.nextReviewAt <= Date.now()).sort((a,b) => a.nextReviewAt - b.nextReviewAt), [items]);
+  const dueItems = useMemo(() => items.filter(item => item.status === "due" && item.nextReviewAt <= now).sort((a,b) => a.nextReviewAt - b.nextReviewAt), [items, now]);
   const active = dueItems.find(item => item.id === activeId) ?? dueItems[0] ?? null;
 
   const saveForReview = () => {
@@ -93,6 +98,6 @@ export default function FocusReviewQueue({ subject, topic, recallNotes, selfTest
       {revealed ? <div className="frq-answer"><strong>Your saved recall</strong><p>{active.answer || "No recall notes were saved. Check your source material, then answer again from memory."}</p></div> : <button type="button" className="frq-reveal" onClick={() => setRevealed(true)}><CircleHelp size={15} /> Reveal saved recall</button>}
       {revealed && <div className="frq-grade"><button type="button" onClick={() => grade(false)}><RotateCcw size={14} /> Need more practice</button><button type="button" onClick={() => grade(true)}><Check size={14} /> Recalled it</button></div>}
     </div> : <div className="frq-empty"><Check size={18} /><div><strong>You’re caught up.</strong><p>Add a topic after studying; it will appear here when its review is due.</p></div></div>}
-    {items.length > 0 && <details className="frq-upcoming"><summary>Upcoming reviews and saved topics ({items.length})</summary><div className="frq-list">{items.slice(0, 8).map(item => <div className="frq-list-item" key={item.id}><div><strong>{item.topic}</strong><small>{item.subject} · {item.nextReviewAt <= Date.now() ? "Due now" : "Due " + dateLabel(item.nextReviewAt)}</small></div><button type="button" aria-label={"Delete review for " + item.topic} onClick={() => setItems(previous => previous.filter(entry => entry.id !== item.id))}><Trash2 size={14} /></button></div>)}</div></details>}
+    {items.length > 0 && <details className="frq-upcoming"><summary>Upcoming reviews and saved topics ({items.length})</summary><div className="frq-list">{items.slice(0, 8).map(item => <div className="frq-list-item" key={item.id}><div><strong>{item.topic}</strong><small>{item.subject} · {item.nextReviewAt <= now ? "Due now" : "Due " + dateLabel(item.nextReviewAt)}</small></div><button type="button" aria-label={"Delete review for " + item.topic} onClick={() => setItems(previous => previous.filter(entry => entry.id !== item.id))}><Trash2 size={14} /></button></div>)}</div></details>}
   </section>;
 }
