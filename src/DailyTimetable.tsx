@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { CalendarDays, Clock3, Plus, Trash2, Check, Pencil, X, Coffee, BookOpen, GraduationCap, Utensils, Dumbbell, Sparkles, ChevronLeft, ChevronRight, Target, Sun, RotateCcw, ArrowRight, CircleCheck, ExternalLink, Link2 } from "lucide-react";
 import type { Resource } from "./types/resource";
 import type { Subject } from "./Subjects";
+import { syncTimetable } from "./services/cloudAutoSync";
 
 type Category = "class" | "study" | "break" | "meal" | "personal";
 type Repeat = "everyday" | "weekdays" | "weekend";
@@ -41,6 +42,7 @@ export default function DailyTimetable({ resources = [], subjects = [], onOpenRe
  const [draft,setDraft]=useState<Omit<TimeBlock,"id">>({title:"",start:"17:00",end:"18:00",category:"study",days:"weekdays",subjectId:undefined,resourceId:undefined});
  useEffect(()=>{try{localStorage.setItem(PLAN_KEY,JSON.stringify(blocks));}catch { /* Keep the in-memory defaults when browser storage is unavailable. */ }},[blocks]);
  useEffect(()=>{try{localStorage.setItem(COMPLETION_KEY,JSON.stringify(doneByDate));}catch { /* Keep the in-memory defaults when browser storage is unavailable. */ }},[doneByDate]);
+ useEffect(()=>{syncTimetable(blocks,doneByDate).catch(error=>console.error("[StudyVault] Timetable saved locally; cloud sync failed:",error));},[blocks,doneByDate]);
  useEffect(()=>{const timer=window.setInterval(()=>setClock(new Date()),30_000);return()=>window.clearInterval(timer);},[]);
  useEffect(()=>{if(!formOpen)return;const handleKeyDown=(event:KeyboardEvent)=>{if(event.key==="Escape")setFormOpen(false);};window.addEventListener("keydown",handleKeyDown);return()=>window.removeEventListener("keydown",handleKeyDown);},[formOpen]);
  const activeDate=useMemo(()=>{const [y,m,d]=selectedDate.split("-").map(Number);return new Date(y,m-1,d);},[selectedDate]);
