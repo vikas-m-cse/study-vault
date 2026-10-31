@@ -24,6 +24,7 @@ type LocalRecord = {
     id: string;
     data: unknown;
     updatedAt: string;
+    attachment?: File;
 };
 
 function parseLocalJson(key: string): unknown {
@@ -85,21 +86,16 @@ export async function migrateLocalWorkspaceToCloud(): Promise<MigrationSummary> 
         ...recordsFromArray<Subject>("subjects", subjects),
         ...recordsFromArray<Folder>("folders", folders),
         ...recordsFromArray<Note>("notes", notes),
-        ...await Promise.all(resources.map(async (resource: Resource) => {
+        ...resources.map((resource: Resource) => {
             const { file, ...metadata } = resource;
-            const cloudFilePath = file
-                ? await uploadResourceAttachment(resource.id, file).then((path) => {
-                    attachmentsUploaded += 1;
-                    return path;
-                })
-                : resource.cloudFilePath;
             return {
                 collection: "resources" as const,
                 id: resource.id,
-                data: { ...metadata, ...(cloudFilePath ? { cloudFilePath } : {}) },
+                data: metadata,
                 updatedAt: timestampOf(resource),
+                ...(file ? { attachment: file } : {}),
             };
-        })),
+        }),
     ];
 
     if (Array.isArray(plan)) {
@@ -141,7 +137,13 @@ export async function migrateLocalWorkspaceToCloud(): Promise<MigrationSummary> 
         for (const remote of records) {
             const key = `${remote.collection}:${remote.record_id}`;
             const local = localByKey.get(key);
-            if (!local || JSON.stringify(local.data) !== JSON.stringify(remote.data)) {
+            const remoteData = remote.collection === "resources" && remote.data && typeof remote.data === "object"
+                ? { ...(remote.data as Record<string, unknown>), cloudFilePath: undefined }
+                : remote.data;
+            const localData = local?.collection === "resources" && local.data && typeof local.data === "object"
+                ? { ...(local.data as Record<string, unknown>), cloudFilePath: undefined }
+                : local?.data;
+            if (!local || JSON.stringify(localData) !== JSON.stringify(remoteData)) {
                 throw new Error(
                     "This account already has different cloud workspace data. Migration stopped to prevent overwriting or mixing data."
                 );
@@ -161,14 +163,27 @@ export async function migrateLocalWorkspaceToCloud(): Promise<MigrationSummary> 
 
     for (const record of localRecords) {
         const key = `${record.collection}:${record.id}`;
-        if (existingCloudKeys.has(key)) continue;
-        await pushWorkspaceRecord(
-            record.collection,
-            record.id,
-            record.data,
-            record.updatedAt
+        const existing = cloudSnapshots.flat().find((remote) =>
+            `${remote.collection}:${remote.record_id}` === key
         );
-        uploaded[record.collection] += 1;
+        if (existingCloudKeys.has(key)) {
+            const existingPath = existing && existing.data && typeof existing.data === "object"
+                ? (existing.data as { cloudFilePath?: unknown }).cloudFilePath
+                : undefined;
+            if (record.collection !== "resources" || !record.attachment || typeof existingPath === "string") continue;
+        }
+
+        let data = record.data;
+        if (record.collection === "resources" && record.attachment) {
+            const cloudFilePath = await uploadResourceAttachment(record.id, record.attachment);
+            data = { ...(record.data as Record<string, unknown>), cloudFilePath };
+            attachmentsUploaded += 1;
+        } else if (existingCloudKeys.has(key)) {
+            continue;
+        }
+
+        await pushWorkspaceRecord(record.collection, record.id, data, record.updatedAt);
+        if (!existingCloudKeys.has(key)) uploaded[record.collection] += 1;
     }
 
     return {
