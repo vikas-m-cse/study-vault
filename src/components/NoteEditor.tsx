@@ -125,7 +125,7 @@ export function NoteEditor({ content, readOnly = false, onChange }: NoteEditorPr
 
     return (
         <div className={`notes-editor ${readOnly ? "read-only" : ""}`}>
-            <div className="notes-editor-toolbar" aria-label="Text formatting">
+            {!readOnly && <div className="notes-editor-toolbar" aria-label="Text formatting">
                 <div className="notes-editor-tool-group">
                     <ToolbarButton
                         label="Undo"
@@ -297,7 +297,7 @@ export function NoteEditor({ content, readOnly = false, onChange }: NoteEditorPr
                         <AlignRight size={16} />
                     </ToolbarButton>
                 </div>
-            </div>
+            </div>}
 
             <EditorContent editor={editor} className="notes-editor-content" />
         </div>

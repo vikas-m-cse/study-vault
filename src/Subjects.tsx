@@ -3,9 +3,12 @@ import { useEffect, useMemo, useState } from "react";
 import {
     BookOpen, Plus, Search, Pencil, Trash2, X,
     SlidersHorizontal, ArrowUpDown, LayoutGrid, List,
-    FileText, FolderOpen, ArrowRight, MoreHorizontal,
+    FileText, FolderOpen, ArrowRight, MoreHorizontal, ArrowLeft, ExternalLink, Search as SearchIcon,
+
 } from "lucide-react";
 import type { Resource } from "./types/resource";
+import type { Note } from "./types/note";
+import { getAllNotes } from "./services/noteStorage";
 
 export type Subject = {
     id: number;
@@ -19,6 +22,8 @@ type SubjectsProps = {
     setSubjects: React.Dispatch<React.SetStateAction<Subject[]>>;
     resources: Resource[];
     focusSubjectId?: number | null;
+    onOpenResource?: (resourceId: string) => void;
+    onOpenNote?: (noteId: string) => void;
 };
 
 const subjectColors = ["blue", "violet", "green", "orange"];
@@ -28,6 +33,8 @@ export default function Subjects({
     setSubjects,
     resources,
     focusSubjectId = null,
+    onOpenResource,
+    onOpenNote,
 }: SubjectsProps) {
     const [search, setSearch] = useState("");
     const [showForm, setShowForm] = useState(false);
@@ -36,6 +43,24 @@ export default function Subjects({
     const [description, setDescription] = useState("");
     const [viewMode, setViewMode] = useState<"cards" | "list">("cards");
     const [sortMode, setSortMode] = useState<"recent" | "name">("recent");
+    const [openedSubjectId, setOpenedSubjectId] = useState<number | null>(null);
+    const [subjectNotes, setSubjectNotes] = useState<Note[]>([]);
+    const [notesLoading, setNotesLoading] = useState(false);
+    const [documentSearch, setDocumentSearch] = useState("");
+
+    useEffect(() => {
+        if (openedSubjectId === null) return;
+        let cancelled = false;
+        getAllNotes().then((allNotes) => {
+            if (!cancelled) setSubjectNotes(allNotes.filter((note) => note.status === "active" && note.subjectId === openedSubjectId));
+        }).catch(() => { if (!cancelled) setSubjectNotes([]); }).finally(() => { if (!cancelled) setNotesLoading(false); });
+        return () => { cancelled = true; };
+    }, [openedSubjectId]);
+
+    const openedSubject = subjects.find((subject) => subject.id === openedSubjectId) ?? null;
+    const relatedResources = resources.filter((resource) => resource.subjectId === openedSubjectId);
+    const visibleNotes = subjectNotes.filter((note) => note.title.toLowerCase().includes(documentSearch.toLowerCase()));
+    const visibleResources = relatedResources.filter((resource) => resource.title.toLowerCase().includes(documentSearch.toLowerCase()));
 
     const subjectStats = useMemo(() => {
         const map = new Map<number, { notes: number; resources: number }>();
@@ -125,14 +150,31 @@ export default function Subjects({
         }
     };
 
+    if (openedSubject) {
+        return (
+            <div className="subjects-page subject-detail-page">
+                <button type="button" className="subject-back-button" onClick={() => { setOpenedSubjectId(null); setDocumentSearch(""); }}><ArrowLeft size={16} /> All subjects</button>
+                <header className="subject-detail-header"><div className={`subject-large-icon ${openedSubject.color}`}><BookOpen size={24} /></div><div className="subject-detail-heading"><p className="eyebrow">SUBJECT WORKSPACE</p><h1>{openedSubject.name}</h1><p className="page-description">{openedSubject.description || "All learning material connected to this subject."}</p></div></header>
+                <div className="subject-detail-summary"><div><strong>{subjectNotes.length}</strong><span>Notes</span></div><div><strong>{relatedResources.length}</strong><span>Documents & resources</span></div><div><strong>{subjectNotes.length + relatedResources.length}</strong><span>Total items</span></div></div>
+                <div className="subject-detail-toolbar"><div className="subjects-search subjects-search-v2"><SearchIcon size={17} /><input type="search" placeholder="Find a note or document..." value={documentSearch} onChange={(event) => setDocumentSearch(event.target.value)} /></div></div>
+                <section className="subject-material-section"><div className="subject-material-heading"><div><p className="eyebrow">YOUR MATERIAL</p><h2>Notes</h2></div><span>{visibleNotes.length} items</span></div>
+                    {notesLoading ? <div className="subject-material-empty">Loading subject notes…</div> : visibleNotes.length === 0 ? <div className="subject-material-empty"><FileText size={21} /><p>No saved notes are assigned to this subject yet.</p></div> : <div className="subject-material-grid">{visibleNotes.map((note) => <button type="button" className="subject-material-card" key={note.id} onClick={() => onOpenNote?.(note.id)}><span className="subject-material-icon"><FileText size={18} /></span><span className="subject-material-copy"><strong>{note.title}</strong><small>{note.plainText?.trim().slice(0,100) || "Saved note"}</small><em>Open note <ArrowRight size={13} /></em></span></button>)}</div>}
+                </section>
+                <section className="subject-material-section"><div className="subject-material-heading"><div><p className="eyebrow">FILES & LINKS</p><h2>Documents and resources</h2></div><span>{visibleResources.length} items</span></div>
+                    {visibleResources.length === 0 ? <div className="subject-material-empty"><FolderOpen size={21} /><p>No documents or resources are assigned to this subject yet.</p></div> : <div className="subject-material-grid">{visibleResources.map((resource) => <button type="button" className="subject-material-card" key={resource.id} onClick={() => onOpenResource?.(resource.id)}><span className="subject-material-icon"><FolderOpen size={18} /></span><span className="subject-material-copy"><strong>{resource.title}</strong><small>{resource.type}{resource.description ? " · " + resource.description : ""}</small><em>Open resource <ExternalLink size={13} /></em></span></button>)}</div>}
+                </section>
+            </div>
+        );
+    }
+
     return (
         <div className="subjects-page">
             <div className="subjects-heading">
                 <div>
-                    <p className="eyebrow">YOUR LEARNING CATEGORIES</p>
-                    <h1>My Subjects</h1>
+                    <p className="eyebrow">STUDYVAULT / SUBJECTS</p>
+                    <h1>Build your <em>learning world.</em></h1>
                     <p className="page-description">
-                        Organise your learning by subject.
+                        Give every subject a space of its own.
                     </p>
                 </div>
 
@@ -183,10 +225,10 @@ export default function Subjects({
                             <span><FolderOpen size={12} /> {subjectStats.get(subject.id)?.resources ?? 0} resources</span>
                         </div>
                         <div className="subject-card-footer subject-card-footer-v2">
-                            <button type="button"><FileText size={13} /> Notes</button>
-                            <button type="button"><FolderOpen size={13} /> Resources</button>
-                            <button type="button"><span className="mini-stack" /> Flashcards</button>
-                            <button className="subject-open-button" type="button" aria-label={`Open ${subject.name}`}><ArrowRight size={15} /></button>
+                            <button type="button" onClick={() => { setSubjectNotes([]); setNotesLoading(true); setOpenedSubjectId(subject.id); }}><FileText size={13} /> Notes</button>
+                            <button type="button" onClick={() => setOpenedSubjectId(subject.id)}><FolderOpen size={13} /> Resources</button>
+                            <button type="button" onClick={() => setOpenedSubjectId(subject.id)}><span className="mini-stack" /> All work</button>
+                            <button className="subject-open-button" type="button" aria-label={`Open ${subject.name}`} onClick={() => setOpenedSubjectId(subject.id)}><ArrowRight size={15} /></button>
                         </div>
                     </article>
                 ))}

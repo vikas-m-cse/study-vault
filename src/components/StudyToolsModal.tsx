@@ -234,15 +234,9 @@ function makeFlashcards(note: Note): Flashcard[] {
     add("What is " + concept + ", and what is its role in this topic?", text, "Core idea");
   }
 
-  if (cards.length < 6) {
-    const keys = keywords(note.plainText, 8);
-    const source = cleanSnippet(note.plainText, 210);
-    for (const key of keys) {
-      if (cards.length >= 6) break;
-      add("What role does " + titleCase(key) + " play in this topic?", source, "Concept");
-    }
-  }
-
+  // Keep the deck honest: every card must come from a distinct, usable source block.
+  // Padding a short deck with keyword questions and the same whole-note answer feels
+  // productive but does not test a meaningful, specific piece of knowledge.
   return cards.slice(0, 6);
 }
 
@@ -668,6 +662,16 @@ export default function StudyToolsModal({ note, onClose }: StudyToolsModalProps)
                   </div>
                 )}
               </div>
+            )}
+
+            {tool === "flashcards" && flashcards.length === 0 && (
+              <section className="sv-retrieval" aria-label="Flashcards unavailable">
+                <div className="sv-complete">
+                  <span className="sv-retrieval-kicker"><span className="sv-live" /> SOURCE NEEDED</span>
+                  <h4>This note needs a little more substance.</h4>
+                  <p>StudyVault only creates cards when it can find a clear idea and a useful answer in your note. Add a definition, explanation, steps, or an example, then reopen Study tools. It won't fill your deck with repeated or made-up answers.</p>
+                </div>
+              </section>
             )}
 
             {tool === "flashcards" && flashcards.length > 0 && (

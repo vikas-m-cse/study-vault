@@ -2,6 +2,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
     Archive,
     BrainCircuit,
+    BookOpen,
+    PencilLine,
     Sparkles,
     ChevronLeft,
     ChevronRight,
@@ -35,6 +37,8 @@ import {
 } from "./services/noteStorage";
 import { legacyResourceToNote } from "./services/legacyNoteAdapter";
 import { plainTextToTipTapDocument } from "./services/noteSerialization";
+import { syncNote, syncNoteDeletion, syncFolder } from "./services/cloudAutoSync";
+import "./notes-focus-mode.css";
 
 type NotesProps = {
     resources: Resource[];
@@ -81,6 +85,7 @@ export default function Notes({ resources, subjects, openNoteId, openFolderId, i
     const [selectedId, setSelectedId] = useState<string | null>(() => openNoteId ?? null);
     const [filter, setFilter] = useState<NotesFilter>(initialFilter);
     const [search, setSearch] = useState("");
+
     const [loadError, setLoadError] = useState<string | null>(null);
     const [saveStates, setSaveStates] = useState<Record<string, SaveState>>({});
     const [saveErrors, setSaveErrors] = useState<Record<string, string>>({});
@@ -91,23 +96,33 @@ export default function Notes({ resources, subjects, openNoteId, openFolderId, i
     const [folderName, setFolderName] = useState("");
     const [workspaceNow] = useState(() => Date.now());
     const [studyToolsOpen, setStudyToolsOpen] = useState(false);
+    const [readingMode, setReadingMode] = useState(false);
+    const [detailsOpen, setDetailsOpen] = useState(false);
+
     const [isNotesFullscreen, setIsNotesFullscreen] = useState(false);
     const workspaceRef = useRef<HTMLDivElement | null>(null);
 
-    const toggleNotesFullscreen = useCallback(async () => {
-        const workspace = workspaceRef.current;
-        if (!workspace) return;
-
-        try {
-            if (document.fullscreenElement === workspace) {
-                await document.exitFullscreen();
-            } else {
-                await workspace.requestFullscreen();
-            }
-        } catch (error) {
-            console.error("[StudyVault] Notes fullscreen unavailable:", error);
-        }
+    const selectNote = useCallback((noteId: string | null) => {
+        setSelectedId(noteId);
+        setReadingMode(false);
+        setDetailsOpen(false);
     }, []);
+
+
+    // Use an in-page focus layout rather than browser Fullscreen API.
+    // This keeps the floating StudyVault toolbar available above the notes.
+    const toggleNotesFullscreen = useCallback(() => {
+        setIsNotesFullscreen((current) => !current);
+    }, []);
+
+    useEffect(() => {
+        if (!isNotesFullscreen) return;
+        const handleEscape = (event: KeyboardEvent) => {
+            if (event.key === "Escape") setIsNotesFullscreen(false);
+        };
+        window.addEventListener("keydown", handleEscape);
+        return () => window.removeEventListener("keydown", handleEscape);
+    }, [isNotesFullscreen]);
 
     useEffect(() => {
         const handleFullscreenChange = () => {
@@ -138,7 +153,7 @@ export default function Notes({ resources, subjects, openNoteId, openFolderId, i
                 }
                 if (openNoteId && noteResult.notes.some((note) => note.id === openNoteId)) {
                     setFilter("all");
-                    setSelectedId(openNoteId);
+                    selectNote(openNoteId);
                 }
                 setLoadError(noteResult.issues.length > 0
                     ? `${noteResult.issues.length} saved note${noteResult.issues.length === 1 ? " has" : "s have"} recoverable data issues. Existing records were left unchanged.`
@@ -154,7 +169,7 @@ export default function Notes({ resources, subjects, openNoteId, openFolderId, i
 
         loadNotes();
         return () => { cancelled = true; };
-    }, [openFolderId, openNoteId]);
+    }, [openFolderId, openNoteId, selectNote]);
 
     useEffect(() => {
         return () => {
@@ -235,6 +250,7 @@ export default function Notes({ resources, subjects, openNoteId, openFolderId, i
         saveTimers.current[note.id] = window.setTimeout(async () => {
             try {
                 await updateNote(note);
+                try { await syncNote(note); } catch (syncError) { console.error("[StudyVault] Note saved locally; cloud sync failed:", syncError); }
                 if (saveVersions.current[note.id] !== nextVersion) return;
                 if (!mountedRef.current) return;
                 setNotes((current) => current.map((item) => item.id === note.id ? note : item));
@@ -291,8 +307,9 @@ export default function Notes({ resources, subjects, openNoteId, openFolderId, i
 
         try {
             await createNote(note);
+            try { await syncNote(note); } catch (syncError) { console.error("[StudyVault] Note created locally; cloud sync failed:", syncError); }
             setNotes((current) => [note, ...current]);
-            setSelectedId(note.id);
+            selectNote(note.id);
             setFilter("all");
             setSaveStates((current) => ({ ...current, [note.id]: "saved" }));
             setLoadError(null);
@@ -313,6 +330,7 @@ export default function Notes({ resources, subjects, openNoteId, openFolderId, i
 
         try {
             await createFolder(folder);
+            try { await syncFolder(folder); } catch (syncError) { console.error("[StudyVault] Folder created locally; cloud sync failed:", syncError); }
             setFolders((current) => [...current, folder].sort((a, b) => a.name.localeCompare(b.name)));
             setFilter(`folder:${folder.id}`);
             setFolderName("");
@@ -332,8 +350,9 @@ export default function Notes({ resources, subjects, openNoteId, openFolderId, i
 
         try {
             await createNote(converted);
+            try { await syncNote(converted); } catch (syncError) { console.error("[StudyVault] Note created locally; cloud sync failed:", syncError); }
             setNotes((current) => [converted, ...current]);
-            setSelectedId(converted.id);
+            selectNote(converted.id);
             setLoadError(null);
         } catch (error) {
             console.error("[StudyVault] Failed to migrate legacy note:", error);
@@ -375,9 +394,9 @@ export default function Notes({ resources, subjects, openNoteId, openFolderId, i
         <div className="notes-page">
             <div className="notes-page-heading">
                 <div>
-                    <p className="eyebrow">YOUR KNOWLEDGE STUDIO</p>
-                    <h1>Notes</h1>
-                    <p className="page-description">Think clearly, connect ideas, and keep your best work close.</p>
+                    <p className="eyebrow">{filter === "favourites" ? "STUDYVAULT / FAVOURITES" : "STUDYVAULT / NOTES"}</p>
+                    <h1>{filter === "favourites" ? <>Keep what matters <em>close.</em></> : <>Give your ideas <em>room to grow.</em></>}</h1>
+                    <p className="page-description">{filter === "favourites" ? "Your favourite notes, collected in one place." : "Think clearly, connect ideas, and keep your best work close."}</p>
                 </div>
                 <div className="notes-heading-actions">
                     <button
@@ -536,7 +555,7 @@ export default function Notes({ resources, subjects, openNoteId, openFolderId, i
                                         type="button"
                                         className={`notes-list-item ${effectiveSelectedId === note.id ? "selected" : ""}`}
                                         key={note.id}
-                                        onClick={() => setSelectedId(note.id)}
+                                        onClick={() => selectNote(note.id)}
                                     >
                                         <div className="notes-list-item-heading">
                                             <h3>{currentNote.title || "Untitled note"}</h3>
@@ -577,7 +596,19 @@ export default function Notes({ resources, subjects, openNoteId, openFolderId, i
                                         {isNotesFullscreen ? <Minimize2 size={15} /> : <Maximize2 size={15} />}
                                         <span>{isNotesFullscreen ? "Exit focus" : "Focus"}</span>
                                     </button>
-                                    {selectedNote && !selectedRecord?.legacy && (
+                                    {selectedNote && (
+                                        <button
+                                            type="button"
+                                            className="notes-reading-mode-button"
+                                            onClick={() => setReadingMode((current) => !current)}
+                                            aria-pressed={readingMode}
+                                            title={readingMode ? "Return to editing" : "Read without editing controls"}
+                                        >
+                                            {readingMode ? <PencilLine size={15} /> : <BookOpen size={15} />}
+                                            <span>{readingMode ? "Edit note" : "Read"}</span>
+                                        </button>
+                                    )}
+                                    {selectedNote && !selectedRecord?.legacy && !readingMode && (
                                         <button
                                             type="button"
                                             className="notes-study-tools-button"
@@ -588,7 +619,7 @@ export default function Notes({ resources, subjects, openNoteId, openFolderId, i
                                             Study tools
                                         </button>
                                     )}
-                                    {selectedNote && !selectedRecord?.legacy && onOpenReview && (
+                                    {selectedNote && !selectedRecord?.legacy && !readingMode && onOpenReview && (
                                         <button
                                             type="button"
                                             className="notes-review-button"
@@ -616,7 +647,7 @@ export default function Notes({ resources, subjects, openNoteId, openFolderId, i
                                     <input
                                         className="notes-title-input"
                                         value={selectedNote.title}
-                                        readOnly={selectedRecord?.legacy}
+                                        readOnly={selectedRecord?.legacy || readingMode}
                                         onChange={(event) => updateSelectedNote({ title: event.target.value })}
                                         aria-label="Note title"
                                     />
@@ -644,6 +675,17 @@ export default function Notes({ resources, subjects, openNoteId, openFolderId, i
                                     </div>
                                 </div>
 
+                                {!readingMode && (
+                                    <div className="notes-details-toggle-row">
+                                        <button type="button" className="notes-details-toggle" onClick={() => setDetailsOpen((current) => !current)} aria-expanded={detailsOpen}>
+                                            <span>{detailsOpen ? "Hide note details" : "Note details"}</span>
+                                            <ChevronRight size={15} className={detailsOpen ? "is-open" : ""} />
+                                        </button>
+                                        {!detailsOpen && <span className="notes-details-summary">Keep the focus on your content</span>}
+                                    </div>
+                                )}
+                                {!readingMode && detailsOpen && (
+                                <>
                                 <div className="notes-metadata-grid">
                                     <label>
                                         <span>Subject</span>
@@ -681,7 +723,9 @@ export default function Notes({ resources, subjects, openNoteId, openFolderId, i
                                     />
                                 </label>
 
-                                {selectedRecord?.legacy && (
+                                </>
+                                )}
+                                {selectedRecord?.legacy && !readingMode && (
                                     <div className="notes-legacy-banner">
                                         <div>
                                             <strong>This note is from My Resources.</strong>
@@ -690,11 +734,11 @@ export default function Notes({ resources, subjects, openNoteId, openFolderId, i
                                         <button type="button" className="secondary-button" onClick={convertLegacyNote}>Make editable</button>
                                     </div>
                                 )}
-
+                                {selectedRecord?.legacy && readingMode && <p className="notes-reading-hint">Read-only resource note</p>}
                                 <NoteEditor
                                     key={`${selectedNote.id}-${selectedRecord?.legacy ? "legacy" : "editable"}`}
                                     content={selectedNote.content}
-                                    readOnly={selectedRecord?.legacy}
+                                    readOnly={selectedRecord?.legacy || readingMode}
                                     onChange={handleEditorChange}
                                 />
 
@@ -704,7 +748,7 @@ export default function Notes({ resources, subjects, openNoteId, openFolderId, i
                             <div className="notes-editor-footer">
                                 <span>{wordCount} {wordCount === 1 ? "word" : "words"}</span>
                                 <span>Updated {formatUpdatedDate(selectedNote.updatedAt)}</span>
-                                {!selectedRecord?.legacy && (
+                                {!selectedRecord?.legacy && !readingMode && (
                                     <div className="notes-status-actions">
                                         {selectedNote.status === "trash" ? (
                                             <>
@@ -715,6 +759,7 @@ export default function Notes({ resources, subjects, openNoteId, openFolderId, i
                                                         if (!window.confirm(`Delete "${selectedNote.title}" permanently?`)) return;
                                                         try {
                                                             await deleteNote(selectedNote.id);
+                                                            try { await syncNoteDeletion(selectedNote.id); } catch (syncError) { console.error("[StudyVault] Note deleted locally; cloud deletion sync failed:", syncError); }
                                                             setNotes((current) => current.filter((note) => note.id !== selectedNote.id));
                                                             setSelectedId(null);
                                                         } catch {

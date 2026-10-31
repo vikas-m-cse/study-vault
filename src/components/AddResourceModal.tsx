@@ -1,6 +1,7 @@
 
 import { useState } from "react";
-import { X, Upload, Link as LinkIcon, FileText } from "lucide-react";
+import { X, Upload, Link as LinkIcon, FileText, HardDrive, ExternalLink } from "lucide-react";
+import { chooseGoogleDriveFile, chooseGoogleDriveFolder } from "../services/googleDrivePicker";
 import type { Resource, ResourceType } from "../types/resource";
 import type { Subject } from "../Subjects";
 
@@ -33,6 +34,47 @@ export function AddResourceModal({
     const [content, setContent] = useState(initialResource?.content ?? "");
     const [isSaving, setIsSaving] = useState(false);
     const [saveError, setSaveError] = useState<string | null>(null);
+    const [driveError, setDriveError] = useState<string | null>(null);
+    const [isChoosingDriveFile, setIsChoosingDriveFile] = useState(false);
+    const [driveFileName, setDriveFileName] = useState<string | null>(null);
+
+    const handleChooseFromDrive = async () => {
+        if (isChoosingDriveFile) return;
+        setIsChoosingDriveFile(true);
+        setDriveError(null);
+        try {
+            const selected = await chooseGoogleDriveFile();
+            if (!selected) return;
+            setDriveFileName(selected.name);
+            setTitle((current) => current.trim() || selected.name);
+            setType("Link");
+            setUrl(selected.url || `https://drive.google.com/open?id=${encodeURIComponent(selected.id)}`);
+            setDescription((current) => current.trim() || `Google Drive file${selected.mimeType ? ` · ${selected.mimeType}` : ""}`);
+        } catch (error) {
+            setDriveError(error instanceof Error ? error.message : "Could not open Google Drive.");
+        } finally {
+            setIsChoosingDriveFile(false);
+        }
+    };
+
+    const handleChooseDriveFolder = async () => {
+        if (isChoosingDriveFile) return;
+        setIsChoosingDriveFile(true);
+        setDriveError(null);
+        try {
+            const selected = await chooseGoogleDriveFolder();
+            if (!selected) return;
+            setDriveFileName(`Folder: ${selected.name}`);
+            setTitle((current) => current.trim() || selected.name);
+            setType("Link");
+            setUrl(selected.url || `https://drive.google.com/drive/folders/${encodeURIComponent(selected.id)}`);
+            setDescription((current) => current.trim() || "Google Drive folder link");
+        } catch (error) {
+            setDriveError(error instanceof Error ? error.message : "Could not open Google Drive folders.");
+        } finally {
+            setIsChoosingDriveFile(false);
+        }
+    };
 
     const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
@@ -145,6 +187,7 @@ export function AddResourceModal({
                         setFile(null);
                         setUrl("");
                         setContent("");
+                        setDriveFileName(null);
                     }}
                 >
                     <option value="PDF">PDF</option>
@@ -153,6 +196,43 @@ export function AddResourceModal({
                     <option value="Link">Website link</option>
                     <option value="Note">Text note</option>
                 </select>
+
+                <div style={{ display: "grid", gap: 8, marginTop: 4 }}>
+                    <button
+                        type="button"
+                        className="secondary-button"
+                        onClick={handleChooseFromDrive}
+                        disabled={isChoosingDriveFile || isSaving}
+                        style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 9, minHeight: 44, borderColor: "#d7e3d8", color: "#263a5b" }}
+                    >
+                        <HardDrive size={18} />
+                        {isChoosingDriveFile ? "Connecting to Google Drive…" : "Choose from Google Drive"}
+                    </button>
+                    <button
+                        type="button"
+                        className="secondary-button"
+                        onClick={handleChooseDriveFolder}
+                        disabled={isChoosingDriveFile || isSaving}
+                        style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 9, minHeight: 44, borderColor: "#d7e3d8", color: "#263a5b" }}
+                    >
+                        <HardDrive size={18} />
+                        {isChoosingDriveFile ? "Connecting to Google Drive…" : "Choose Google Drive folder"}
+                    </button>
+                    <p style={{ margin: 0, color: "#718096", fontSize: 12, lineHeight: 1.5 }}>
+                        Save a shortcut to a Drive folder. The folder stays in Drive; StudyVault does not copy its contents.
+                    </p>
+                    <p style={{ margin: 0, color: "#718096", fontSize: 12, lineHeight: 1.5 }}>
+                        Select a file from your Drive to save a link to it in StudyVault. Drive sharing permissions still apply.
+                    </p>
+                    {driveFileName && (
+                        <div style={{ display: "flex", alignItems: "center", gap: 8, color: "#2f6b4f", fontSize: 13 }}>
+                            <FileText size={16} />
+                            <span>{driveFileName}</span>
+                            <ExternalLink size={14} />
+                        </div>
+                    )}
+                    {driveError && <div className="resource-save-error" role="alert">{driveError}</div>}
+                </div>
 
                 {type === "Link" && (
                     <>

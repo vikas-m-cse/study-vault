@@ -11,6 +11,30 @@ import { getAllNotes } from "../services/noteStorage";
 import type { Resource } from "../types/resource";
 import type { Subject } from "../Subjects";
 
+const mockSession = vi.hoisted(() => ({ user: { id: "test-user", email: "student@example.com" } }));
+
+vi.mock("../lib/supabase", () => ({
+    isSupabaseConfigured: true,
+    supabase: {
+        auth: {
+            onAuthStateChange: vi.fn(() => ({ data: { subscription: { unsubscribe: vi.fn() } } })),
+            getSession: vi.fn(async () => ({ data: { session: mockSession }, error: null })),
+            signOut: vi.fn(async () => ({ error: null })),
+        },
+    },
+}));
+
+vi.mock("../services/cloudAutoSync", () => ({
+    syncSubjectChanges: vi.fn(async () => undefined),
+    syncResource: vi.fn(async () => undefined),
+    syncResourceDeletion: vi.fn(async () => undefined),
+    syncNote: vi.fn(async () => undefined),
+    syncNoteDeletion: vi.fn(async () => undefined),
+    syncFolder: vi.fn(async () => undefined),
+    syncFolderDeletion: vi.fn(async () => undefined),
+    syncTimetable: vi.fn(async () => undefined),
+}));
+
 const subjects: Subject[] = [{
     id: 1,
     name: "Operating Systems",
@@ -230,14 +254,14 @@ describe("Notes and application regression", () => {
     it("renders the existing application shell and Notes navigation", async () => {
         const user = userEvent.setup();
         render(<App />);
-        expect(await screen.findByText("Good morning, Vikas.")).toBeTruthy();
+        expect(await screen.findByRole("heading", { name: /Build knowledge.*that stays\./i })).toBeTruthy();
         await user.click(screen.getByRole("button", { name: "Notes" }));
-        expect(await screen.findByRole("heading", { name: "Notes" })).toBeTruthy();
+        expect(await screen.findByRole("heading", { name: /Give your ideas.*room to grow\./i })).toBeTruthy();
         fireEvent.keyDown(window, { key: "k", ctrlKey: true });
         expect(await screen.findByRole("dialog", { name: "Search your knowledge" })).toBeTruthy();
         await user.type(screen.getByRole("textbox", { name: "Search your knowledge" }), "Operating Systems");
-        await user.click(await screen.findByRole("option"));
-        expect(await screen.findByRole("heading", { name: "My Subjects" })).toBeTruthy();
+        await user.click(await screen.findByRole("option", { name: /Operating Systems.*Subject/ }));
+        expect(await screen.findByRole("heading", { name: /Build your.*learning world\./i })).toBeTruthy();
     });
 
     it("exposes legacy notes as read-only until explicit conversion", async () => {

@@ -6,6 +6,9 @@ import {
     FileText,
     Star,
     BrainCircuit,
+    TrendingUp,
+    CalendarDays,
+    Timer,
     Settings,
     Library,
 } from "lucide-react";
@@ -39,6 +42,18 @@ const navigationItems = [
     {
         label: "Review",
         icon: BrainCircuit,
+    },
+    {
+        label: "Progress",
+        icon: TrendingUp,
+    },
+    {
+        label: "Focus Cockpit",
+        icon: Timer,
+    },
+    {
+        label: "Timetable",
+        icon: CalendarDays,
     },
 ];
 

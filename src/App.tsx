@@ -1,5 +1,8 @@
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
+import type { Session } from "@supabase/supabase-js";
+import AuthScreen from "./components/AuthScreen";
+import { isSupabaseConfigured, supabase } from "./lib/supabase";
 import { Sidebar } from "./components/Sidebar";
 import { Topbar } from "./components/Topbar";
 import { GlobalSearch } from "./components/GlobalSearch";
@@ -11,6 +14,11 @@ import type { Resource } from "./types/resource";
 import type { SearchResult } from "./services/search";
 import Subjects, { type Subject } from "./Subjects";
 import Review from "./Review";
+import Progress from "./Progress";
+import DailyTimetable from "./DailyTimetable";
+import FocusCockpit from "./FocusCockpit";
+import BackupCenter from "./components/BackupCenter";
+import StudyVaultToolbar from "./components/StudyVaultToolbar";
 import {
     isStorageAvailable,
     loadResources,
@@ -21,6 +29,10 @@ import {
 } from "./services/storage";
 import "./App.css";
 import "./premium-motion.css";
+import "./focus-cockpit.css";
+import { migrateLocalWorkspaceToCloud, type MigrationSummary } from "./services/localWorkspaceMigration";
+import { restoreCloudWorkspaceToLocal } from "./services/cloudRestore";
+import { syncSubjectChanges, syncResource, syncResourceDeletion } from "./services/cloudAutoSync";
 
 // ---------------------------------------------------------------------------
 // Default subjects shown on first launch (before any user data is saved)
@@ -58,6 +70,82 @@ const DEFAULT_SUBJECTS: Subject[] = [
 // ---------------------------------------------------------------------------
 
 function App() {
+    const [session, setSession] = useState<Session | null>(null);
+    const [authLoading, setAuthLoading] = useState(Boolean(supabase));
+    const [migrationBusy, setMigrationBusy] = useState(false);
+    const [migrationMessage, setMigrationMessage] = useState<string | null>(null);
+    const [shouldPersistSubjects, setShouldPersistSubjects] = useState(false);
+    const previousSubjectsRef = useRef<Subject[]>([]);
+
+    useEffect(() => {
+        if (!supabase) return;
+
+        let active = true;
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, nextSession) => {
+            if (!active) return;
+            setSession(nextSession);
+            setAuthLoading(false);
+        });
+
+        supabase.auth.getSession().then(({ data, error }) => {
+            if (!active) return;
+            if (error) console.error("[StudyVault] Could not restore auth session:", error);
+            setSession(data.session);
+            setAuthLoading(false);
+        });
+
+        return () => {
+            active = false;
+            subscription.unsubscribe();
+        };
+    }, []);
+
+    const handleCloudMigration = useCallback(async () => {
+        const confirmed = window.confirm(
+            "Upload this browser’s existing StudyVault subjects, notes, folders, resources and timetable to the signed-in account? Local data will not be deleted. Existing cloud data will cause the migration to stop unless it matches a previous interrupted migration. Resource file attachments will also be uploaded."
+        );
+        if (!confirmed) return;
+
+        setMigrationBusy(true);
+        setMigrationMessage(null);
+        try {
+            const summary: MigrationSummary = await migrateLocalWorkspaceToCloud();
+            const total = Object.values(summary.uploaded).reduce((sum, count) => sum + count, 0);
+            setMigrationMessage(
+                `Uploaded ${total} records, including ${summary.attachmentsUploaded} file attachments.`
+            );
+        } catch (error) {
+            setMigrationMessage(error instanceof Error ? error.message : "Cloud migration failed. Local data remains unchanged.");
+        } finally {
+            setMigrationBusy(false);
+        }
+    }, []);
+
+    const handleCloudRestore = useCallback(async () => {
+        const confirmed = window.confirm(
+            "Download this account’s cloud workspace to this device? Restore only works when this device has no existing StudyVault data. Existing local data will never be overwritten."
+        );
+        if (!confirmed) return;
+
+        setMigrationBusy(true);
+        setMigrationMessage(null);
+        try {
+            const summary = await restoreCloudWorkspaceToLocal();
+            const total = Object.values(summary.restored).reduce((sum, count) => sum + count, 0);
+            setMigrationMessage(`Restored ${total} records and ${summary.attachmentsDownloaded} file attachments. Reloading StudyVault…`);
+            window.location.reload();
+        } catch (error) {
+            setMigrationMessage(error instanceof Error ? error.message : "Cloud restore failed. Existing local data was not changed.");
+            setMigrationBusy(false);
+        }
+    }, []);
+
+    const handleSignOut = useCallback(async () => {
+        if (!supabase) return;
+        const { error } = await supabase.auth.signOut();
+        if (error) console.error("[StudyVault] Sign out failed:", error);
+    }, []);
+
     const [activePage, setActivePage] = useState("Dashboard");
 
     const navigate = useCallback((page: string) => {
@@ -71,6 +159,7 @@ function App() {
         }
     }, [activePage]);
     const [isSearchOpen, setIsSearchOpen] = useState(false);
+    const [isBackupOpen, setIsBackupOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
     const [notesTarget, setNotesTarget] = useState<{ noteId?: string; folderId?: string } | null>(null);
     const [reviewNoteId, setReviewNoteId] = useState<string | null>(null);
@@ -112,7 +201,10 @@ function App() {
 
                 if (cancelled) return;
 
-                // Use saved subjects; fall back to defaults on first launch
+                // Keep starter subjects in memory only until the user edits them.
+                // A fresh device must remain empty so cloud restore can populate it.
+                previousSubjectsRef.current = savedSubjects;
+                setShouldPersistSubjects(savedSubjects.length > 0);
                 setSubjects(savedSubjects.length > 0 ? savedSubjects : DEFAULT_SUBJECTS);
                 setResources(savedResources);
             } catch (err) {
@@ -135,13 +227,22 @@ function App() {
     // -----------------------------------------------------------------------
 
     useEffect(() => {
-        if (subjects === null) return;
+        if (subjects === null || !shouldPersistSubjects) return;
         if (!isStorageAvailable()) return;
 
-        saveSubjects(subjects).catch((err) => {
+        saveSubjects(subjects).then(async () => {
+            const previous = previousSubjectsRef.current;
+            previousSubjectsRef.current = subjects;
+            try {
+                await syncSubjectChanges(subjects, previous);
+            } catch (err) {
+                console.error("[StudyVault] Cloud subject sync failed; local data is safe:", err);
+                setMigrationMessage("Saved on this device. Cloud subject sync will need a retry.");
+            }
+        }).catch((err) => {
             console.error("[StudyVault] Failed to save subjects:", err);
         });
-    }, [subjects]);
+    }, [subjects, shouldPersistSubjects]);
 
     useEffect(() => {
         const handleShortcut = (event: KeyboardEvent) => {
@@ -187,6 +288,13 @@ function App() {
             throw new Error("StudyVault could not save this resource locally.", { cause: err });
         }
 
+        try {
+            await syncResource(savedResource);
+        } catch (err) {
+            console.error("[StudyVault] Cloud resource sync failed; local data is safe:", err);
+            setMigrationMessage("Resource saved on this device, but cloud sync failed. Retry when online.");
+        }
+
         setResources((previous) => {
             if (previous === null) return [savedResource];
 
@@ -199,6 +307,27 @@ function App() {
         setEditingResource(null);
     }, []);
 
+    const handleOpenTimetableResource = useCallback((id: string) => {
+        const resource = resources?.find((item) => item.id === id);
+        if (!resource) return;
+
+        // Open files and external links directly in the user gesture so the
+        // browser does not treat the new tab as a popup. Notes open in-app.
+        if (resource.type !== "Note" && resource.file) {
+            const fileUrl = URL.createObjectURL(resource.file);
+            window.open(fileUrl, "_blank", "noopener,noreferrer");
+            window.setTimeout(() => URL.revokeObjectURL(fileUrl), 60_000);
+            return;
+        }
+        if (resource.type !== "Note" && resource.url) {
+            window.open(resource.url, "_blank", "noopener,noreferrer");
+            return;
+        }
+
+        setResourceTargetId(id);
+        navigate("My Resources");
+    }, [resources, navigate]);
+
     const handleDeleteResource = useCallback(async (id: string) => {
         if (!isStorageAvailable()) {
             throw new Error("IndexedDB is unavailable. This resource was not deleted.");
@@ -209,6 +338,13 @@ function App() {
         } catch (err) {
             console.error("[StudyVault] Failed to delete resource from IndexedDB:", err);
             throw new Error("StudyVault could not delete this resource locally.", { cause: err });
+        }
+
+        try {
+            await syncResourceDeletion(id);
+        } catch (err) {
+            console.error("[StudyVault] Cloud resource deletion sync failed:", err);
+            setMigrationMessage("Resource deleted on this device, but cloud deletion sync failed.");
         }
 
         setResources((previous) =>
@@ -223,6 +359,7 @@ function App() {
 
     const handleSetSubjects: React.Dispatch<React.SetStateAction<Subject[]>> = useCallback(
         (action) => {
+            setShouldPersistSubjects(true);
             setSubjects((prev) => {
                 const current = prev ?? DEFAULT_SUBJECTS;
                 return typeof action === "function" ? action(current) : action;
@@ -250,6 +387,15 @@ function App() {
         }
     }, [navigate]);
 
+    // Authentication is required before the local workspace is opened.
+    if (authLoading) {
+        return <div className="app-layout"><div className="app-loading"><p>Checking your StudyVault session…</p></div></div>;
+    }
+
+    if (!isSupabaseConfigured || !session) {
+        return <AuthScreen />;
+    }
+
     // -----------------------------------------------------------------------
     // Loading guard — show nothing until IndexedDB data is ready
     // -----------------------------------------------------------------------
@@ -273,8 +419,16 @@ function App() {
             <Sidebar activePage={activePage} onNavigate={navigate} />
 
             <main className="main-content">
+                <div className="auth-session-bar">
+                    <span>{session.user.email ?? "Signed in"}</span>
+                    <button type="button" onClick={handleCloudMigration} disabled={migrationBusy}>{migrationBusy ? "Working…" : "Migrate local data to cloud"}</button>
+                    <button type="button" onClick={handleCloudRestore} disabled={migrationBusy}>{migrationBusy ? "Working…" : "Restore cloud data"}</button>
+                    <button type="button" onClick={handleSignOut}>Sign out</button>
+                </div>
+                {migrationMessage && <div className="storage-error-banner" role="status">{migrationMessage}</div>}
                 <Topbar
                     onAddResource={handleAddResource}
+                    onOpenBackup={() => setIsBackupOpen(true)}
                     onOpenSearch={() => setIsSearchOpen(true)}
                     searchQuery={searchQuery}
                     onSearchQueryChange={setSearchQuery}
@@ -292,6 +446,7 @@ function App() {
                             resources={resources}
                             subjects={subjects}
                             onAddResource={handleAddResource}
+                            onOpenReview={() => { setReviewNoteId(null); navigate("Review"); }}
                         />
                     ) : activePage === "Subjects" ? (
                         <Subjects
@@ -299,6 +454,8 @@ function App() {
                             setSubjects={handleSetSubjects}
                             resources={resources}
                             focusSubjectId={subjectTargetId}
+                            onOpenResource={(id) => { setResourceTargetId(id); navigate("My Resources"); }}
+                            onOpenNote={(id) => { setNotesTarget({ noteId: id }); navigate("Notes"); }}
                         />
                     ) : activePage === "My Resources" ? (
                         <Resources
@@ -311,6 +468,7 @@ function App() {
                         />
                     ) : activePage === "Notes" ? (
                         <Notes
+                            key="notes"
                             resources={resources}
                             subjects={subjects}
                             openNoteId={notesTarget?.noteId}
@@ -322,10 +480,15 @@ function App() {
                         />
                     ) : activePage === "Favourites" ? (
                         <Notes
+                            key="favourites"
                             resources={resources}
                             subjects={subjects}
                             initialFilter="favourites"
                         />
+                     ) : activePage === "Progress" ? (
+                        <Progress subjects={subjects} onOpenReview={() => navigate("Review")} />
+                    ) : activePage === "Focus Cockpit" ? null : activePage === "Timetable" ? (
+                        <DailyTimetable resources={resources} subjects={subjects} onOpenResource={handleOpenTimetableResource} />
                     ) : activePage === "Review" ? (
                         <Review
                             resources={resources}
@@ -341,6 +504,7 @@ function App() {
                             </p>
                         </div>
                     )}
+                    <FocusCockpit subjects={subjects} onOpenReview={() => navigate("Review")} isActive={activePage === "Focus Cockpit"} />
                 </section>
             </main>
 
@@ -352,6 +516,15 @@ function App() {
                     initialResource={editingResource ?? undefined}
                 />
             )}
+
+            {isBackupOpen && <BackupCenter onClose={() => setIsBackupOpen(false)} />}
+
+            <StudyVaultToolbar
+                activePage={activePage}
+                onNavigate={navigate}
+                onAddResource={handleAddResource}
+                onOpenSearch={() => setIsSearchOpen(true)}
+            />
 
             <GlobalSearch
                 isOpen={isSearchOpen}

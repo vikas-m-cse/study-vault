@@ -63,6 +63,12 @@ function write<T>(key: string, value: T) {
   }
 }
 
+function notifyLearningUpdated() {
+  if (typeof window !== "undefined") {
+    window.dispatchEvent(new CustomEvent("studyvault:learning-updated"));
+  }
+}
+
 export function getMastery(): Record<string, ConceptMastery> {
   return read<Record<string, ConceptMastery>>(STORAGE_KEY, {});
 }
@@ -127,6 +133,7 @@ export function recordLearningEvent(event: LearningEvent): ConceptMastery {
   const events = getLearningEvents();
   events.push(event);
   write(EVENT_KEY, events.slice(-1000));
+  notifyLearningUpdated();
 
   return current;
 }

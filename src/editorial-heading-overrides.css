@@ -1,0 +1,245 @@
+/* StudyVault editorial page-heading system.
+   Restore the original cool-neutral/blue palette and give every page the Daily Planner's
+   editorial hierarchy without changing page content or behavior. */
+
+:root {
+  color-scheme: light;
+  --glass-ink: #263247;
+  --glass-ink-soft: #4d5b70;
+  --glass-muted: #7b8799;
+  --glass-paper: #f7f8fc;
+  --glass-white: #ffffff;
+  --glass-border: #e5e9ef;
+  --glass-blue: #263a5b;
+  --glass-blue-deep: #1d2d49;
+  --glass-champagne: #d9a86c;
+  --color-primary: #263a5b;
+  --color-primary-hover: #1d2d49;
+  --color-accent: #d9a86c;
+  --color-background: #f7f8fc;
+  --color-surface: #ffffff;
+  --color-surface-muted: #f2f5f8;
+  --color-text: #263247;
+  --color-text-secondary: #7b8799;
+  --color-text-muted: #9aa4b3;
+  --color-border: #e5e9ef;
+}
+
+html, body, #root { background: #f7f8fc !important; color: #263247; }
+body { background-image: none !important; }
+::selection { color: #263a5b !important; background: rgba(217,168,108,.28) !important; }
+
+.sidebar {
+  background: rgba(255,255,255,.96) !important;
+  border-right: 1px solid #e5e9ef !important;
+  box-shadow: 5px 0 24px rgba(38,58,91,.025) !important;
+  backdrop-filter: none !important;
+}
+.sidebar .nav-item.active, .sidebar .nav-item[aria-current="page"] {
+  background: #eef2f6 !important; color: #263a5b !important;
+  box-shadow: inset 3px 0 #d9a86c !important;
+}
+.brand-icon, .sidebar .brand-icon {
+  background: linear-gradient(145deg,#304a70,#263a5b 62%,#1d2d49) !important;
+  color: #fff !important;
+}
+.dashboard .sv-home-hero {
+  background: linear-gradient(120deg,#263a5b 0%,#1d2d49 100%) !important;
+}
+.resources-page .resource-subject-trigger,
+.resources-page .resource-subject-menu {
+  border-color: #e5e9ef !important; background: #fff !important; color: #263247 !important;
+}
+.resources-page .resource-subject-option:hover,
+.resources-page .resource-subject-option[aria-selected="true"] { background: #eef2f6 !important; }
+.notes-page .notes-nav-item.active,
+.notes-page .notes-list-item[aria-selected="true"],
+.notes-page .notes-list-item.active { background: #eef2f6 !important; color: #263a5b !important; }
+.subjects-page .subject-card-art { background: linear-gradient(145deg,#f4f6f9,#eaf0f6) !important; }
+.subjects-page .subject-card-v2 .subject-open-button {
+  background: #263a5b !important; color: #fff !important; border-color: #263a5b !important;
+}
+.review-page .review-v2-rating-buttons button.good,
+.review-page .review-v2-rating-buttons button[aria-pressed="true"],
+.review-page .review-v2-next { background: #eef2f6 !important; color: #263a5b !important; border-color: #d5deea !important; }
+.progress-page .progress-overview { background: linear-gradient(120deg,#fff 0%,#f3f6fa 100%) !important; }
+.progress-page .progress-metric-icon { background: #eef2f6 !important; color: #263a5b !important; }
+
+/* Shared editorial heading: compact uppercase label, oversized serif headline,
+   subtle italic accent phrase where the page provides one, and generous breathing room. */
+:where(.page-heading, .notes-page-heading, .subjects-heading, .review-v2-header, .progress-header, .dashboard .sv-page-heading) {
+  margin-bottom: 30px !important;
+}
+:where(.page-heading, .notes-page-heading, .subjects-heading, .review-v2-header, .progress-header) .eyebrow,
+:where(.progress-eyebrow) {
+  color: #858579 !important;
+  font-size: 10px !important;
+  font-weight: 800 !important;
+  letter-spacing: .16em !important;
+  line-height: 1.5 !important;
+  text-transform: uppercase !important;
+}
+:where(.page-heading, .notes-page-heading, .subjects-heading, .review-v2-header, .progress-header) h1 {
+  margin-top: 8px !important;
+  margin-bottom: 10px !important;
+  color: #292a27 !important;
+  font-family: Georgia, "Times New Roman", serif !important;
+  font-size: clamp(36px, 4.1vw, 48px) !important;
+  font-weight: 700 !important;
+  letter-spacing: -.045em !important;
+  line-height: 1.06 !important;
+}
+:where(.page-heading, .notes-page-heading, .subjects-heading, .review-v2-header, .progress-header) > p:not(.eyebrow) {
+  color: #7c7e78 !important;
+  font-size: 15px !important;
+  font-weight: 400 !important;
+  line-height: 1.65 !important;
+  max-width: 760px !important;
+}
+:where(.page-heading, .notes-page-heading, .subjects-heading, .review-v2-header, .progress-header) h1 em,
+:where(.page-heading, .notes-page-heading, .subjects-heading, .review-v2-header, .progress-header) h1 i {
+  color: #6c7c62 !important;
+  font-weight: 500 !important;
+}
+@media (max-width: 700px) {
+  :where(.page-heading, .notes-page-heading, .subjects-heading, .review-v2-header, .progress-header) { margin-bottom: 22px !important; }
+  :where(.page-heading, .notes-page-heading, .subjects-heading, .review-v2-header, .progress-header) h1 {
+    font-size: clamp(32px, 8vw, 40px) !important;
+  }
+}
+
+
+/* Contrast and palette correction: calm light hero + cohesive subject cards.
+   Keeps the editorial layout while removing the heavy navy/orange treatment. */
+.dashboard .sv-home-hero {
+  background: linear-gradient(125deg, #ffffff 0%, #f1f4f8 100%) !important;
+  border: 1px solid #e3e8ef !important;
+  box-shadow: 0 18px 42px rgba(38, 50, 71, .055) !important;
+}
+.dashboard .sv-home-hero .sv-hero-kicker {
+  color: #77849a !important;
+}
+.dashboard .sv-home-hero .sv-hero-kicker > span,
+.dashboard .sv-home-hero .sv-hero-live {
+  background: #8295ad !important;
+}
+.dashboard .sv-home-hero h1 {
+  color: #252d3a !important;
+}
+.dashboard .sv-home-hero h1 em {
+  color: #526b8c !important;
+}
+.dashboard .sv-home-hero p {
+  color: #687589 !important;
+}
+.dashboard .sv-home-hero .sv-hero-note {
+  color: #738096 !important;
+}
+.dashboard .sv-home-hero .sv-hero-primary {
+  background: #263a5b !important;
+  color: #ffffff !important;
+  border: 1px solid #263a5b !important;
+  box-shadow: 0 5px 14px rgba(38,58,91,.12) !important;
+}
+.dashboard .sv-home-hero .sv-hero-primary:hover {
+  background: #1d2d49 !important;
+}
+.dashboard .sv-home-hero .sv-hero-visual,
+.dashboard .sv-home-hero .sv-core {
+  color: #526b8c !important;
+}
+.dashboard .sv-home-hero .sv-core {
+  background: rgba(255,255,255,.78) !important;
+  border-color: rgba(82,107,140,.2) !important;
+}
+.dashboard .sv-home-hero .sv-orbit {
+  border-color: rgba(82,107,140,.18) !important;
+}
+.dashboard .sv-home-hero .sv-orbit-label {
+  color: #74849a !important;
+}
+.dashboard .sv-dashboard-intro h2 em {
+  color: #526b8c !important;
+}
+
+/* Subjects: neutral porcelain cards and one restrained blue accent, regardless
+   of each subject's legacy blue/violet/green/orange category class. */
+.subjects-page .subject-card-v2 {
+  background: #fff !important;
+  border-color: #e3e8ef !important;
+  box-shadow: 0 10px 28px rgba(38,50,71,.045) !important;
+}
+.subjects-page .subject-card-v2:hover {
+  border-color: #cbd6e4 !important;
+  box-shadow: 0 14px 32px rgba(38,50,71,.075) !important;
+}
+.subjects-page .subject-card-art {
+  background: linear-gradient(135deg, #f4f6f9 0%, #e9eef5 100%) !important;
+}
+.subjects-page .subject-card-art .art-core {
+  background: #dbe4ef !important;
+  box-shadow: 0 0 0 8px rgba(82,107,140,.07) !important;
+}
+.subjects-page .subject-card-art .art-orbit {
+  border-color: rgba(82,107,140,.22) !important;
+}
+.subjects-page .subject-large-icon,
+.subjects-page .subject-large-icon.blue,
+.subjects-page .subject-large-icon.violet,
+.subjects-page .subject-large-icon.green,
+.subjects-page .subject-large-icon.orange {
+  color: #526b8c !important;
+  background: #edf2f8 !important;
+  border-color: #dfe7f0 !important;
+}
+.subjects-page .subject-card-v2 .subject-open-button {
+  color: #fff !important;
+  background: #263a5b !important;
+  border-color: #263a5b !important;
+}
+.subjects-page .subject-card-footer-v2 > button:not(.subject-open-button) {
+  color: #65748a !important;
+  background: #f7f9fb !important;
+  border-color: #e5eaf0 !important;
+}
+.subjects-page .subject-card-footer-v2 > button:not(.subject-open-button):hover {
+  background: #eef2f7 !important;
+  color: #263a5b !important;
+}
+.subjects-page .subject-card-stats,
+.subjects-page .subject-card-copy > p {
+  color: #788598 !important;
+}
+
+
+/* Match the Daily Planner's editorial typography on the dashboard hero too. */
+.dashboard .sv-home-hero .sv-hero-kicker {
+  display: flex !important;
+  align-items: center !important;
+  gap: 9px !important;
+  color: #858579 !important;
+  font-size: 10px !important;
+  font-weight: 800 !important;
+  letter-spacing: .16em !important;
+  text-transform: uppercase !important;
+}
+.dashboard .sv-home-hero h1 {
+  color: #292a27 !important;
+  font-family: Georgia, "Times New Roman", serif !important;
+  font-size: clamp(40px, 4.4vw, 54px) !important;
+  font-weight: 700 !important;
+  letter-spacing: -.045em !important;
+  line-height: 1.04 !important;
+}
+.dashboard .sv-home-hero h1 em {
+  color: #6c7c62 !important;
+  font-weight: 500 !important;
+}
+.dashboard .sv-home-hero > .sv-hero-copy > p {
+  color: #7c7e78 !important;
+  font-size: 15px !important;
+  line-height: 1.65 !important;
+}
+@media (max-width: 700px) {
+  .dashboard .sv-home-hero h1 { font-size: clamp(34px, 8vw, 42px) !important; }
+}
