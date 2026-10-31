@@ -121,6 +121,25 @@ function App() {
         }
     }, []);
 
+    const handleCloudRestore = useCallback(async () => {
+        const confirmed = window.confirm(
+            "Download this account’s cloud workspace to this device? Restore only works when this device has no existing StudyVault data. Existing local data will never be overwritten."
+        );
+        if (!confirmed) return;
+
+        setMigrationBusy(true);
+        setMigrationMessage(null);
+        try {
+            const summary = await restoreCloudWorkspaceToLocal();
+            const total = Object.values(summary.restored).reduce((sum, count) => sum + count, 0);
+            setMigrationMessage(`Restored ${total} records and ${summary.attachmentsDownloaded} file attachments. Reloading StudyVault…`);
+            window.location.reload();
+        } catch (error) {
+            setMigrationMessage(error instanceof Error ? error.message : "Cloud restore failed. Existing local data was not changed.");
+            setMigrationBusy(false);
+        }
+    }, []);
+
     const handleSignOut = useCallback(async () => {
         if (!supabase) return;
         const { error } = await supabase.auth.signOut();
