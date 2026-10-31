@@ -64,6 +64,18 @@ export async function restoreCloudWorkspaceToLocal(): Promise<RestoreSummary> {
         throw new Error("This device already has local StudyVault data. Restore stopped to protect it. Use a fresh browser profile/device or back up and clear local data deliberately before restoring.");
     }
 
+    // Timetable data lives in localStorage, outside the IndexedDB stores above.
+    // Refuse to overwrite either key, even if the IndexedDB workspace is empty.
+    try {
+        if (localStorage.getItem(TIMETABLE_PLAN_KEY) !== null ||
+            localStorage.getItem(TIMETABLE_COMPLETION_KEY) !== null) {
+            throw new Error("This device already has local timetable data. Restore stopped to protect it. Back it up or clear it deliberately before restoring.");
+        }
+    } catch (error) {
+        if (error instanceof Error && error.message.includes("Restore stopped")) throw error;
+        throw new Error("StudyVault could not safely inspect local timetable data. Restore was stopped.");
+    }
+
     const subjects = activeRows<Subject>(byCollection.get("subjects")!);
     const folders = activeRows<Folder>(byCollection.get("folders")!);
     const notes = activeRows<Note>(byCollection.get("notes")!);
