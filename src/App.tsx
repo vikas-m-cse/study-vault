@@ -31,6 +31,7 @@ import "./App.css";
 import "./premium-motion.css";
 import "./focus-cockpit.css";
 import { migrateLocalWorkspaceToCloud, type MigrationSummary } from "./services/localWorkspaceMigration";
+import { restoreCloudWorkspaceToLocal } from "./services/cloudRestore";
 
 // ---------------------------------------------------------------------------
 // Default subjects shown on first launch (before any user data is saved)
