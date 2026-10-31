@@ -192,6 +192,7 @@ export async function restoreStudyVaultBackup(file: File): Promise<void> {
       error instanceof Error
         ? `Study data was restored, but settings could not be applied: ${error.message}`
         : "Study data was restored, but settings could not be applied.",
+      { cause: error },
     );
   }
 }
