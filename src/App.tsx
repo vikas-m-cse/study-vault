@@ -377,6 +377,7 @@ function App() {
                     <button type="button" onClick={handleCloudMigration} disabled={migrationBusy}>{migrationBusy ? "Uploading…" : "Migrate local data to cloud"}</button>
                     <button type="button" onClick={handleSignOut}>Sign out</button>
                 </div>
+                {migrationMessage && <div className="storage-error-banner" role="status">{migrationMessage}</div>}
                 <Topbar
                     onAddResource={handleAddResource}
                     onOpenBackup={() => setIsBackupOpen(true)}
