@@ -12,6 +12,9 @@ export type Resource = {
     // Used for uploaded files
     file?: File;
 
+    /** Private Supabase Storage object path for cross-device attachment retrieval. */
+    cloudFilePath?: string;
+
     // Used for website links
     url?: string;
 
