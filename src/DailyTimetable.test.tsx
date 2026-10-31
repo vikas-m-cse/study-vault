@@ -12,7 +12,7 @@ describe("DailyTimetable", () => {
     await user.click(screen.getByRole("button", { name: /Mon/ }));
   }
 
-  it("shows the weekly selector, daily summary, and starter routine", () => {
+  it("shows the weekly selector, daily summary, and starter routine", async () => {
     render(<DailyTimetable />);
     await selectMonday(userEvent.setup());
     expect(screen.getByRole("navigation", { name: "Choose a day" })).toBeTruthy();
