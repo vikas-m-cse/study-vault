@@ -1,5 +1,8 @@
 
 import { useState, useEffect, useCallback } from "react";
+import type { Session } from "@supabase/supabase-js";
+import AuthScreen from "./components/AuthScreen";
+import { isSupabaseConfigured, supabase } from "./lib/supabase";
 import { Sidebar } from "./components/Sidebar";
 import { Topbar } from "./components/Topbar";
 import { GlobalSearch } from "./components/GlobalSearch";
@@ -64,6 +67,41 @@ const DEFAULT_SUBJECTS: Subject[] = [
 // ---------------------------------------------------------------------------
 
 function App() {
+    const [session, setSession] = useState<Session | null>(null);
+    const [authLoading, setAuthLoading] = useState(true);
+
+    useEffect(() => {
+        if (!supabase) {
+            setAuthLoading(false);
+            return;
+        }
+
+        let active = true;
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, nextSession) => {
+            if (!active) return;
+            setSession(nextSession);
+            setAuthLoading(false);
+        });
+
+        supabase.auth.getSession().then(({ data, error }) => {
+            if (!active) return;
+            if (error) console.error("[StudyVault] Could not restore auth session:", error);
+            setSession(data.session);
+            setAuthLoading(false);
+        });
+
+        return () => {
+            active = false;
+            subscription.unsubscribe();
+        };
+    }, []);
+
+    const handleSignOut = useCallback(async () => {
+        if (!supabase) return;
+        const { error } = await supabase.auth.signOut();
+        if (error) console.error("[StudyVault] Sign out failed:", error);
+    }, []);
+
     const [activePage, setActivePage] = useState("Dashboard");
 
     const navigate = useCallback((page: string) => {
@@ -278,6 +316,15 @@ function App() {
         }
     }, [navigate]);
 
+    // Authentication is required before the local workspace is opened.
+    if (authLoading) {
+        return <div className="app-layout"><div className="app-loading"><p>Checking your StudyVault session…</p></div></div>;
+    }
+
+    if (!isSupabaseConfigured || !session) {
+        return <AuthScreen />;
+    }
+
     // -----------------------------------------------------------------------
     // Loading guard — show nothing until IndexedDB data is ready
     // -----------------------------------------------------------------------
@@ -301,6 +348,10 @@ function App() {
             <Sidebar activePage={activePage} onNavigate={navigate} />
 
             <main className="main-content">
+                <div className="auth-session-bar">
+                    <span>{session.user.email ?? "Signed in"}</span>
+                    <button type="button" onClick={handleSignOut}>Sign out</button>
+                </div>
                 <Topbar
                     onAddResource={handleAddResource}
                     onOpenBackup={() => setIsBackupOpen(true)}
