@@ -394,7 +394,8 @@ function App() {
             <main className="main-content">
                 <div className="auth-session-bar">
                     <span>{session.user.email ?? "Signed in"}</span>
-                    <button type="button" onClick={handleCloudMigration} disabled={migrationBusy}>{migrationBusy ? "Uploading…" : "Migrate local data to cloud"}</button>
+                    <button type="button" onClick={handleCloudMigration} disabled={migrationBusy}>{migrationBusy ? "Working…" : "Migrate local data to cloud"}</button>
+                    <button type="button" onClick={handleCloudRestore} disabled={migrationBusy}>{migrationBusy ? "Working…" : "Restore cloud data"}</button>
                     <button type="button" onClick={handleSignOut}>Sign out</button>
                 </div>
                 {migrationMessage && <div className="storage-error-banner" role="status">{migrationMessage}</div>}
