@@ -8,8 +8,13 @@ describe("DailyTimetable", () => {
     localStorage.clear();
   });
 
+  async function selectMonday(user: ReturnType<typeof userEvent.setup>) {
+    await user.click(screen.getByRole("button", { name: /Mon/ }));
+  }
+
   it("shows the weekly selector, daily summary, and starter routine", () => {
     render(<DailyTimetable />);
+    await selectMonday(userEvent.setup());
     expect(screen.getByRole("navigation", { name: "Choose a day" })).toBeTruthy();
     expect(screen.getByRole("heading", { name: "Your timeline" })).toBeTruthy();
     expect(screen.getAllByText("Morning routine & breakfast").length).toBeGreaterThan(0);
@@ -46,6 +51,7 @@ describe("DailyTimetable", () => {
   it("records completion and keeps it when restoring the starter routine", async () => {
     const user = userEvent.setup();
     render(<DailyTimetable />);
+    await selectMonday(user);
     const event = screen.getAllByText("Morning routine & breakfast")
       .map((element) => element.closest("article"))
       .find((candidate) => candidate !== null);
@@ -72,6 +78,7 @@ describe("DailyTimetable", () => {
     }];
     const subjects = [{ id: 1, name: "Operating Systems", description: "OS concepts", color: "olive" }];
     render(<DailyTimetable resources={resources} subjects={subjects} onOpenResource={onOpenResource} />);
+    await selectMonday(user);
 
     await user.click(screen.getByRole("button", { name: /add a block/i }));
     await user.type(screen.getByPlaceholderText("e.g. Java problem-solving"), "Revise OS Module 1");
