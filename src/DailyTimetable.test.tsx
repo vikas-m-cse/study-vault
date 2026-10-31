@@ -24,6 +24,7 @@ describe("DailyTimetable", () => {
   it("adds a block and persists the updated plan", async () => {
     const user = userEvent.setup();
     render(<DailyTimetable />);
+    await selectMonday(user);
     await user.click(screen.getByRole("button", { name: /add a block/i }));
     await user.type(screen.getByPlaceholderText("e.g. Java problem-solving"), "Java practice");
     fireEvent.change(screen.getByLabelText("Starts"), { target: { value: "18:15" } });
