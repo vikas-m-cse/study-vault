@@ -73,6 +73,7 @@ function App() {
     const [authLoading, setAuthLoading] = useState(true);
     const [migrationBusy, setMigrationBusy] = useState(false);
     const [migrationMessage, setMigrationMessage] = useState<string | null>(null);
+    const [shouldPersistSubjects, setShouldPersistSubjects] = useState(false);
 
     useEffect(() => {
         if (!supabase) {
@@ -201,7 +202,9 @@ function App() {
 
                 if (cancelled) return;
 
-                // Use saved subjects; fall back to defaults on first launch
+                // Keep starter subjects in memory only until the user edits them.
+                // A fresh device must remain empty so cloud restore can populate it.
+                setShouldPersistSubjects(savedSubjects.length > 0);
                 setSubjects(savedSubjects.length > 0 ? savedSubjects : DEFAULT_SUBJECTS);
                 setResources(savedResources);
             } catch (err) {
@@ -224,13 +227,13 @@ function App() {
     // -----------------------------------------------------------------------
 
     useEffect(() => {
-        if (subjects === null) return;
+        if (subjects === null || !shouldPersistSubjects) return;
         if (!isStorageAvailable()) return;
 
         saveSubjects(subjects).catch((err) => {
             console.error("[StudyVault] Failed to save subjects:", err);
         });
-    }, [subjects]);
+    }, [subjects, shouldPersistSubjects]);
 
     useEffect(() => {
         const handleShortcut = (event: KeyboardEvent) => {
@@ -333,6 +336,7 @@ function App() {
 
     const handleSetSubjects: React.Dispatch<React.SetStateAction<Subject[]>> = useCallback(
         (action) => {
+            setShouldPersistSubjects(true);
             setSubjects((prev) => {
                 const current = prev ?? DEFAULT_SUBJECTS;
                 return typeof action === "function" ? action(current) : action;
