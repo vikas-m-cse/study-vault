@@ -30,6 +30,7 @@ import {
 import "./App.css";
 import "./premium-motion.css";
 import "./focus-cockpit.css";
+import { migrateLocalWorkspaceToCloud, type MigrationSummary } from "./services/localWorkspaceMigration";
 
 // ---------------------------------------------------------------------------
 // Default subjects shown on first launch (before any user data is saved)
@@ -69,6 +70,8 @@ const DEFAULT_SUBJECTS: Subject[] = [
 function App() {
     const [session, setSession] = useState<Session | null>(null);
     const [authLoading, setAuthLoading] = useState(true);
+    const [migrationBusy, setMigrationBusy] = useState(false);
+    const [migrationMessage, setMigrationMessage] = useState<string | null>(null);
 
     useEffect(() => {
         if (!supabase) {
@@ -94,6 +97,27 @@ function App() {
             active = false;
             subscription.unsubscribe();
         };
+    }, []);
+
+    const handleCloudMigration = useCallback(async () => {
+        const confirmed = window.confirm(
+            "Upload this browser’s existing StudyVault subjects, notes, folders, resources and timetable to the signed-in account? Local data will not be deleted. Existing cloud data will cause the migration to stop. Uploaded file attachments are not included yet."
+        );
+        if (!confirmed) return;
+
+        setMigrationBusy(true);
+        setMigrationMessage(null);
+        try {
+            const summary: MigrationSummary = await migrateLocalWorkspaceToCloud();
+            const total = Object.values(summary.uploaded).reduce((sum, count) => sum + count, 0);
+            setMigrationMessage(
+                `Uploaded ${total} records. ${summary.attachmentsNotUploaded} file attachments still need a separate upload step.`
+            );
+        } catch (error) {
+            setMigrationMessage(error instanceof Error ? error.message : "Cloud migration failed. Local data remains unchanged.");
+        } finally {
+            setMigrationBusy(false);
+        }
     }, []);
 
     const handleSignOut = useCallback(async () => {
@@ -350,6 +374,7 @@ function App() {
             <main className="main-content">
                 <div className="auth-session-bar">
                     <span>{session.user.email ?? "Signed in"}</span>
+                    <button type="button" onClick={handleCloudMigration} disabled={migrationBusy}>{migrationBusy ? "Uploading…" : "Migrate local data to cloud"}</button>
                     <button type="button" onClick={handleSignOut}>Sign out</button>
                 </div>
                 <Topbar
