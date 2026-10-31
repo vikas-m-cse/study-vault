@@ -73,7 +73,7 @@ export async function restoreCloudWorkspaceToLocal(): Promise<RestoreSummary> {
         }
     } catch (error) {
         if (error instanceof Error && error.message.includes("Restore stopped")) throw error;
-        throw new Error("StudyVault could not safely inspect local timetable data. Restore was stopped.");
+        throw new Error("StudyVault could not safely inspect local timetable data. Restore was stopped.", { cause: error });
     }
 
     const subjects = activeRows<Subject>(byCollection.get("subjects")!);
