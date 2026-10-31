@@ -1,5 +1,5 @@
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import type { Session } from "@supabase/supabase-js";
 import AuthScreen from "./components/AuthScreen";
 import { isSupabaseConfigured, supabase } from "./lib/supabase";
@@ -32,6 +32,7 @@ import "./premium-motion.css";
 import "./focus-cockpit.css";
 import { migrateLocalWorkspaceToCloud, type MigrationSummary } from "./services/localWorkspaceMigration";
 import { restoreCloudWorkspaceToLocal } from "./services/cloudRestore";
+import { syncSubjectChanges, syncResource, syncResourceDeletion } from "./services/cloudAutoSync";
 
 // ---------------------------------------------------------------------------
 // Default subjects shown on first launch (before any user data is saved)
@@ -74,6 +75,7 @@ function App() {
     const [migrationBusy, setMigrationBusy] = useState(false);
     const [migrationMessage, setMigrationMessage] = useState<string | null>(null);
     const [shouldPersistSubjects, setShouldPersistSubjects] = useState(false);
+    const previousSubjectsRef = useRef<Subject[]>([]);
 
     useEffect(() => {
         if (!supabase) {
@@ -204,6 +206,7 @@ function App() {
 
                 // Keep starter subjects in memory only until the user edits them.
                 // A fresh device must remain empty so cloud restore can populate it.
+                previousSubjectsRef.current = savedSubjects;
                 setShouldPersistSubjects(savedSubjects.length > 0);
                 setSubjects(savedSubjects.length > 0 ? savedSubjects : DEFAULT_SUBJECTS);
                 setResources(savedResources);
@@ -230,7 +233,16 @@ function App() {
         if (subjects === null || !shouldPersistSubjects) return;
         if (!isStorageAvailable()) return;
 
-        saveSubjects(subjects).catch((err) => {
+        saveSubjects(subjects).then(async () => {
+            const previous = previousSubjectsRef.current;
+            previousSubjectsRef.current = subjects;
+            try {
+                await syncSubjectChanges(subjects, previous);
+            } catch (err) {
+                console.error("[StudyVault] Cloud subject sync failed; local data is safe:", err);
+                setMigrationMessage("Saved on this device. Cloud subject sync will need a retry.");
+            }
+        }).catch((err) => {
             console.error("[StudyVault] Failed to save subjects:", err);
         });
     }, [subjects, shouldPersistSubjects]);
@@ -279,6 +291,13 @@ function App() {
             throw new Error("StudyVault could not save this resource locally.", { cause: err });
         }
 
+        try {
+            await syncResource(savedResource);
+        } catch (err) {
+            console.error("[StudyVault] Cloud resource sync failed; local data is safe:", err);
+            setMigrationMessage("Resource saved on this device, but cloud sync failed. Retry when online.");
+        }
+
         setResources((previous) => {
             if (previous === null) return [savedResource];
 
@@ -322,6 +341,13 @@ function App() {
         } catch (err) {
             console.error("[StudyVault] Failed to delete resource from IndexedDB:", err);
             throw new Error("StudyVault could not delete this resource locally.", { cause: err });
+        }
+
+        try {
+            await syncResourceDeletion(id);
+        } catch (err) {
+            console.error("[StudyVault] Cloud resource deletion sync failed:", err);
+            setMigrationMessage("Resource deleted on this device, but cloud deletion sync failed.");
         }
 
         setResources((previous) =>
