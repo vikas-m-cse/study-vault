@@ -33,7 +33,7 @@ import "./focus-cockpit.css";
 import { migrateLocalWorkspaceToCloud, type MigrationSummary } from "./services/localWorkspaceMigration";
 import {
     restoreCloudWorkspaceToLocal,
-    mergeCloudSubjectsToLocal,
+    mergeCloudWorkspaceToLocal,
 } from "./services/cloudRestore";
 import { syncSubjectChanges, syncResource, syncResourceDeletion } from "./services/cloudAutoSync";
 
@@ -143,25 +143,26 @@ function App() {
         }
     }, []);
 
-    const handleMergeCloudSubjects = useCallback(async () => {
+    const handleMergeCloudWorkspace = useCallback(async () => {
         const confirmed = window.confirm(
-            "Merge missing subjects from your signed-in cloud account into this device? Existing local subjects will never be overwritten."
+            "Merge missing subjects, resources, notes, folders and timetable data from your signed-in cloud account into this device? Existing local records will never be overwritten or deleted. Resource attachments will be downloaded where available."
         );
         if (!confirmed) return;
 
         setMigrationBusy(true);
         setMigrationMessage(null);
         try {
-            const summary = await mergeCloudSubjectsToLocal();
+            const summary = await mergeCloudWorkspaceToLocal();
+            const total = Object.values(summary.added).reduce((sum, count) => sum + count, 0);
             setMigrationMessage(
-                `Subject merge complete: ${summary.added} added, ${summary.alreadyPresent} already existed. Reloading StudyVault…`
+                `Cloud merge complete: ${total} records added (subjects ${summary.added.subjects}, resources ${summary.added.resources}, notes ${summary.added.notes}, folders ${summary.added.folders}, timetable ${summary.added.timetable + summary.added.timetable_completions}); ${summary.attachmentsDownloaded} attachments downloaded. Reloading StudyVault…`
             );
             window.location.reload();
         } catch (error) {
             setMigrationMessage(
                 error instanceof Error
                     ? error.message
-                    : "Subject merge failed. Existing local data remains unchanged."
+                    : "Cloud workspace merge failed. Existing local data remains unchanged."
             );
             setMigrationBusy(false);
         }
@@ -449,7 +450,7 @@ function App() {
                 <div className="auth-session-bar">
                     <span>{session.user.email ?? "Signed in"}</span>
                     <button type="button" onClick={handleCloudMigration} disabled={migrationBusy}>{migrationBusy ? "Working…" : "Migrate local data to cloud"}</button>
-                    <button type="button" onClick={handleMergeCloudSubjects} disabled={migrationBusy}>{migrationBusy ? "Working…" : "Merge missing subjects from cloud"}</button>
+                    <button type="button" onClick={handleMergeCloudWorkspace} disabled={migrationBusy}>{migrationBusy ? "Working…" : "Merge missing workspace data from cloud"}</button>
                     <button type="button" onClick={handleCloudRestore} disabled={migrationBusy}>{migrationBusy ? "Working…" : "Restore cloud data"}</button>
                     <button type="button" onClick={handleSignOut}>Sign out</button>
                 </div>
