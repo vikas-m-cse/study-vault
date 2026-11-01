@@ -192,3 +192,78 @@ export async function migrateLocalWorkspaceToCloud(): Promise<MigrationSummary> 
         attachmentsUploaded,
     };
 }
+
+
+export type LocalCloudMergeSummary = {
+    uploaded: Record<WorkspaceCollection, number>;
+    skippedExistingCloud: number;
+    attachmentsUploaded: number;
+};
+
+/**
+ * Back up local-only records without replacing anything already in the cloud.
+ * Cloud records (including tombstones) always win on ID conflicts.
+ */
+export async function mergeLocalWorkspaceMissingToCloud(): Promise<LocalCloudMergeSummary> {
+    const [subjects, resources, notes, folders] = await Promise.all([
+        loadSubjects(), loadResources(), getAllNotes(), getAllFolders(),
+    ]);
+    const plan = parseLocalJson(TIMETABLE_PLAN_KEY);
+    const completions = parseLocalJson(TIMETABLE_COMPLETION_KEY);
+
+    const localRecords: LocalRecord[] = [
+        ...recordsFromArray<Subject>("subjects", subjects),
+        ...recordsFromArray<Folder>("folders", folders),
+        ...recordsFromArray<Note>("notes", notes),
+        ...resources.map((resource: Resource) => {
+            const { file, ...metadata } = resource;
+            return {
+                collection: "resources" as const,
+                id: resource.id,
+                data: metadata,
+                updatedAt: timestampOf(resource),
+                ...(file ? { attachment: file } : {}),
+            };
+        }),
+    ];
+
+    if (Array.isArray(plan)) {
+        localRecords.push({ collection: "timetable", id: "plan", data: plan, updatedAt: new Date().toISOString() });
+    }
+    if (completions && typeof completions === "object" && !Array.isArray(completions)) {
+        localRecords.push({ collection: "timetable_completions", id: "by-date", data: completions, updatedAt: new Date().toISOString() });
+    }
+
+    const collections: WorkspaceCollection[] = [
+        "subjects", "resources", "notes", "folders", "timetable", "timetable_completions",
+    ];
+    const snapshots = await Promise.all(collections.map((collection) => pullWorkspaceCollection(collection)));
+    const cloudKeys = new Set(snapshots.flat().map((remote) => `${remote.collection}:${remote.record_id}`));
+
+    const uploaded: Record<WorkspaceCollection, number> = {
+        subjects: 0, resources: 0, notes: 0, folders: 0, timetable: 0, timetable_completions: 0,
+    };
+    let skippedExistingCloud = 0;
+    let attachmentsUploaded = 0;
+
+    for (const record of localRecords) {
+        const key = `${record.collection}:${record.id}`;
+        if (cloudKeys.has(key)) {
+            skippedExistingCloud += 1;
+            continue;
+        }
+
+        let data = record.data;
+        if (record.collection === "resources" && record.attachment) {
+            const cloudFilePath = await uploadResourceAttachment(record.id, record.attachment);
+            data = { ...(record.data as Record<string, unknown>), cloudFilePath };
+            attachmentsUploaded += 1;
+        }
+
+        await pushWorkspaceRecord(record.collection, record.id, data, record.updatedAt);
+        cloudKeys.add(key);
+        uploaded[record.collection] += 1;
+    }
+
+    return { uploaded, skippedExistingCloud, attachmentsUploaded };
+}

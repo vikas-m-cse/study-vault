@@ -30,7 +30,7 @@ import {
 import "./App.css";
 import "./premium-motion.css";
 import "./focus-cockpit.css";
-import { migrateLocalWorkspaceToCloud, type MigrationSummary } from "./services/localWorkspaceMigration";
+import { migrateLocalWorkspaceToCloud, mergeLocalWorkspaceMissingToCloud, type MigrationSummary } from "./services/localWorkspaceMigration";
 import {
     restoreCloudWorkspaceToLocal,
     mergeCloudWorkspaceToLocal,
@@ -150,6 +150,32 @@ function App() {
             );
         } catch (error) {
             setMigrationMessage(error instanceof Error ? error.message : "Cloud migration failed. Local data remains unchanged.");
+        } finally {
+            setMigrationBusy(false);
+        }
+    }, []);
+
+
+    const handleMergeLocalToCloud = useCallback(async () => {
+        const confirmed = window.confirm(
+            "Back up records that exist on this device but are missing from your cloud account? Existing cloud records will never be overwritten. Local data will not be deleted. Missing resource attachments will be uploaded."
+        );
+        if (!confirmed) return;
+
+        setMigrationBusy(true);
+        setMigrationMessage(null);
+        try {
+            const summary = await mergeLocalWorkspaceMissingToCloud();
+            const total = Object.values(summary.uploaded).reduce((sum, count) => sum + count, 0);
+            setMigrationMessage(
+                `Local-to-cloud backup complete: ${total} new records uploaded; ${summary.skippedExistingCloud} existing cloud records preserved; ${summary.attachmentsUploaded} attachments uploaded.`
+            );
+        } catch (error) {
+            setMigrationMessage(
+                error instanceof Error
+                    ? error.message
+                    : "Local-to-cloud backup failed. Your local data remains unchanged."
+            );
         } finally {
             setMigrationBusy(false);
         }
@@ -481,6 +507,7 @@ function App() {
                 <div className="auth-session-bar">
                     <span>{session.user.email ?? "Signed in"}</span>
                     <button type="button" onClick={handleCloudMigration} disabled={migrationBusy}>{migrationBusy ? "Working…" : "Migrate local data to cloud"}</button>
+                    <button type="button" onClick={handleMergeLocalToCloud} disabled={migrationBusy}>{migrationBusy ? "Working…" : "Back up missing local data to cloud"}</button>
                     <button type="button" onClick={handleMergeCloudWorkspace} disabled={migrationBusy}>{migrationBusy ? "Working…" : "Merge missing workspace data from cloud"}</button>
                     <button type="button" onClick={handleCloudRestore} disabled={migrationBusy}>{migrationBusy ? "Working…" : "Restore cloud data"}</button>
                     <button type="button" onClick={handleSignOut}>Sign out</button>
