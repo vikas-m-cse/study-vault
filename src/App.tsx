@@ -35,7 +35,7 @@ import {
     restoreCloudWorkspaceToLocal,
     mergeCloudWorkspaceToLocal,
 } from "./services/cloudRestore";
-import { syncSubjectChanges, syncResource, syncResourceDeletion } from "./services/cloudAutoSync";
+import { syncSubjectChanges, syncResource, syncResourceDeletion, flushPendingCloudSync } from "./services/cloudAutoSync";
 
 // ---------------------------------------------------------------------------
 // Default subjects shown on first launch (before any user data is saved)
@@ -102,6 +102,37 @@ function App() {
             subscription.unsubscribe();
         };
     }, []);
+
+
+    // Retry durable cloud writes whenever the app starts, reconnects, or returns to the foreground.
+    useEffect(() => {
+        if (!session || !supabase) return;
+
+        const retry = () => {
+            void flushPendingCloudSync().then(({ pending }) => {
+                if (pending > 0) {
+                    setMigrationMessage(`Cloud backup has ${pending} change(s) waiting to sync. StudyVault will retry automatically.`);
+                }
+            }).catch((error) => {
+                console.warn("[StudyVault] Automatic cloud retry could not run:", error);
+            });
+        };
+
+        retry();
+        const handleOnline = () => retry();
+        const handleVisibility = () => {
+            if (document.visibilityState === "visible") retry();
+        };
+        window.addEventListener("online", handleOnline);
+        document.addEventListener("visibilitychange", handleVisibility);
+        const interval = window.setInterval(retry, 30_000);
+
+        return () => {
+            window.removeEventListener("online", handleOnline);
+            document.removeEventListener("visibilitychange", handleVisibility);
+            window.clearInterval(interval);
+        };
+    }, [session?.user.id]);
 
     const handleCloudMigration = useCallback(async () => {
         const confirmed = window.confirm(
