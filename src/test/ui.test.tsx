@@ -33,6 +33,7 @@ vi.mock("../services/cloudAutoSync", () => ({
     syncFolder: vi.fn(async () => undefined),
     syncFolderDeletion: vi.fn(async () => undefined),
     syncTimetable: vi.fn(async () => undefined),
+    flushPendingCloudSync: vi.fn(async () => ({ synced: 0, pending: 0 })),
 }));
 
 const subjects: Subject[] = [{
