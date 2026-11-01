@@ -33,7 +33,6 @@ import "./focus-cockpit.css";
 import { migrateLocalWorkspaceToCloud, type MigrationSummary } from "./services/localWorkspaceMigration";
 import {
     restoreCloudWorkspaceToLocal,
-    mergeCloudSubjectsToLocal,
     mergeCloudWorkspaceToLocal,
 } from "./services/cloudRestore";
 import { syncSubjectChanges, syncResource, syncResourceDeletion } from "./services/cloudAutoSync";
@@ -143,31 +142,6 @@ function App() {
             setMigrationBusy(false);
         }
     }, []);
-
-    const handleMergeCloudSubjects = useCallback(async () => {
-        const confirmed = window.confirm(
-            "Merge missing subjects from your signed-in cloud account into this device? Existing local subjects will never be overwritten."
-        );
-        if (!confirmed) return;
-
-        setMigrationBusy(true);
-        setMigrationMessage(null);
-        try {
-            const summary = await mergeCloudSubjectsToLocal();
-            setMigrationMessage(
-                `Subject merge complete: ${summary.added} added, ${summary.alreadyPresent} already existed. Reloading StudyVault…`
-            );
-            window.location.reload();
-        } catch (error) {
-            setMigrationMessage(
-                error instanceof Error
-                    ? error.message
-                    : "Subject merge failed. Existing local data remains unchanged."
-            );
-            setMigrationBusy(false);
-        }
-    }, []);
-
 
     const handleMergeCloudWorkspace = useCallback(async () => {
         const confirmed = window.confirm(
