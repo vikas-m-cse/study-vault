@@ -28,6 +28,80 @@ function activeRows<T>(rows: CloudRow[]): T[] {
     return rows.filter((row) => !row.deleted_at).map((row) => row.data as T);
 }
 
+
+/**
+ * Merge active cloud subjects into local IndexedDB without replacing local data.
+ * Only the subjects collection is read or modified.
+ */
+export async function mergeCloudSubjectsToLocal(): Promise<{
+    added: number;
+    alreadyPresent: number;
+}> {
+    const rows = await pullWorkspaceCollection("subjects");
+    const active = rows.filter((row) => !row.deleted_at);
+    if (active.length === 0) {
+        throw new Error("No active cloud subjects were found for this account.");
+    }
+
+    // Validate every cloud row before opening a write transaction.
+    const cloudSubjects = new Map<number, Subject>();
+    for (const row of active) {
+        const value = row.data as Partial<Subject> | null;
+        if (
+            !value ||
+            !Number.isSafeInteger(value.id) ||
+            typeof value.name !== "string" ||
+            typeof value.description !== "string" ||
+            typeof value.color !== "string" ||
+            row.record_id !== String(value.id)
+        ) {
+            throw new Error("A cloud subject has invalid data. No local subjects were changed.");
+        }
+        cloudSubjects.set(value.id as number, value as Subject);
+    }
+
+    const db = await openStudyVaultDB();
+    const tx = db.transaction([STORE_SUBJECTS], "readwrite");
+    const store = tx.objectStore(STORE_SUBJECTS);
+    let added = 0;
+    let alreadyPresent = 0;
+
+    const complete = new Promise<void>((resolve, reject) => {
+        tx.oncomplete = () => resolve();
+        tx.onerror = () => reject(tx.error ?? new Error("Subject merge failed."));
+        tx.onabort = () => reject(tx.error ?? new Error("Subject merge was cancelled."));
+    });
+
+    const request = store.getAll();
+    request.onsuccess = () => {
+        const existingIds = new Set(
+            (request.result as Subject[]).map((subject) => subject.id)
+        );
+
+        for (const subject of cloudSubjects.values()) {
+            if (existingIds.has(subject.id)) {
+                alreadyPresent += 1;
+                continue;
+            }
+
+            // add() is insert-only; it cannot overwrite an existing subject.
+            store.add(subject);
+            existingIds.add(subject.id);
+            added += 1;
+        }
+    };
+    request.onerror = () => {
+        try {
+            tx.abort();
+        } catch {
+            // The transaction may already have aborted.
+        }
+    };
+
+    await complete;
+    return { added, alreadyPresent };
+}
+
 /**
  * Restore only into a completely empty local workspace. All cloud reads and
  * attachment downloads finish before the single IndexedDB write transaction.
