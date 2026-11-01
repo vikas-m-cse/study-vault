@@ -31,7 +31,10 @@ import "./App.css";
 import "./premium-motion.css";
 import "./focus-cockpit.css";
 import { migrateLocalWorkspaceToCloud, type MigrationSummary } from "./services/localWorkspaceMigration";
-import { restoreCloudWorkspaceToLocal } from "./services/cloudRestore";
+import {
+    restoreCloudWorkspaceToLocal,
+    mergeCloudSubjectsToLocal,
+} from "./services/cloudRestore";
 import { syncSubjectChanges, syncResource, syncResourceDeletion } from "./services/cloudAutoSync";
 
 // ---------------------------------------------------------------------------
@@ -136,6 +139,30 @@ function App() {
             window.location.reload();
         } catch (error) {
             setMigrationMessage(error instanceof Error ? error.message : "Cloud restore failed. Existing local data was not changed.");
+            setMigrationBusy(false);
+        }
+    }, []);
+
+    const handleMergeCloudSubjects = useCallback(async () => {
+        const confirmed = window.confirm(
+            "Merge missing subjects from your signed-in cloud account into this device? Existing local subjects will never be overwritten."
+        );
+        if (!confirmed) return;
+
+        setMigrationBusy(true);
+        setMigrationMessage(null);
+        try {
+            const summary = await mergeCloudSubjectsToLocal();
+            setMigrationMessage(
+                `Subject merge complete: ${summary.added} added, ${summary.alreadyPresent} already existed. Reloading StudyVault…`
+            );
+            window.location.reload();
+        } catch (error) {
+            setMigrationMessage(
+                error instanceof Error
+                    ? error.message
+                    : "Subject merge failed. Existing local data remains unchanged."
+            );
             setMigrationBusy(false);
         }
     }, []);
@@ -422,6 +449,7 @@ function App() {
                 <div className="auth-session-bar">
                     <span>{session.user.email ?? "Signed in"}</span>
                     <button type="button" onClick={handleCloudMigration} disabled={migrationBusy}>{migrationBusy ? "Working…" : "Migrate local data to cloud"}</button>
+                    <button type="button" onClick={handleMergeCloudSubjects} disabled={migrationBusy}>{migrationBusy ? "Working…" : "Merge missing subjects from cloud"}</button>
                     <button type="button" onClick={handleCloudRestore} disabled={migrationBusy}>{migrationBusy ? "Working…" : "Restore cloud data"}</button>
                     <button type="button" onClick={handleSignOut}>Sign out</button>
                 </div>
