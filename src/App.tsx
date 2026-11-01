@@ -167,7 +167,8 @@ function App() {
             setMigrationBusy(false);
         }
     }, []);
-\n    const handleSignOut = useCallback(async () => {
+
+    const handleSignOut = useCallback(async () => {
         if (!supabase) return;
         const { error } = await supabase.auth.signOut();
         if (error) console.error("[StudyVault] Sign out failed:", error);
