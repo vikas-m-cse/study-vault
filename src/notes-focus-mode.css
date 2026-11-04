@@ -103,3 +103,128 @@
         font-size: 16px !important;
     }
 }
+
+
+/* Focus mode viewport correction.
+   The workspace must own the viewport, not inherit the notes page's
+   content height or the editor's intrinsic minimum width. */
+html:has(.notes-workspace.is-fullscreen),
+body:has(.notes-workspace.is-fullscreen),
+#root:has(.notes-workspace.is-fullscreen) {
+    min-height: 100%;
+}
+
+.notes-workspace.is-fullscreen {
+    position: fixed !important;
+    inset: 0 !important;
+    z-index: 12000 !important;
+    display: grid !important;
+    grid-template-columns: minmax(210px, 244px) minmax(240px, .78fr) minmax(0, 1.6fr) !important;
+    width: 100vw !important;
+    max-width: 100vw !important;
+    height: 100vh !important;
+    height: 100dvh !important;
+    min-height: 100vh !important;
+    min-height: 100dvh !important;
+    max-height: 100dvh !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+    box-sizing: border-box !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+}
+
+.notes-workspace.is-fullscreen.left-closed {
+    grid-template-columns: 0 minmax(240px, .78fr) minmax(0, 1.6fr) !important;
+}
+
+.notes-workspace.is-fullscreen.right-closed {
+    grid-template-columns: minmax(210px, 244px) minmax(0, 1fr) 0 !important;
+}
+
+.notes-workspace.is-fullscreen.left-closed.right-closed {
+    grid-template-columns: 0 minmax(0, 1fr) 0 !important;
+}
+
+.notes-workspace.is-fullscreen > .notes-panel {
+    width: auto !important;
+    min-width: 0 !important;
+    min-height: 0 !important;
+    max-width: 100% !important;
+    height: 100% !important;
+    max-height: 100% !important;
+    overflow: auto !important;
+    box-sizing: border-box !important;
+}
+
+.notes-workspace.is-fullscreen .notes-editor-panel {
+    display: flex !important;
+    min-width: 0 !important;
+    min-height: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    overflow: hidden !important;
+    opacity: 1 !important;
+    pointer-events: auto !important;
+}
+
+.notes-workspace.is-fullscreen .notes-editor-header {
+    flex: 0 0 auto !important;
+    min-width: 0 !important;
+    flex-wrap: wrap !important;
+}
+
+.notes-workspace.is-fullscreen .notes-editor-scroll {
+    flex: 1 1 auto !important;
+    min-width: 0 !important;
+    min-height: 0 !important;
+    width: 100% !important;
+    overflow: auto !important;
+    overscroll-behavior: contain;
+}
+
+.notes-workspace.is-fullscreen .notes-editor,
+.notes-workspace.is-fullscreen .notes-title-row,
+.notes-workspace.is-fullscreen .notes-metadata-grid,
+.notes-workspace.is-fullscreen .notes-tags-field,
+.notes-workspace.is-fullscreen .notes-editor-content {
+    min-width: 0 !important;
+    width: 100% !important;
+    max-width: 1000px !important;
+    box-sizing: border-box !important;
+}
+
+.notes-workspace.is-fullscreen .notes-title-input {
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    overflow-wrap: anywhere !important;
+    box-sizing: border-box !important;
+}
+
+@media (max-width: 900px) {
+    .notes-workspace.is-fullscreen,
+    .notes-workspace.is-fullscreen.left-closed,
+    .notes-workspace.is-fullscreen.right-closed,
+    .notes-workspace.is-fullscreen.left-closed.right-closed {
+        display: flex !important;
+        flex-direction: column !important;
+        overflow-y: auto !important;
+        overflow-x: hidden !important;
+    }
+
+    .notes-workspace.is-fullscreen .notes-left-panel,
+    .notes-workspace.is-fullscreen .notes-list-panel {
+        flex: 0 0 auto !important;
+        width: 100% !important;
+        max-height: 22dvh !important;
+    }
+
+    .notes-workspace.is-fullscreen .notes-editor-panel {
+        flex: 1 0 70dvh !important;
+        min-height: 70dvh !important;
+        height: 70dvh !important;
+    }
+}
