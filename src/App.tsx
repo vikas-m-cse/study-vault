@@ -36,6 +36,7 @@ import {
     mergeCloudWorkspaceToLocal,
 } from "./services/cloudRestore";
 import { syncSubjectChanges, syncResource, syncResourceDeletion, flushPendingCloudSync } from "./services/cloudAutoSync";
+import { createDailyCloudSnapshot } from "./services/cloudSnapshotBackup";
 
 // ---------------------------------------------------------------------------
 // Default subjects shown on first launch (before any user data is saved)
@@ -77,6 +78,7 @@ function App() {
     const [authLoading, setAuthLoading] = useState(Boolean(supabase));
     const [migrationBusy, setMigrationBusy] = useState(false);
     const [migrationMessage, setMigrationMessage] = useState<string | null>(null);
+    const [cloudBackupStatus, setCloudBackupStatus] = useState<"idle" | "syncing" | "synced" | "error">("idle");
     const [shouldPersistSubjects, setShouldPersistSubjects] = useState(false);
     const previousSubjectsRef = useRef<Subject[]>([]);
 
@@ -307,6 +309,31 @@ function App() {
         return () => { cancelled = true; };
     }, [storageAvailable]);
 
+    // Create one full private Storage snapshot per user per day after local data loads.
+    // Record-level sync continues to push individual edits throughout the day.
+    useEffect(() => {
+        if (!session || subjects === null || resources === null || !storageAvailable) return;
+
+        let active = true;
+        setCloudBackupStatus("syncing");
+        createDailyCloudSnapshot().then(({ records, skipped }) => {
+            if (!active) return;
+            setCloudBackupStatus("synced");
+            setMigrationMessage(
+                skipped
+                    ? `Auto backup: ${records} records already backed up to cloud today.`
+                    : `Auto backup: ${records} records uploaded to cloud today.`
+            );
+        }).catch((error) => {
+            if (!active) return;
+            console.error("[StudyVault] Automatic snapshot backup failed:", error);
+            setCloudBackupStatus("error");
+            setMigrationMessage(error instanceof Error ? error.message : "Automatic cloud backup failed. Local data is safe.");
+        });
+
+        return () => { active = false; };
+    }, [session?.user.id, subjects === null, resources === null, storageAvailable]);
+
     // -----------------------------------------------------------------------
     // Persist subjects whenever they change (skip initial null)
     // -----------------------------------------------------------------------
@@ -505,6 +532,9 @@ function App() {
 
             <main className="main-content">
                 <div className="auth-session-bar">
+                    <span className={`cloud-backup-badge ${cloudBackupStatus}`} role="status">
+                        {cloudBackupStatus === "syncing" ? "CLOUD SYNCING" : cloudBackupStatus === "synced" ? "CLOUD SYNCED" : cloudBackupStatus === "error" ? "CLOUD BACKUP ISSUE" : "CLOUD BACKUP"}
+                    </span>
                     <span>{session.user.email ?? "Signed in"}</span>
                     <button type="button" onClick={handleCloudMigration} disabled={migrationBusy}>{migrationBusy ? "Working…" : "Migrate local data to cloud"}</button>
                     <button type="button" onClick={handleMergeLocalToCloud} disabled={migrationBusy}>{migrationBusy ? "Working…" : "Back up missing local data to cloud"}</button>
