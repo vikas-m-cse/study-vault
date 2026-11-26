@@ -86,7 +86,7 @@ export async function createDailyCloudSnapshot(): Promise<{ records: number; pat
 
   const userId = data.user.id;
   const now = new Date();
-  const day = now.toISOString().slice(0, 10);
+  const day = [now.getFullYear(), String(now.getMonth() + 1).padStart(2, "0"), String(now.getDate()).padStart(2, "0")].join("-");
   const markerKey = `${LAST_BACKUP_PREFIX}${userId}`;
   try {
     const marker = JSON.parse(localStorage.getItem(markerKey) ?? "null") as { day?: string; records?: number } | null;
